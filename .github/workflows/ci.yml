@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: oxane
+          POSTGRES_USER: oxane
+          POSTGRES_PASSWORD: oxane_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U oxane -d oxane"
+          --health-interval 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://oxane:oxane_dev@localhost:5432/oxane
+      DEAL_FILE: ${{ github.workspace }}/deal-kit/deal.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: alembic upgrade head
+      - run: pytest

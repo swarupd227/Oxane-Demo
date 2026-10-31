@@ -1,0 +1,47 @@
+# Single source of truth for the demo deal. Every name here is fictional.
+# Phase 1 extends this file with the terms, rules and planted exceptions that
+# generate the document pack, the loan tape and the answer key.
+
+case:
+  number: "0412"
+  target_go_live: null # Set once the demo date is agreed.
+
+lender:
+  name: Calderwood Bank plc
+  short_name: Calderwood Bank
+  desk: Warehouse lending desk
+
+borrower:
+  name: Bramble Auto Receivables I LLC
+  short_name: Bramble Auto Receivables I
+  parent: Bramble Auto Finance LLC
+  description: Special purpose vehicle of a near-prime auto lender
+
+facility:
+  type: Senior secured revolving warehouse facility
+  short_type: warehouse facility
+  limit_usd: 250000000
+  collateral: Retail auto loan receivables
+  first_tape_loans: 2400
+
+pricing:
+  margin: Term SOFR + 3.25%
+  unused_fee: 0.50% a year
+
+dates:
+  - label: Facility signed
+    date: 2026-01-15
+  - label: Amendment No. 1 signed
+    date: 2026-02-20
+  - label: Amendment No. 1 effective
+    date: 2026-03-01
+  - label: First borrowing base period ends
+    date: 2026-04-30
+
+oxane_role:
+  title: Verification agent for the lender
+  summary: Check the borrower's borrowing base and report to Calderwood.
+
+analysts:
+  preparer: Onboarding analyst, Gurgaon
+  approver: Second analyst, four-eyes approval

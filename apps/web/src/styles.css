@@ -1,0 +1,73 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme {
+  /* Artizent deck palette. */
+  --color-ink: #141414;
+  --color-ink-soft: #2b2b2f;
+  --color-muted: #5e5651;
+  --color-subtle: #7b716d;
+  --color-stone: #bdafa3;
+  --color-line: #d8cec3;
+  --color-sand: #efe8e0;
+  --color-canvas: #f8f5f1;
+  --color-surface: #ffffff;
+  --color-accent: #ffdd00;
+
+  /* Status colours are separate from the brand and always sit beside a label. */
+  --color-ok: #17633d;
+  --color-ok-tint: #e3f1e9;
+  --color-warn: #7d5200;
+  --color-warn-tint: #fbf0d6;
+  --color-danger: #a8241c;
+  --color-danger-tint: #fbe7e5;
+  --color-info: #255291;
+  --color-info-tint: #e5edf7;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --shadow-card: 0 1px 2px rgb(20 20 20 / 0.05);
+  --shadow-overlay: 0 12px 32px rgb(20 20 20 / 0.18);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    /* Presenter mode scales everything because all sizing is in rem. */
+    font-size: 100%;
+    transition: font-size 200ms var(--ease-out-soft);
+  }
+
+  html[data-presenter="true"] {
+    font-size: 118.75%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss03";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px var(--color-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      transition: none;
+    }
+  }
+}
+
+@utility numeric {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "lnum";
+}

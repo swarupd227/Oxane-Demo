@@ -1,6 +1,8 @@
 # Single source of truth for the demo deal. Every name here is fictional.
-# Phase 1 extends this file with the terms, rules and planted exceptions that
-# generate the document pack, the loan tape and the answer key.
+# The generators in dealkit/ build the document pack, loan tape and answer key
+# from this file and the seed, so the numbers always agree.
+
+seed: 20260430
 
 case:
   number: "0412"
@@ -10,12 +12,17 @@ lender:
   name: Calderwood Bank plc
   short_name: Calderwood Bank
   desk: Warehouse lending desk
+  address: 40 Lothbury Square, London EC2R 7HH, United Kingdom
 
 borrower:
   name: Bramble Auto Receivables I LLC
   short_name: Bramble Auto Receivables I
   parent: Bramble Auto Finance LLC
   description: Special purpose vehicle of a near-prime auto lender
+  address: 2100 Larkspur Parkway, Suite 900, Plano, Texas 75024, United States
+
+servicer:
+  name: Bramble Auto Finance LLC
 
 facility:
   type: Senior secured revolving warehouse facility
@@ -45,3 +52,93 @@ oxane_role:
 analysts:
   preparer: Onboarding analyst, Gurgaon
   approver: Second analyst, four-eyes approval
+
+terms:
+  governing_law: New York
+  signing_date: 2026-01-15
+  amendment_signed: 2026-02-20
+  amendment_effective: 2026-03-01
+  advance_rate_original_pct: 85
+  advance_rate_amended_pct: 82.5
+  reserve_pct: 1
+  margin_pct: 3.25
+  unused_fee_pct: 0.50
+  arrangement_fee_pct: 1.00
+  payment_day: 15
+  revolving_period_end: 2028-01-15
+  final_maturity: 2029-01-15
+  delinquency_trigger_pct: 6.0
+  min_tangible_net_worth_usd: 40000000
+  max_leverage_ratio: 6.0
+  min_liquidity_usd: 10000000
+  subordinated_debt_cap_usd: 15000000
+  bbc_business_days_after_month_end: 15
+  quarterly_statements_days: 45
+  annual_statements_days: 120
+  events_of_default: 14
+
+eligibility:
+  - {id: E1, field: days_past_due, op: "<=", value: 30, text: Not more than 30 days past due}
+  - {id: E2, field: status, op: not_in, value: [CHARGED_OFF, REPO], text: Not charged off or in repossession}
+  - {id: E3, field: original_term, op: "<=", value: 84, text: Original term of 84 months or less}
+  - {id: E4, field: fico, op: ">=", value: 540, text: FICO at origination of 540 or more}
+  - {id: E5, field: current_balance, op: "<=", value: 75000, text: "Current balance of US$75,000 or less"}
+  - {id: E6, field: obligor_state, op: in_us_states, text: Obligor located in the United States}
+  - {id: E7, field: obligor_state, op: not_in_schedule_4, text: Obligor not in a Restricted Jurisdiction}
+  - {id: E8, field: modification_count, op: "<=", value: 1, text: Modified no more than once}
+  - {id: E9, field: apr, op: between, value: [6.00, 29.99], text: APR between 6% and 29.99%}
+  - {id: E10, field: vehicle_age_at_origination, op: "<=", value: 10, text: Vehicle model year no older than 10 years at origination}
+  - {id: E11, field: payments_made, op: ">=", value: 1, text: At least one scheduled payment made}
+  - {id: E12, field: vin, op: unique, text: Vehicle has a unique VIN in the pool}
+
+concentration:
+  - {id: C1, text: Loans to obligors in one state, limit_pct: 20, source: Schedule 2}
+  - {id: C2, text: Loans originated by one dealer, limit_pct: 5, source: Schedule 2}
+  - {id: C3, text: Loans with original term above 72 months, limit_pct: 25, source: Schedule 2}
+  - {id: C4, text: Loans with FICO below 600, limit_pct: 35, source: Amendment No. 1}
+  - {id: C5, text: Used vehicles, limit_pct: 70, source: Schedule 2}
+
+tape:
+  loans: 2400
+  cutoff_date: 2026-04-30
+  mean_original_balance_usd: 33500
+  # Loans planted to fail exactly one rule. The borrower excludes these too.
+  baseline_failures:
+    E1: 18 # 61+ days past due. The borrower's test catches these.
+    E2: 14
+    E3: 6
+    E4: 9
+    E5: 4
+    E6: 3
+    E8: 7
+    E9: 5
+    E10: 6
+    E11: 12
+
+planted:
+  x4_past_due_loans: 41
+  x4_gap_target_usd: 1100000
+  x5_shared_vins: 3
+  x6_dealer_names: [Sunrise Motors LLC, Sunrise Motors]
+  x6_dealer_share_pct: [3.1, 2.6]
+  x9_mixed_date_rows: 120
+
+bbc:
+  outstanding_advances_usd: 48000000
+
+servicer_history:
+  # 60+ day Delinquency Ratio for the months before the April tape.
+  february_pct: 0.71
+  march_pct: 0.76
+
+financials:
+  period_end: 2026-03-31
+  # US$ thousands, consolidated Bramble Auto Finance LLC.
+  total_equity: 58000
+  goodwill: 6000
+  intangibles: 3500
+  related_party_receivables: 2000
+  subordinated_debt: 12000
+  total_liabilities: 320800
+  unrestricted_cash: 12600
+  receivables_net: 351400

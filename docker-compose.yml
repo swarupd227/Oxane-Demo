@@ -51,5 +51,11 @@ services:
       api:
         condition: service_healthy
 
+  deal-kit:
+    profiles: [tools]
+    build: ./deal-kit
+    volumes:
+      - ./deal-kit:/deal-kit
+
 volumes:
   db-data:

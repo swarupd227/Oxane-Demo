@@ -10,4 +10,5 @@ __pycache__/
 .env.local
 *.log
 .DS_Store
+deal-kit/output/
 .claude/settings.local.json

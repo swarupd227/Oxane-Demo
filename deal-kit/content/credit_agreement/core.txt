@@ -1,0 +1,119 @@
+## 2.1 The Commitment
+Subject to the terms of this Agreement, the Lender agrees to make Advances to the Borrower during the Revolving Period in an aggregate principal amount at any one time outstanding not exceeding the lesser of (a) the Facility Limit and (b) the Borrowing Base. The Commitment of the Lender is set out in Annex A (Commitment Schedule). Within those limits the Borrower may borrow, repay and reborrow.
+
+## 2.3 Advance Rate
+The "Advance Rate" means 85%. The Advance Rate applies to the amount described in clause (a) of the definition of Borrowing Base, and the Borrower shall calculate each Borrowing Base Certificate using the Advance Rate in effect on the last day of the relevant Collection Period.
+
+## 2.6 Interest
+(a) Each Advance bears interest on its outstanding principal amount at a rate per annum equal to Term SOFR for the applicable Interest Period plus {{margin}} (the "Margin").
+
+(b) Interest is calculated on the basis of the actual number of days elapsed and a year of 360 days.
+
+(c) If an Event of Default is continuing, the rate of interest on all Obligations increases by 2.00% per annum from the date of that Event of Default until it is cured or waived.
+
+## 2.7 Interest Periods and Payment Dates
+(a) Each Interest Period is one month. The first Interest Period for an Advance begins on the date of that Advance, and each later Interest Period begins on the last day of the preceding Interest Period.
+
+(b) Accrued interest is payable monthly in arrears on the {{payment_day}} day of each calendar month, or if that day is not a Business Day, on the next Business Day (each a "Payment Date"), and on the Final Maturity Date.
+
+## 6.12 Financial Covenants
+The Borrower shall procure that:
+
+(a) Minimum Tangible Net Worth. Tangible Net Worth at the end of each fiscal quarter of the Parent is not less than {{min_tnw}}.
+
+(b) Maximum Leverage Ratio. The Leverage Ratio at the end of each fiscal quarter of the Parent does not exceed {{max_leverage}} to 1.00.
+
+(c) Treatment of Subordinated Debt. Solely for the purpose of calculating the Leverage Ratio under paragraph (b) above, and not for the purpose of paragraph (a) above, (i) Subordinated Debt in an aggregate amount of up to {{sub_debt_cap}} shall be added to Tangible Net Worth, and (ii) the same amount of Subordinated Debt shall be deducted from Total Liabilities.
+
+(d) Minimum Liquidity. Liquidity at all times is not less than {{min_liquidity}}, tested at the end of each calendar month.
+
+## 7.1 Delinquency Trigger
+A "Delinquency Trigger" occurs if the average of the Delinquency Ratio for the three most recently ended Collection Periods exceeds {{delinquency_trigger}}. While a Delinquency Trigger is continuing, the Revolving Period is suspended, the Lender has no obligation to make further Advances, and all Collections shall be applied under Section 2.10 as if the Revolving Period had ended.
+
+## 8.1 Events of Default
+Each of the following is an "Event of Default":
+
+(a) Non-payment of principal. The Borrower fails to pay any principal of any Advance when due.
+
+(b) Non-payment of interest or fees. The Borrower fails to pay any interest, fee or other amount under the Transaction Documents within three Business Days after it is due.
+
+(c) Borrowing Base Deficiency. A Borrowing Base Deficiency is not cured within the period set out in Section 2.4.
+
+(d) Financial covenants. The Borrower breaches Section 6.12.
+
+(e) Reporting. A Borrowing Base Certificate or a Servicer Report is not delivered within two Business Days after the date required by Schedule 3.
+
+(f) Other covenants. The Borrower or the Servicer breaches any other covenant in the Transaction Documents and the breach continues for 30 days after the earlier of notice from the Lender and actual knowledge of a Responsible Officer.
+
+(g) Misrepresentation. A representation or warranty made in a Transaction Document proves to have been incorrect in any material respect when made.
+
+(h) Cross-default. The Parent or any Subsidiary fails to pay Debt of {{threshold_amount}} or more when due, or that Debt becomes capable of being accelerated.
+
+(i) Insolvency. The Borrower, the Parent or the Servicer becomes subject to an Insolvency Event.
+
+(j) Judgments. One or more final judgments for {{threshold_amount}} or more, not covered by insurance, remain unsatisfied for 45 days against the Borrower, the Parent or the Servicer.
+
+(k) Security. The Lender ceases to hold a valid first priority perfected security interest in any material part of the Collateral.
+
+(l) Change of Control. A Change of Control occurs.
+
+(m) Servicer Default. A Servicer Default occurs and no successor servicer acceptable to the Lender is in place within 60 days.
+
+(n) Investment Company. The Borrower or the Collateral becomes required to register as an investment company under the Investment Company Act of 1940.
+
+## 10.2 Notices
+All notices under this Agreement shall be in writing and delivered by hand, courier or email to the addresses below, or to any other address notified in writing by the relevant party.
+
+The Borrower: {{borrower}}, {{borrower_address}}. Attention: Treasurer.
+
+The Lender: {{lender}}, {{lender_address}}. Attention: Warehouse Lending Desk.
+
+A notice takes effect on delivery, or on the next Business Day if delivered after 5:00 p.m. at the place of receipt.
+
+## 10.9 Governing Law
+This Agreement and all claims arising out of or relating to it are governed by the law of the State of {{governing_law}}, without regard to its conflict of laws principles other than Sections 5-1401 and 5-1402 of the New York General Obligations Law.
+
+# SCHEDULE 1 — ELIGIBILITY CRITERIA
+A Receivable satisfies this Schedule 1 on a date of determination only if, on that date, each of the following is true.
+
+1. Delinquency. No scheduled payment on the Receivable is more than 30 days past due.
+
+2. Status. The Receivable has not been charged off and the related Financed Vehicle has not been repossessed.
+
+3. Term. The original term of the Receivable is 84 months or less.
+
+4. Credit score. The Obligor's FICO score at origination is 540 or higher.
+
+5. Balance. The Outstanding Balance of the Receivable does not exceed US$75,000.
+
+6. Location. The Obligor's billing address is in one of the fifty states of the United States or the District of Columbia.
+
+7. Restricted Jurisdictions. The Obligor's billing address is not in a Restricted Jurisdiction.
+
+8. Modifications. The terms of the Receivable have been modified no more than once since origination.
+
+9. Annual percentage rate. The annual percentage rate of the Receivable is not less than 6.00% and not more than 29.99%.
+
+10. Vehicle age. The model year of the Financed Vehicle is no more than ten years before the year of origination of the Receivable.
+
+11. Seasoning. The Obligor has made at least one scheduled payment on the Receivable.
+
+12. Unique collateral. The Financed Vehicle is identified by a Vehicle Identification Number that appears on no other Receivable in the Pool.
+
+# SCHEDULE 2 — CONCENTRATION LIMITS
+On any date of determination, the amount by which the aggregate Outstanding Balance of Eligible Receivables in a category below exceeds the stated percentage of the Eligible Pool Balance is an excess amount, and is included in the Excess Concentration Amount.
+
+| No. | Category | Limit (% of Eligible Pool Balance) |
+| 1 | Obligors with a billing address in any one state | 20% |
+| 2 | Receivables originated by any one Dealer, treating Dealers under common ownership or trading under variations of one name as one Dealer | 5% |
+| 3 | Receivables with an original term of more than 72 months | 25% |
+| 4 | Receivables secured by used Financed Vehicles | 70% |
+
+# SCHEDULE 3 — REPORTING REQUIREMENTS
+The Borrower shall deliver, or procure that the Servicer delivers, each of the following to the Lender and the Verification Agent.
+
+| Item | Deliverable | Timing |
+| 1 | Borrowing Base Certificate and Loan Tape | On or before the 15th Business Day after the end of each calendar month |
+| 2 | Servicer Report | On or before the 15th Business Day after the end of each calendar month |
+| 3 | Quarterly unaudited financial statements of the Parent, with a compliance certificate | Within 45 days after the end of each fiscal quarter |
+| 4 | Annual audited financial statements of the Parent, with a compliance certificate | Within 120 days after the end of each fiscal year |

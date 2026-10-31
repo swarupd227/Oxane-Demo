@@ -1,0 +1,16 @@
+{
+  "pack/BAF_Financial_Statements_Q1_2026.pdf": "1765aedd250abde25ab7399c53cc614196bed50c5bcd36b4faea20f251f594ac",
+  "pack/BAF_Loan_Tape_2026-04.csv": "42262ab57ec7576292bd7aba601dbb99e8928e5994ad10eefa6571c35001f134",
+  "pack/BAF_Servicer_Report_April_2026.pdf": "2dd2b81b006279d51892cde18e9042cd919bfcb2ffe1d2fa33a5d1f3ca111814",
+  "pack/Bramble_Amendment_No_1.pdf": "69e8570cba664580903a0eaa4a55dc2d2d9b0ed3f0d55fb6940d133360928495",
+  "pack/Bramble_BBC_April_2026.xlsx": "37e6d1ea1b6a7c125d0dd728f3a21bc8932eeb21139f8f44e82b0f224a60b8db",
+  "pack/Bramble_Credit_Agreement_Executed.pdf": "0b538ab58cdac9451014a794cc7b0cc8257797b7207a20b834c37b00de72d58b",
+  "pack/Bramble_Fee_Letter.pdf": "0e9863f62977aac02e1bce543c8392eaff857cf53b4eaaafaeeb42709b83abba",
+  "pack/Calderwood_Requirements.xlsx": "c164f1e2101ee34a4a038d0ba31f240f9689d62de4de132b56ea9a304bc22395",
+  "answer-key/calculation.json": "980beb57377eabd2dc7c9833236492f3a0fbbf6f0b0a713f729f79fad2d2b859",
+  "answer-key/exceptions.json": "6be23cb86534f460fb1b175c698c02b37b66e9663bd867dee39ddc83d2bf7612",
+  "answer-key/fields.json": "d8250dce5cda08c3b8dc592ad23f611d2aa8e0ff91caf8b4435f4516c1ba5538",
+  "answer-key/mapping.json": "1a5f9b35d3a47cd856de99d798fbd0c1a776f4de410e1eb167c1a63e9f65aadb",
+  "answer-key/pack.json": "a7a28e8addd30bae756342ab137815d029a1428a7d2719f761c709f844585e54",
+  "answer-key/rules.json": "1807a222256e209e24efdfa454b64aeb58c197b896e9cc44d27e8a389120a49e"
+}

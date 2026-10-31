@@ -1,0 +1,329 @@
+## 5.1 Existence
+The Borrower shall, and shall procure that it does, at all times preserve and keep in full force and effect its legal existence as a limited liability company or other special purpose entity formed under the law of its jurisdiction of organization, and all rights, licenses, permits, franchises and qualifications material to the conduct of its business and to the ownership, enforcement and collection of the Collateral.
+
+(a) The Borrower shall remain duly qualified to do business and in good standing in each jurisdiction in which the nature of its business or the character of any Collateral makes such qualification necessary, except where the failure to be so qualified could not reasonably be expected to have a Material Adverse Effect or to impair the enforceability of any Pool Receivable against the related Obligor.
+
+(b) The Borrower shall not, without the prior written consent of the Lender, change its name, its identity, its organizational structure, its jurisdiction of organization or the location of its chief executive office or principal place of business, and shall give the Lender not less than 30 days' prior written notice of any such change that the Lender has consented to, together with such financing statement amendments and other documents as the Lender may reasonably request to maintain the perfection and priority of the Lien of the Lender in the Collateral; provided that nothing in this paragraph (b) permits any transaction otherwise prohibited by Section 6.3.
+
+## 5.2 Compliance with Law
+The Borrower shall comply, and shall cause the Servicer, the Parent and each Originator to comply, in all material respects with all laws, rules, regulations and orders of any governmental authority applicable to it or to its property, including, in each case to the extent applicable to the origination, purchase, servicing, collection or enforcement of any Receivable, the Uniform Commercial Code as in effect in any relevant jurisdiction, the Truth in Lending Act, the Equal Credit Opportunity Act, the Fair Credit Reporting Act, the Fair Debt Collection Practices Act, the Servicemembers Civil Relief Act, state motor vehicle retail installment sales and licensing statutes, and all privacy, data security and consumer protection laws, except to the extent that the applicable requirement is being contested in good faith by appropriate proceedings, adequate reserves have been established in accordance with GAAP, and the failure to comply could not reasonably be expected to result in a Material Adverse Effect or in any Receivable becoming unenforceable in whole or in material part.
+
+The Borrower shall maintain in effect, and shall enforce, policies and procedures reasonably designed to promote compliance by the Borrower, its directors, officers and employees, and the Servicer, with applicable anti-corruption laws, anti-money laundering laws and the sanctions laws administered by the United States government.
+
+## 5.3 Books and Records
+The Borrower shall keep, and shall procure that the Servicer keeps, proper books of record and account in which full, true and correct entries are made of all dealings and transactions in relation to its business, the Pool and the Collateral, in conformity with GAAP consistently applied and with all requirements of law.
+
+(a) The Borrower shall maintain, or cause the Servicer to maintain, records with respect to each Pool Receivable and the related Financed Vehicle, including the contract, the certificate of title or evidence of the notation of the Lien of the Lender or its predecessor in interest on that certificate, the payment history, the Obligor's billing address, and all correspondence, in each case sufficient to permit the identification of each Pool Receivable, the determination of its Outstanding Balance, and the verification of every Borrowing Base Certificate and Servicer Report.
+
+(b) The Borrower shall, and shall cause the Servicer to, mark conspicuously, by appropriate designation in its computer records and data files, each Pool Receivable to show that it has been pledged to the Lender under the Security Agreement, and shall not remove or alter that designation except upon a release of the relevant Collateral under Section 3.3.
+
+(c) The Borrower shall keep its books and records separate and distinct from those of any other person, and shall retain all records relating to the Collateral for a period that is the longer of the period required by applicable law and the period during which any Obligations remain outstanding, and for such further period as is reasonably necessary to permit the enforcement of any Pool Receivable.
+
+## 5.4 Inspection and Field Examinations
+The Borrower shall, and shall procure that the Servicer shall, permit the Lender, the Verification Agent and their respective representatives, advisers and agents, at the expense of the Borrower to the extent provided in this Section, upon reasonable prior notice and during normal business hours, to visit and inspect the offices, systems and properties of the Borrower and the Servicer, to examine and make copies of and abstracts from the books and records relating to the Collateral, and to discuss the affairs, finances and accounts of the Borrower and the servicing of the Pool with its officers, employees, independent accountants and, where the Servicer is not an Affiliate of the Borrower, with the Servicer.
+
+(a) The Lender may conduct a field examination or collateral audit, which may include a review of the origination and servicing files for a sample of Pool Receivables selected by the Lender or the Verification Agent, a review of title and lien documentation for the related Financed Vehicles, a test of the accuracy of the Loan Tape against underlying servicing records, and an evaluation of the systems, controls and personnel used in servicing and collection, at such frequency as the Lender may determine in its reasonable discretion and, in addition, at any time while an Event of Default or a Servicer Default is continuing or the Lender reasonably believes that a Delinquency Trigger may be about to occur.
+
+(b) The Borrower shall bear the reasonable and documented costs and expenses of each examination conducted under paragraph (a) above, subject to any limit on the frequency of examinations at the Borrower's expense that is set out in the Fee Letter; provided that, while an Event of Default is continuing, all examinations conducted by or for the Lender shall be at the expense of the Borrower without limit as to frequency.
+
+(c) The Borrower acknowledges that information obtained under this Section is subject to Section 10.12, and that no inspection, examination or failure to inspect shall constitute a waiver of any representation, warranty or covenant of the Borrower or relieve it of any obligation under the Transaction Documents.
+
+## 5.5 Delivery of Reports
+The Borrower shall deliver, or procure that the Servicer delivers, to the Lender and the Verification Agent each item described in Schedule 3, in the manner, in the form and at the times specified in that Schedule, together with the further supporting information required by this Section.
+
+(a) Each Borrowing Base Certificate shall be substantially in the form of Exhibit A, and each compliance certificate shall be substantially in the form of Exhibit C. Each certificate shall be signed by a Responsible Officer of the person delivering it, and a Responsible Officer of the Borrower, by signing a Borrowing Base Certificate, certifies that the information in it is true, complete and correct in all material respects and that the calculations in it have been made in accordance with this Agreement.
+
+(b) Each Loan Tape shall be delivered in the electronic format reasonably prescribed by the Lender or the Verification Agent from time to time, shall identify each Receivable in the Pool at the relevant date, and shall contain for each such Receivable the data fields reasonably required to apply the criteria in Schedule 1 and the limits in Schedule 2 and to compute the Delinquency Ratio.
+
+(c) Each compliance certificate delivered with financial statements of the Parent shall state whether, to the knowledge of the signing Responsible Officer after due inquiry, any Event of Default, or any event that with notice or the lapse of time would become an Event of Default, has occurred and is continuing and, if so, shall describe it and the steps the Borrower proposes to take, and shall set out in reasonable detail the calculations demonstrating compliance with Section 6.12.
+
+(d) Financial statements delivered under Schedule 3 shall be prepared in accordance with GAAP consistently applied, and the annual financial statements shall be accompanied by the report of independent public accountants of recognized standing, which report shall not be subject to any qualification as to the scope of the audit or as to the status of the Parent or the Borrower as a going concern.
+
+(e) The Borrower shall also deliver to the Lender, promptly following a request, such additional information regarding the Collateral, the Pool, the operations and financial condition of the Borrower, the Parent or the Servicer, or the compliance of any of them with the Transaction Documents, as the Lender or the Verification Agent may reasonably request.
+
+(f) Delivery to the Lender of any report, notice or document under this Agreement is not a waiver of any right of the Lender in respect of any inaccuracy in it, and the failure of the Lender or the Verification Agent to object to any report is not an acceptance of it.
+
+## 5.6 Notice of Certain Events
+The Borrower shall give the Lender prompt written notice, and in any event within three Business Days after a Responsible Officer of the Borrower or the Servicer obtains knowledge of it, of each of the following, in each case describing the event in reasonable detail and the action the Borrower or the Servicer proposes to take with respect to it:
+
+(a) the occurrence of any Event of Default, Servicer Default or Delinquency Trigger, or of any event that with notice or the lapse of time, or both, would constitute any of them;
+
+(b) any Borrowing Base Deficiency, whether or not the period to cure it under Section 2.4 has expired;
+
+(c) any litigation, investigation, arbitration or governmental proceeding commenced or threatened against or affecting the Borrower, the Servicer or the Parent that could reasonably be expected to result in a Material Adverse Effect, that challenges the validity or enforceability of any Transaction Document, or that relates to a material portion of the Collateral;
+
+(d) any Lien, other than a Permitted Lien, asserted against any Collateral, and any claim by any person to any interest in any Collateral;
+
+(e) any notice from any governmental authority, Obligor or class of Obligors alleging a material violation of any consumer protection law in connection with the origination or servicing of any Pool Receivable;
+
+(f) any change in the senior management of the Servicer who is responsible for the servicing of the Pool, or any material change in the servicing systems or platform used for the Pool;
+
+(g) any event that has had or could reasonably be expected to have a Material Adverse Effect;
+
+(h) any downgrade, withdrawal or suspension of any rating of the Parent or the Servicer by any rating agency, and any notice of non-renewal, termination or material change of any insurance required under Section 5.8; and
+
+(i) any Insolvency Event, or the taking of any step toward an Insolvency Event, in relation to the Borrower, the Parent, the Servicer or any Originator.
+
+## 5.7 Taxes
+The Borrower shall file or cause to be filed all tax returns required to be filed by it and shall pay and discharge, before they become delinquent, all taxes, assessments and governmental charges imposed on it or on its income, profits, assets or the Collateral, together with all claims for sums that have become due and payable and that by law have or might become a Lien upon any Collateral, other than a Permitted Lien.
+
+The Borrower may nevertheless defer payment of any such tax, assessment, charge or claim that is being contested in good faith by appropriate proceedings diligently conducted, so long as (a) adequate reserves in respect of it have been established on the books of the Borrower in accordance with GAAP, (b) the contest operates to suspend enforcement of any related Lien, and (c) the non-payment could not reasonably be expected to result in a Material Adverse Effect. Nothing in this Section limits Section 2.13.
+
+## 5.8 Insurance
+The Borrower shall maintain, and shall cause the Servicer to maintain, with financially sound and reputable insurers, insurance with respect to its business, properties and operations in such types and amounts, and with such deductibles and retentions, as are customarily carried by prudent companies engaged in similar businesses in the same general areas, and in any event as are sufficient to protect the Collateral.
+
+(a) Without limiting the generality of the foregoing, the Servicer shall maintain fidelity bond or crime coverage, errors and omissions coverage, and cyber and data breach coverage in each case that is reasonably acceptable to the Lender and that covers the Servicer and its employees and agents in respect of the servicing of the Pool.
+
+(b) The Servicer shall use commercially reasonable efforts, consistent with the Credit and Collection Policy, to require each Obligor to maintain physical damage insurance covering the related Financed Vehicle, and, where an Obligor fails to maintain such insurance, to enforce the related contract in respect of force-placed coverage to the extent permitted by applicable law.
+
+(c) Each policy required by this Section, other than a policy maintained by an Obligor, shall provide that it will not be cancelled or materially reduced without prior written notice to the Lender, and, where available on commercially reasonable terms, shall name the Lender as loss payee or additional insured as its interest may appear. The Borrower shall furnish evidence of such insurance to the Lender promptly upon request.
+
+## 5.9 Collateral Maintenance
+The Borrower shall take, or cause to be taken, all actions necessary or, in the reasonable opinion of the Lender, desirable to maintain the Lender as the holder of a valid, perfected and first priority security interest in the Collateral, free and clear of all Liens other than Permitted Liens.
+
+(a) The Borrower shall cause the notation of its interest or the interest of the Lender, as the case may be, as secured party on the certificate of title of each Financed Vehicle, or the electronic equivalent, to be made and maintained in accordance with the law of the jurisdiction in which the Financed Vehicle is titled, or shall cause the Servicer or a custodian to hold the same for the benefit of the Lender, and shall cause each original contract evidencing a Pool Receivable that constitutes chattel paper to be held in a manner that gives the Lender control or possession for purposes of the Uniform Commercial Code.
+
+(b) The Borrower shall promptly remove from the Pool, by repurchasing, replacing or otherwise dealing with it in the manner permitted by the Transaction Documents, and shall in any event not include in any Borrowing Base Certificate as an Eligible Receivable, any Pool Receivable that the Borrower knows or ought reasonably to know does not satisfy a representation or warranty made in respect of it in any Transaction Document.
+
+(c) The Borrower shall enforce all of its rights against each Originator under the Purchase Agreement, including all rights to repurchase or substitute Receivables for breach of a representation or warranty, and shall not waive, amend or release any such right other than as permitted by Section 6.9.
+
+(d) The Borrower shall hold all Collateral in its own name and shall not commingle it with property of any other person.
+
+## 5.10 Servicing
+The Borrower shall cause the Pool Receivables to be serviced at all times in accordance with the Servicing Agreement, the Credit and Collection Policy and applicable law, and shall enforce, and shall not waive or fail to enforce, its rights under the Servicing Agreement against the Servicer.
+
+(a) The Servicer shall act with the same care, skill and diligence as it uses in servicing receivables owned by it or serviced for others, and in any event with the standard of care of a prudent servicer of motor vehicle retail installment contracts of similar credit quality, and shall maintain all licenses and qualifications necessary to service the Pool Receivables in each relevant jurisdiction.
+
+(b) The Servicer shall not extend, rewrite, defer or otherwise modify the terms of any Pool Receivable, or release any Obligor, except in accordance with the Credit and Collection Policy and, in each case, in a manner that does not impair the interest of the Lender in the relevant Pool Receivable; provided that any modification that causes the Pool Receivable to cease to satisfy any criterion in Schedule 1 shall have the consequence that it ceases to be an Eligible Receivable and shall be taken into account in the next Borrowing Base Certificate.
+
+(c) The Servicer shall be responsible for repossession and for the sale of each Financed Vehicle securing a Defaulted Receivable, in a commercially reasonable manner and in compliance with applicable law, and shall apply the net proceeds to the related Pool Receivable and pay them into the Collection Account.
+
+(d) The Borrower shall not appoint any sub-servicer or delegate any material function under the Servicing Agreement without the prior written consent of the Lender, and no such appointment or delegation shall relieve the Servicer of any liability under the Servicing Agreement.
+
+## 5.11 Credit and Collection Policy
+The Borrower shall comply, and shall cause the Servicer and each Originator to comply, in all material respects with the credit and collection policy of the Servicer and the Originators in the form delivered to the Lender before the Closing Date, as it may be amended in accordance with Section 6.11 (the "Credit and Collection Policy"), in regard to the origination, underwriting, purchase, servicing, collection and charge-off of each Receivable.
+
+(a) The Borrower shall deliver to the Lender, promptly upon its adoption, any amendment to the Credit and Collection Policy that is not required to be consented to by the Lender, together with a statement identifying the change.
+
+(b) The Borrower shall procure that each Receivable included in the Pool was originated by an Originator in the ordinary course of its business, under a retail installment sale contract or loan arising from the sale of a Financed Vehicle by a Dealer to the Obligor, and in accordance with the Credit and Collection Policy and applicable law.
+
+(c) If the Lender determines in good faith that any deviation from the Credit and Collection Policy has resulted or could reasonably be expected to result in any material deterioration in the quality or collectability of the Pool, the Lender may require the Borrower and the Servicer to meet with it and to propose a plan of remediation reasonably satisfactory to the Lender.
+
+## 5.12 Collection Account
+The Borrower shall establish and maintain, at all times until the Obligations have been paid in full and the Commitment has terminated, the Collection Account with the Lender or with another depositary institution acceptable to the Lender, in the name of the Borrower and subject to a control agreement or other arrangement that gives the Lender exclusive control over it for purposes of the Uniform Commercial Code.
+
+(a) The Borrower shall instruct, and shall cause the Servicer to instruct, each Obligor to make all payments on its Pool Receivables, and shall cause all other Collections to be deposited, directly into the Collection Account or into a lockbox, account or payment channel from which they are swept to the Collection Account, in each case within the period required by the Servicing Agreement and without deduction for any fee, charge or set-off.
+
+(b) If the Borrower, the Servicer or any Affiliate receives any Collections, it shall hold them in trust for the Lender, shall not commingle them with its own funds or funds of any other person, and shall deposit them into the Collection Account promptly, and in any event no later than the second Business Day after receipt.
+
+(c) The Borrower shall not close or change the Collection Account, or add any account into which Collections may be paid, except under Section 6.10, and shall not permit any person other than the Lender to withdraw funds from the Collection Account except as provided in Section 2.10 and Section 7.4.
+
+(d) All amounts on deposit in the Collection Account shall be applied only in accordance with Section 2.10 or, after the occurrence of an Event of Default, Section 8.3.
+
+## 5.13 Hedging
+The Borrower shall maintain in effect, on terms and with counterparties reasonably acceptable to the Lender, such interest rate swaps, caps or other hedging arrangements as the Lender may from time to time reasonably require in order to mitigate the exposure of the Borrower to changes in Term SOFR in relation to the fixed rate receivables in the Pool.
+
+(a) Any such arrangement shall be entered into solely for the purpose of hedging interest rate risk arising in the ordinary course of the business of the Borrower and not for speculation, and shall have a notional amount, tenor and amortization profile that corresponds reasonably to the Pool and to the Advances.
+
+(b) The rights of the Borrower under any such arrangement shall form part of the Collateral, and the counterparty shall, if it is not the Lender, have agreed in writing to subordinate or limit its rights against the Collateral on terms satisfactory to the Lender and to waive any right to commence or join any proceeding of the kind referred to in Section 10.14.
+
+(c) The Borrower shall not terminate, amend or assign any such arrangement except with the prior written consent of the Lender or as required by its terms upon an event of default or termination event of the counterparty.
+
+## 5.14 Further Assurances
+The Borrower shall, at its own expense, promptly execute and deliver all further instruments and documents, and take all further action, that may be necessary or that the Lender may reasonably request in order to perfect, protect, preserve and enforce the security interests and Liens granted or purported to be granted under the Security Agreement and the other Transaction Documents, or to enable the Lender to exercise and enforce its rights and remedies under them.
+
+Without limiting the foregoing, the Borrower shall authorize the filing of such financing statements, continuation statements and amendments, shall execute such control agreements and notices of assignment, and shall deliver such opinions of counsel in respect of perfection and priority, as the Lender may request. The Borrower authorizes the Lender to file any financing statement describing the Collateral as all assets of the Borrower, and to file any such statement without the signature of the Borrower where permitted by law.
+
+If the Borrower fails to perform any obligation under this Section, the Lender may, but is not obliged to, perform it on behalf of the Borrower, and the Borrower shall reimburse the Lender on demand for all reasonable costs so incurred in accordance with Section 10.3.
+
+## 5.15 Separateness
+The Borrower acknowledges that the Lender and the other parties to the Transaction Documents are entering into them in reliance on the separate legal identity of the Borrower from the Parent, each Originator, the Servicer and each other Affiliate, and accordingly the Borrower shall, and shall procure that the Parent shall, at all times observe the following.
+
+(a) The Borrower shall maintain its own books, records, bank accounts and financial statements separate from those of any other person, and shall not permit its assets to be listed as assets on the financial statement of any other person other than on a consolidated basis with a clear notation that the Borrower is a separate legal entity whose assets are not available to creditors of any other person.
+
+(b) The Borrower shall hold itself out to the public as a legal entity separate from any other person, shall conduct business in its own name, and shall correct any known misunderstanding regarding its separate identity.
+
+(c) The Borrower shall observe all limited liability company formalities required by its constitutional documents and by the law of its jurisdiction of organization, and shall maintain at least one independent manager or director whose consent is required for any voluntary Insolvency Event of the Borrower.
+
+(d) The Borrower shall maintain adequate capital in light of its contemplated business operations, shall pay its own liabilities and expenses only out of its own funds, and shall not guarantee, become obligated for, or hold out its credit as being available to satisfy, the debts of any other person.
+
+(e) The Borrower shall not commingle its funds or assets with those of any other person, and shall not pay the salaries of the employees of any Affiliate.
+
+(f) The Borrower shall allocate fairly and reasonably any overhead for shared office space and any shared services, and shall enter into transactions with Affiliates only in accordance with Section 6.7.
+
+(g) The Borrower shall not acquire securities or obligations of the Parent, any Originator or any other Affiliate except as permitted by Section 6.5.
+
+(h) The Borrower shall maintain the assumptions and factual statements about it contained in any legal opinion delivered on or before the Closing Date regarding the separateness of the Borrower and the true sale of the Receivables, and shall procure that those assumptions remain true and correct.
+
+## 5.16 Use of Proceeds
+The Borrower shall use the proceeds of each Advance solely (a) to pay or reimburse the purchase price for Receivables acquired by it under the Purchase Agreement, (b) to fund the payment of fees and expenses due under the Transaction Documents, and (c) to make distributions and payments to the extent permitted by Section 6.6, and in each case for no other purpose.
+
+The Borrower shall not use, and shall procure that its directors, officers, employees and agents do not use, any proceeds of any Advance (i) in furtherance of an offer, payment, promise to pay or authorization of the payment or giving of money or anything else of value to any person in violation of any applicable anti-corruption law, (ii) for the purpose of funding, financing or facilitating any activity, business or transaction of or with any person that is the subject of sanctions, or in or with any Restricted Jurisdiction, in each case in violation of applicable sanctions laws, or (iii) in any manner that would result in the violation of any law or regulation applicable to the Lender, including Regulations T, U and X of the Board of Governors of the Federal Reserve System. No part of the proceeds of any Advance shall be used to purchase or carry margin stock.
+
+## 6.1 Debt
+The Borrower shall not create, incur, assume, guarantee or suffer to exist, or otherwise become or remain liable with respect to, any Debt, other than the following (each, as to its permitted extent, "permitted Debt" for the purposes of this Section):
+
+(a) Debt under the Transaction Documents, including the Obligations and any Debt owed to the Lender in its capacity as Lender, Administrative Agent or hedge counterparty.
+
+(b) Debt of the Borrower to the Parent or an Originator representing the unpaid purchase price for Receivables acquired under the Purchase Agreement, including any deferred purchase price or similar obligation, provided that (i) such Debt is expressly subordinated to the Obligations on terms satisfactory to the Lender, (ii) such Debt is payable solely out of funds available for distribution under Section 2.10 after the payment in full of all amounts then due to the Lender, and (iii) the holder of such Debt has agreed not to take any action against the Borrower of the kind described in Section 10.14.
+
+(c) Debt arising under any hedging arrangement required or permitted by Section 5.13, provided that the arrangement is not entered into for speculative purposes and the obligations of the Borrower under it are secured only by the Collateral on the basis contemplated by that Section.
+
+(d) Unsecured trade payables and accrued expenses incurred in the ordinary course of business of the Borrower, in each case for the payment of customary administrative, legal, audit, custodial and servicing-related costs, and not more than 60 days overdue or being contested in good faith by appropriate proceedings, with adequate reserves established in accordance with GAAP.
+
+(e) Debt in respect of indemnification obligations and customary obligations of the Borrower to the independent manager, any custodian or any other service provider to the Borrower, in each case arising in the ordinary course of business and limited recourse in accordance with Section 10.15.
+
+(f) Debt consisting of obligations to pay insurance premiums, and obligations in respect of taxes that are not yet delinquent or that are being contested in a manner permitted by Section 5.7.
+
+(g) Contingent obligations in respect of customary representations, warranties, covenants and indemnities given by the Borrower in connection with any transaction permitted by Section 6.4, provided that no such obligation is a guarantee of any Debt of any other person.
+
+(h) Subordinated Debt owed by the Borrower to the Parent, if and only if (i) the aggregate principal amount of such Debt does not at any time exceed {{threshold_amount}}, (ii) such Debt is unsecured, (iii) such Debt is subordinated to the Obligations on terms reasonably satisfactory to the Lender and by a written instrument in form and substance acceptable to the Lender, (iv) no scheduled payment of principal, and no payment of interest other than payments of interest that are permitted by the subordination terms, is required to be made before the date that is six months after the Final Maturity Date, and (v) before and after the incurrence of such Debt, no Event of Default has occurred and is continuing and no Borrowing Base Deficiency exists.
+
+(i) Debt arising from the endorsement of negotiable instruments for collection in the ordinary course of business, and Debt in respect of netting services, overdraft protections and similar arrangements in connection with deposit accounts of the Borrower, in each case other than the Collection Account, and so long as any overdraft is cleared within five Business Days.
+
+(j) Any other Debt consented to in writing by the Lender in its sole discretion, but only to the extent, and on the terms, specified in that consent.
+
+The Borrower shall not use any of the exceptions in paragraphs (a) through (j) above in any manner designed to circumvent the prohibition in the first sentence of this Section, whether by the combination of exceptions, the recharacterization of Debt, the incurrence of Debt through any other person, or otherwise. Nothing in this Section authorizes the Borrower to issue any preferred equity or any equity security that is mandatorily redeemable or redeemable at the option of the holder before the date on which the Obligations have been paid in full, and any such issuance shall for the purposes of this Section be treated as Debt.
+
+For the purposes of determining compliance with this Section, (x) Debt of the Borrower that satisfies the criteria of more than one of the paragraphs above may be classified by the Borrower, on the date it is incurred and from time to time thereafter, in any manner that complies with this Section, provided that Debt under paragraph (a) shall not be reclassified, (y) Debt shall be calculated without duplication, and (z) the amount of any Debt issued at a discount shall be the face amount of that Debt less unamortized discount, determined in accordance with GAAP. A breach of this Section occurring by reason of a change in the amount of Debt resulting solely from fluctuations in a currency exchange rate shall not constitute a breach of this Section if the Debt was permitted when incurred.
+
+## 6.2 Liens
+The Borrower shall not create, incur, assume or suffer to exist any Lien upon or with respect to any of its property or assets, whether now owned or hereafter acquired, including any Collateral, or sign or file, or permit to be on file, any financing statement naming it as debtor, other than the Liens created under the Transaction Documents and the following Permitted Liens: Liens for taxes, assessments or governmental charges not yet delinquent or being contested in a manner permitted by Section 5.7; Liens imposed by law in favor of repairers, carriers, warehousemen and similar claimants on a Financed Vehicle arising in the ordinary course of the business of the relevant Obligor, provided that the Lien is not the subject of any enforcement proceeding that could impair the interest of the Lender in the related Pool Receivable and the Servicer is taking action in accordance with the Credit and Collection Policy to resolve it; and any Lien in favor of the depositary bank, in respect of fees and returned items, on the Collection Account in accordance with the control agreement for that account, which Lien is subordinate to the Lien of the Lender.
+
+The Borrower shall promptly, at its own expense, take any action necessary to discharge any Lien that is not a Permitted Lien upon becoming aware of it, and shall notify the Lender in accordance with Section 5.6(d).
+
+## 6.3 Mergers and Fundamental Changes
+The Borrower shall not merge, consolidate or amalgamate with or into any other person, liquidate, wind up or dissolve itself or permit any such action, convey, sell, lease or transfer all or substantially all of its property or business to any person, or divide itself into two or more entities under any applicable division statute, in each case whether in a single transaction or a series of transactions.
+
+(a) The Borrower shall not form, acquire or hold any Subsidiary except as permitted by Section 6.14.
+
+(b) The Borrower shall not amend or permit any amendment to its constitutional documents in any manner that would impair its status as a special purpose entity, that would remove or alter the requirement for an independent manager, or that would adversely affect the rights or remedies of the Lender, without the prior written consent of the Lender.
+
+(c) The Borrower shall not cause or permit any Affiliate, including the Parent, the Servicer or any Originator, to merge, consolidate, convey or transfer substantially all of its assets, in each case where such transaction would result in a Change of Control or the Servicer ceasing to be capable of performing its obligations under the Servicing Agreement, unless the Lender has given its written consent and the successor has assumed in writing all obligations of its predecessor under the Transaction Documents.
+
+## 6.4 Dispositions
+The Borrower shall not sell, assign, transfer, lease, license, factor, discount, securitize or otherwise dispose of, or grant any option, warrant or other right to purchase or acquire, any of its property or assets, including any Collateral, any Receivable, any interest in a Financed Vehicle or any right in or to Collections, whether in one transaction or in a series of transactions and whether voluntarily or involuntarily (each a "Disposition"), or agree to do so, other than the following:
+
+(a) the sale of Receivables, and the release of related Collateral, by the Borrower to the Parent, an Originator or any other person in connection with a prepayment under Section 2.5 or a release under Section 3.3, in each case where the proceeds are received in cash and, after giving effect to the Disposition and the application of the proceeds, no Borrowing Base Deficiency exists and no Event of Default has occurred and is continuing;
+
+(b) the repurchase by an Originator, or the substitution of an Eligible Receivable by it, of any Pool Receivable in respect of which a representation or warranty made in the Purchase Agreement was inaccurate, in accordance with the terms of the Purchase Agreement, provided that the repurchase price or the substituted Receivable is no less favorable to the Borrower than the Outstanding Balance of the repurchased Receivable together with accrued interest on it;
+
+(c) the sale or other disposition of a Financed Vehicle, or any other property securing a Defaulted Receivable, following repossession, by the Servicer in a commercially reasonable manner and in accordance with the Credit and Collection Policy and applicable law, where the net proceeds are deposited into the Collection Account;
+
+(d) the sale of any Defaulted Receivable by the Servicer, on behalf of the Borrower, to a person that is not an Affiliate of the Borrower, for cash and on arm's length terms, with the proceeds paid to the Collection Account, where the Defaulted Receivable has been charged off in accordance with the Credit and Collection Policy and the price is determined by a competitive process or otherwise reflects fair market value;
+
+(e) the compromise, settlement, extension or modification of any Pool Receivable by the Servicer in accordance with Section 5.10 and the Credit and Collection Policy, and the release of any Obligor on payment in full;
+
+(f) the grant of any Lien that is a Permitted Lien, and the transfer of any property to the Lender or to any person at the direction of the Lender in the exercise of its remedies under Section 8.2;
+
+(g) the disposition of cash and cash equivalents, and the application of funds held in the Collection Account, in each case in accordance with Section 2.10 or, after an Event of Default, Section 8.3;
+
+(h) the disposition of obsolete, worn-out or surplus equipment and property that is not Collateral and is not material to the business of the Borrower, provided that the aggregate fair market value of property disposed of under this paragraph in any fiscal year does not exceed {{threshold_amount}};
+
+(i) the transfer of any Receivable, together with all related rights, to a successor Servicer or to a custodian solely for purposes of servicing, safekeeping or enforcement, provided that the Lien of the Lender is not impaired and the transferee acknowledges the interest of the Lender in writing; and
+
+(j) any Disposition consented to in writing by the Lender, but only to the extent and on the conditions specified in that consent.
+
+The Borrower shall not make any Disposition permitted by this Section to any Affiliate except on terms that comply with Section 6.7 and that are consistent with the arm's length standard in that Section. The Borrower shall not sell or otherwise transfer any Receivable that is, on the date of the Disposition, included in the Pool, other than in accordance with paragraphs (a) through (j) above, and any purported sale in breach of this Section is void as against the Borrower to the extent permitted by applicable law.
+
+(a) Each Disposition permitted under paragraph (a) above shall be accompanied by a certificate of a Responsible Officer of the Borrower delivered to the Lender before the Disposition, stating the Receivables to be disposed of, the proceeds and the proposed application of the proceeds, and confirming, with supporting calculations, that the conditions to the Disposition under that paragraph are satisfied. The Lender shall within a reasonable period after receipt of such certificate release its Lien on the Receivables concerned, upon receipt of the proceeds, to the extent required by Section 3.3.
+
+(b) The selection of Receivables to be disposed of under paragraph (a) above shall not be made in a manner that is intended to be adverse to the interests of the Lender, and in particular shall not be made by selecting Receivables that are more likely to be Eligible Receivables or have a lower risk of default than the remaining Pool Receivables unless the Borrower has demonstrated to the satisfaction of the Lender that the Borrowing Base after giving effect to the Disposition is no less than it would have been had a random selection been made.
+
+(c) No Disposition shall be permitted by reason of any provision of this Section if, at the time of or after giving effect to it, a Delinquency Trigger is continuing, except under paragraphs (b), (c), (e) and (f) above and under paragraph (a) above where the proceeds are applied as required by Section 2.10 as if the Revolving Period had ended.
+
+(d) The Borrower acknowledges that a Disposition, other than a Disposition permitted by this Section, would be an infringement of the Lien of the Lender and agrees to hold in trust for the Lender, and to pay into the Collection Account on demand, all proceeds of any Disposition made in breach of this Section.
+
+## 6.5 Investments
+The Borrower shall not make, purchase, acquire or hold any loan, advance, capital contribution, stock, bond, note or other security of, or any interest in, any person, or make any other investment of any kind, other than (a) Receivables acquired under the Purchase Agreement, (b) cash and cash equivalents held in the Collection Account or in other accounts permitted by Section 6.10, invested only in instruments of the kind approved in writing by the Lender, (c) rights under the Transaction Documents and under any hedging arrangement permitted by Section 5.13, and (d) trade credit and prepayments to service providers extended in the ordinary course of business. The Borrower shall not form or acquire any Subsidiary, or acquire any equity interest in any person, other than as permitted by Section 6.14.
+
+## 6.6 Restricted Payments
+The Borrower shall not declare, pay or make, directly or indirectly, any dividend or distribution on, or any payment on account of the purchase, redemption, retirement or other acquisition of, any of its equity interests, any payment of principal or interest on any Debt subordinated to the Obligations, or any payment of any management, advisory or similar fee to the Parent or any Affiliate (each, a "Restricted Payment"), other than Restricted Payments made on a Payment Date, from funds available for that purpose under Section 2.10, if and only if, both immediately before and immediately after giving effect to it, (a) no Event of Default, Delinquency Trigger or Servicer Default has occurred and is continuing, (b) no Borrowing Base Deficiency exists, (c) the Borrower is Solvent and its ability to pay its debts as they fall due is not impaired, and (d) the Borrower has delivered the Borrowing Base Certificate and the Servicer Report most recently required by Schedule 3 and has paid in full all fees, interest and other amounts then due to the Lender and the Verification Agent. Any Restricted Payment in breach of this Section shall be held by the recipient in trust for the Lender and returned to the Borrower or paid into the Collection Account on demand.
+
+## 6.7 Transactions with Affiliates
+The Borrower shall not enter into, or be a party to, any transaction with any Affiliate, including the Parent, any Originator and the Servicer, or with any director, officer, manager or equity holder of the Borrower or any of its Affiliates, except (a) transactions expressly contemplated by the Transaction Documents, (b) transactions in the ordinary course of business and pursuant to the reasonable requirements of the business of the Borrower, which are on terms and conditions fair and reasonable to the Borrower and no less favorable to the Borrower than would be obtained in a comparable arm's length transaction with a person that is not an Affiliate, and (c) the payment of reasonable compensation and indemnity to the independent manager of the Borrower.
+
+Each such transaction, other than those under the Transaction Documents, shall be recorded in writing. The Borrower shall not enter into any transaction that has the effect of making the Borrower liable for any obligation of the Parent or any Affiliate, nor shall the Borrower lend money to, or guarantee the obligations of, any Affiliate.
+
+## 6.8 Business Activities
+The Borrower shall not engage in any business or activity other than the purchase, ownership, financing, servicing through the Servicer, administration and enforcement of Receivables and the Collateral, the borrowing of Advances, and such other activities as are necessary, convenient or incidental to those activities and as are permitted by its constitutional documents and the Transaction Documents. The Borrower shall not own any asset other than the Receivables, the related Collateral, its rights under the Transaction Documents and cash and cash equivalents in permitted accounts, shall not have any employees, and shall not enter into any agreement other than the Transaction Documents and agreements incidental to its permitted activities, such as agreements for legal, audit, administrative and custodial services.
+
+## 6.9 Amendments to Documents
+The Borrower shall not, and shall not permit the Parent, any Originator or the Servicer to, amend, supplement, waive any provision of, terminate or replace, or consent to any departure from, the Purchase Agreement, the Servicing Agreement, the constitutional documents of the Borrower, any custody or lockbox agreement, any control agreement or any document governing any Subordinated Debt, in each case without the prior written consent of the Lender, other than an amendment of a purely administrative or technical nature that is not adverse to the Lender and that has been notified to the Lender in writing before it takes effect.
+
+The Borrower shall deliver to the Lender a copy of each amendment, supplement and waiver, whether or not consented to, promptly after it takes effect.
+
+## 6.10 Change of Accounts
+The Borrower shall not, and shall not permit the Servicer to, add or terminate any bank or lockbox account into which Collections are or may be deposited, close or change the Collection Account, or make or consent to any change in the payment instructions given to Obligors, in each case without the prior written consent of the Lender, which consent shall be given or withheld in the sole discretion of the Lender where such change is to an account not subject to a control agreement in favor of the Lender.
+
+The Borrower shall maintain no deposit account or securities account other than the Collection Account and accounts that are subject to a control agreement in favor of the Lender and, except where the Lender otherwise agrees, shall not permit any amount other than Collections and proceeds of Advances to be deposited into any such account.
+
+## 6.11 Credit Policy Changes
+The Borrower shall not, and shall not permit the Servicer or any Originator to, amend, modify or waive any provision of the Credit and Collection Policy, or change in any material respect the manner in which Receivables are originated, underwritten, serviced, collected or charged off, unless (a) the Lender has given its prior written consent, such consent not to be unreasonably withheld in the case of a change that, in the reasonable judgment of the Lender, would not adversely affect the collectability of the Pool Receivables or the interests of the Lender, or (b) the change is required by applicable law, in which case the Borrower shall give the Lender prompt written notice of it, including a description of the legal requirement. Any change to the definition of delinquency, charge-off or modification standards, or to the method of calculating the Outstanding Balance of any Receivable, is deemed material for the purposes of this Section.
+
+## 6.13 Sanctions
+The Borrower shall not, and shall procure that the Parent, the Servicer and each Originator and their respective directors, officers, employees and agents do not, directly or indirectly, (a) become, or be owned or controlled by, a person that is the subject of sanctions administered by the United States government, (b) engage in any dealing or transaction with, or for the benefit of, any such person or any person located, organized or resident in a Restricted Jurisdiction, (c) include in the Pool any Receivable owed by an Obligor that is such a person or whose billing address is in a Restricted Jurisdiction, or (d) use any proceeds of any Advance or any Collections, or lend, contribute or otherwise make them available to any person, in any manner that would result in a violation of sanctions or anti-corruption laws by any party to the Transaction Documents. The Borrower shall promptly notify the Lender upon becoming aware of any breach or suspected breach of this Section.
+
+## 6.14 Subsidiaries
+The Borrower shall not form or acquire any Subsidiary, make any investment in any Subsidiary, or hold any equity interest in any person. The Borrower shall not become a member of any partnership, joint venture or similar arrangement, or enter into any agreement for the sharing of profits or losses with any person other than under the Transaction Documents.
+
+## 6.15 Fiscal Year
+The Borrower shall not change its fiscal year or the basis on which it prepares its financial statements or accounts, and shall not permit the Parent to change its fiscal year, in each case without the prior written consent of the Lender, other than a change to a fiscal year that ends on a different date but that the Parent has notified to the Lender at least 60 days before the change and in respect of which the Parent has agreed in writing to such amendments to Schedule 3 and Section 6.12 as the Lender may reasonably require to preserve the intent of those provisions.
+
+## 7.2 Servicer Termination
+Each of the following is a "Servicer Default", and the Lender may, by notice to the Borrower and the Servicer, at any time after the occurrence of a Servicer Default and while it is continuing, terminate all of the rights and obligations of the Servicer under the Servicing Agreement, whereupon the termination takes effect on the date specified in the notice:
+
+(a) the Servicer fails to deposit, or to cause to be deposited, any Collections into the Collection Account, or to make any payment or transfer required by the Servicing Agreement, when due, and the failure continues for two Business Days;
+
+(b) the Servicer fails to deliver any Servicer Report or other report required by Section 5.5, or to give any notice required by Section 5.6, within two Business Days after the date on which it is required;
+
+(c) the Servicer fails to observe or perform any other covenant or agreement in the Servicing Agreement or any other Transaction Document to which it is a party, and the failure continues for 30 days after the earlier of notice from the Lender and actual knowledge of a Responsible Officer of the Servicer;
+
+(d) any representation, warranty or certification made by the Servicer in any Transaction Document or in any report or certificate delivered under it proves to have been incorrect in any material respect when made or deemed made;
+
+(e) the Servicer becomes subject to an Insolvency Event, or admits in writing its inability to pay its debts generally as they become due;
+
+(f) the Servicer ceases to hold any license or qualification required to service the Pool Receivables, or becomes subject to any order or regulatory action of a governmental authority that prohibits or materially restricts it from servicing the Pool Receivables;
+
+(g) a Change of Control of the Servicer occurs;
+
+(h) a Material Adverse Effect occurs in relation to the Servicer or its ability to service the Pool; or
+
+(i) the Servicer, as a result of a final audit or field examination under Section 5.4, is found to have materially misapplied or failed to segregate any Collections, or to have failed to maintain records sufficient to permit the verification of the Pool.
+
+The Servicer Default described in paragraph (e) above takes effect as a termination of the Servicer immediately, without the need for notice, to the extent permitted by applicable law. The Servicer shall cooperate fully with the Lender and any successor in effecting any termination, and the Borrower shall not waive any Servicer Default without the prior written consent of the Lender.
+
+## 7.3 Replacement Servicer
+Upon the termination of the Servicer under Section 7.2, or upon the resignation of the Servicer where permitted by the Servicing Agreement, the Lender may appoint a successor servicer, which may be the Lender or an Affiliate of the Lender or any other person that the Lender, in its sole discretion, considers qualified, to assume the duties of the Servicer under the Servicing Agreement on the terms of that Agreement or on such other terms as the Lender and the successor may agree, subject to the compensation of the successor not exceeding that which is customary for servicing receivables of the same kind.
+
+(a) The outgoing Servicer shall continue to perform its functions as Servicer until the date of the transfer of servicing, shall transfer to the successor all records, data, files, certificates of title, powers of attorney and other property relating to the Pool, and shall give the successor full access to its premises, systems and personnel for transition purposes.
+
+(b) The outgoing Servicer shall, and the Borrower shall procure that it does, deliver notice to each Obligor and each Dealer, in the form directed by the Lender, of the change in servicer and of the new payment instructions, and shall not permit any Collections to be paid to any account other than the Collection Account.
+
+(c) The Borrower shall pay, or reimburse the Lender for, the reasonable costs and expenses of the transfer of servicing, to the extent not paid by the outgoing Servicer under the Servicing Agreement, in accordance with the priority of payments in Section 2.10 or, after an Event of Default, Section 8.3.
+
+(d) The Borrower shall and shall procure that the Parent and each Originator shall execute such documents and take such further action as the Lender may reasonably request to enable the successor to perform its obligations.
+
+(e) No successor servicer shall have any liability for any act or omission of the predecessor, and the termination of the Servicer does not affect any liability of the Servicer in respect of any period before the effective date of termination.
+
+## 7.4 Cash Dominion
+From the date on which any of the following occurs and for so long as it is continuing, the Lender may, by notice to the Borrower and the Servicer, and the Borrower shall be treated as having authorized the Lender, to exercise exclusive dominion and control over the Collection Account and all Collections (a "Cash Dominion Event"): (a) an Event of Default, (b) a Servicer Default, (c) a Delinquency Trigger, or (d) a Borrowing Base Deficiency that has not been cured within the time permitted by Section 2.4.
+
+(a) During a Cash Dominion Event, all Collections and other amounts in the Collection Account shall be applied solely by the Lender in accordance with Section 2.10, or, if an Event of Default has occurred and is continuing and the Lender has exercised its remedies, in accordance with Section 8.3, and the Borrower shall have no right to give any instruction with respect to, or to withdraw any amount from, the Collection Account.
+
+(b) The Lender may, and the Borrower irrevocably authorizes and directs the Lender to, give notice to each depositary bank and to each Obligor of the exercise of control, to direct payments to the account specified by the Lender, and to endorse in the name of the Borrower any check or other instrument for the payment of money received in respect of the Collateral.
+
+(c) During a Cash Dominion Event the Borrower shall not be entitled to make any Restricted Payment, and no Advance shall be made except to the extent expressly permitted by the Lender in writing after a Delinquency Trigger has ceased to continue.
+
+(d) The exercise of rights under this Section does not constitute an acceptance of any breach, a waiver of any Event of Default, or an exercise of remedies under Section 8.2, and shall be without prejudice to any other right of the Lender.
+
+## 7.5 Effect of Cure
+A Delinquency Trigger, a Cash Dominion Event or a Servicer Default shall be treated as no longer continuing only to the extent provided in this Section.
+
+(a) A Delinquency Trigger ceases to be continuing when the test in Section 7.1 is no longer met, as shown in a Servicer Report delivered under Section 5.5 and confirmed by the Verification Agent, and, upon that cessation, the suspension of the Revolving Period under Section 7.1 shall end, subject to the Lender having received written confirmation from the Verification Agent and to the satisfaction of each condition in Section 3.2 for the next Advance.
+
+(b) A Servicer Default is cured only if it is remedied to the satisfaction of the Lender, which shall have determined by written notice to the Borrower and the Servicer that it has been remedied, and a termination of the Servicer under Section 7.2 that has taken effect shall not be reversed by the later cure of the Servicer Default.
+
+(c) A Cash Dominion Event ends when each circumstance that gave rise to it has ceased and the Lender has given written notice of that fact to the Borrower, and any Collections applied during the period of the Cash Dominion Event under Section 2.10 shall not be re-advanced to the Borrower except as provided in Section 2.2 and subject to the conditions in Section 3.2.
+
+(d) No cure under this Section shall (i) waive or cure any Event of Default that has occurred, or (ii) operate to restore the Revolving Period if the Commitment has terminated, and the Lender shall have no obligation to make any Advance during any period when any of the circumstances referred to in this Section is continuing, even if the Borrower alleges that a cure has taken place, unless the Lender has confirmed the cure in writing.

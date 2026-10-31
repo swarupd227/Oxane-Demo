@@ -43,11 +43,31 @@ docker compose exec api ruff check .
 docker compose exec api pytest
 ```
 
+## Build the deal pack
+
+The 8-file document pack and the answer key are generated from `deal-kit/deal.yaml` into `deal-kit/output/`. The same seed always gives byte-identical files, and `deal-kit/pack.manifest.json` records their hashes.
+
+```bash
+docker compose run --rm deal-kit python -m dealkit.build
+```
+
+Check the pack with a script that shares no code with the generators:
+
+```bash
+docker compose run --rm deal-kit python -m dealkit.verify
+```
+
+```bash
+docker compose run --rm deal-kit pytest
+```
+
+The answer key is for scoring only. The pipeline must never read `deal-kit/output/answer-key/`.
+
 ## Layout
 
 | Path | Contents |
 |---|---|
 | `apps/web` | React workbench |
 | `services/api` | FastAPI service and database migrations |
-| `deal-kit` | `deal.yaml`, the single source of truth for the demo deal |
+| `deal-kit` | `deal.yaml`, the document generators, the answer key and the independent checker |
 | `docs` | Development plan |

@@ -1,0 +1,117 @@
+"Administrative Agent" means the Lender, acting in its capacity as administrative agent for itself and for each other secured party under the Transaction Documents, and any successor to the Lender in that capacity appointed in accordance with Article 9.
+
+"Affiliate" means, with respect to any Person, any other Person that directly or indirectly controls, is controlled by, or is under common control with, that Person, and for this purpose "control" means the possession, directly or indirectly, of the power to direct or cause the direction of the management and policies of a Person, whether through the ownership of voting securities, by contract or otherwise; provided that, for the purposes of the Transaction Documents, neither the Lender nor the Administrative Agent shall be treated as an Affiliate of the Borrower, the Parent or the Servicer by reason of its rights and remedies under the Transaction Documents.
+
+"Agreement" means this credit agreement, including each Schedule, Annex and Exhibit to it, as amended, restated, supplemented or otherwise modified from time to time in accordance with its terms.
+
+"Anti-Corruption Laws" means all laws, rules and regulations of any jurisdiction applicable to the Borrower, the Parent, the Servicer or any of their respective Subsidiaries from time to time concerning or relating to bribery or corruption, including the United States Foreign Corrupt Practices Act of 1977.
+
+"Applicable Law" means, as to any Person, all laws, statutes, treaties, rules, regulations, orders, judgments, decrees, injunctions, writs and awards of any Governmental Authority, and all licensing and registration requirements and binding interpretive guidance issued by any Governmental Authority, in each case that are applicable to or binding upon that Person or any of its property or to which that Person or any of its property is subject,.
+
+"Borrower" means {{borrower}}, a Delaware limited liability company, and its successors and permitted assigns.
+
+"Certificate of Title" means, with respect to a Financed Vehicle, the certificate of title, or the electronic equivalent of a certificate of title, issued by the motor vehicle registry of the state in which the Financed Vehicle is titled, on which the interest of the lienholder in that Financed Vehicle is noted.
+
+"Change of Control" means the occurrence of any of the following: (a) any Person, or any group of Persons acting in concert, other than the holders of the equity interests of the Parent on the Closing Date and their respective Affiliates, acquires, directly or indirectly, beneficial ownership of equity interests of the Parent carrying the power to elect a majority of the governing body of the Parent or to direct the management and policies of the Parent; (b) the Parent ceases to own and control, directly and beneficially, all of the issued and outstanding equity interests of the Borrower, free of any Lien other than a Lien in favor of the Administrative Agent; (c) the Parent ceases to own and control, directly or indirectly, all of the issued and outstanding equity interests of the Servicer, or the Servicer ceases to be an Affiliate of the Parent, in each case other than following the appointment of a Replacement Servicer under Section 7.3; or (d) the Parent, the Borrower or the Servicer consolidates with or merges into, or sells all or substantially all of its assets to, any other Person in a transaction not permitted by Section 6.3.
+
+"Closing Date" means the date on which each condition set out in Section 3.1 has been satisfied or waived in writing by the Lender and the initial Advance is first available to be made, as confirmed by the Lender to the Borrower in writing.
+
+"Collateral" has the meaning given in Section 2.9.
+
+"Collection Account" means the deposit account in the name of the Borrower, identified in Section 5.12 and maintained with the Lender or with another depository institution approved in writing by the Lender, which is subject to a control agreement or other arrangement satisfactory to the Lender under which the Administrative Agent has control, within the meaning of the UCC, for the purpose of receiving Collections and applying them under Section 2.10, together with each successor or replacement account designated in accordance with Section 6.10.
+
+"Collections" means, with respect to any Receivable, all cash collections and other cash proceeds of that Receivable, including all scheduled and prepaid payments of principal, interest and fees, all late charges, extension fees and other amounts received from or on behalf of the related Obligor, all recoveries from the repossession, sale or other disposition of the related Financed Vehicle, all proceeds of any insurance policy, service contract or guaranty relating to that Receivable or Financed Vehicle, all amounts received from any Dealer under a Dealer Agreement in respect of that Receivable, all repurchase and indemnity payments made under the Purchase Agreement in respect of that Receivable, and all other amounts received by the Borrower, the Servicer or any of their respective Affiliates and attributable to that Receivable, but excluding any amount that the Servicer is entitled to retain as reimbursement for a permitted advance under the Servicing Agreement.
+
+"Consumer Law" means each of the Truth in Lending Act, the Equal Credit Opportunity Act, the Fair Credit Reporting Act, the Servicemembers Civil Relief Act and Section 5 of the Federal Trade Commission Act, and each other federal, state or local law, rule or regulation relating to consumer protection, consumer credit, retail installment sales, motor vehicle financing, unfair or deceptive acts or practices, privacy, data security or the collection of consumer debts, in each case as amended and together with all regulations promulgated under it.
+
+"Contractual Obligation" means, as to any Person, any provision of any security issued by that Person or of any agreement, instrument or other undertaking to which that Person is a party or by which it or any of its property is bound.
+
+"Credit and Collection Policy" means the written credit, underwriting, servicing, collection, charge-off and repossession policies and procedures of the Originator and the Servicer relating to Receivables, a copy of which has been delivered to the Lender before the Closing Date, as modified from time to time in compliance with Section 5.11 and Section 6.11.
+
+"Dealer" means any motor vehicle dealer that originated a Receivable, or that sold the related Financed Vehicle to the related Obligor and assigned the related Receivable to the Originator, in each case under a Dealer Agreement.
+
+"Dealer Agreement" means, with respect to any Dealer, the agreement between that Dealer and the Originator, in a form satisfactory to the Lender, under which the Dealer sells, assigns or originates retail installment sale contracts or loans to the Originator, together with all related assignments, recourse, repurchase and reserve arrangements and all amendments to it.
+
+"Debt" means, with respect to any Person at any date and without duplication: (a) all obligations of that Person for borrowed money; (b) all obligations of that Person evidenced by bonds, debentures, notes or similar instruments; (c) all obligations of that Person to pay the deferred purchase price of property or services, other than trade accounts payable incurred in the ordinary course of business and not past due beyond customary terms; (d) all obligations of that Person as lessee under leases that are required to be capitalized in accordance with GAAP; (e) all obligations of that Person in respect of letters of credit, bankers' acceptances and similar instruments, whether or not drawn; (f) all obligations of that Person, contingent or otherwise, in respect of any interest rate, currency or commodity hedging arrangement, valued at the termination value of that arrangement; (g) all obligations of that Person under any securitization, receivables financing or repurchase arrangement that would be characterized as indebtedness under GAAP; (h) all Debt of any other Person of the kind described in the preceding clauses that is secured by a Lien on property of that Person, whether or not that Person has assumed it; and (i) all guarantees by that Person of Debt of any other Person.
+
+"Default" means any event or circumstance that, with the giving of notice, the lapse of time or both, would become an Event of Default.
+
+"Defaulted Receivable" means any Receivable (a) that has been charged off, or that should have been charged off in accordance with the Credit and Collection Policy, (b) as to which the period for charge-off specified in the Credit and Collection Policy has elapsed without cure, (c) the related Obligor of which is the subject of a bankruptcy, insolvency or similar proceeding, other than a proceeding in which the Receivable has been reaffirmed or otherwise reinstated on terms that do not reduce the amount or defer the timing of any payment on it, (d) the related Financed Vehicle of which has been repossessed and not redeemed or reinstated, or has been stolen or declared a total loss, or (e) that the Servicer has otherwise determined, in accordance with the Credit and Collection Policy, to be uncollectible.
+
+"Delinquency Trigger" has the meaning given in Section 7.1.
+
+"Event of Default" has the meaning given in Section 8.1.
+
+"Fee Letter" means the letter agreement dated on or about the Closing Date between the Borrower and the Lender, and any other letter agreement concerning fees entered into between the Borrower and the Lender or the Administrative Agent in connection with this Agreement, in each case as amended from time to time.
+
+"Financed Vehicle" means an automobile, light truck, sport utility vehicle, van or motorcycle, together with all accessions to it, that secures the payment obligations of an Obligor under the related Receivable.
+
+"GAAP" means generally accepted accounting principles in the United States of America as in effect from time to time, consistently applied, subject to Section 1.3.
+
+"Governmental Authority" means the government of the United States of America, any other nation or any political subdivision of either, whether state or local, and any agency, authority, instrumentality, regulatory body, court, central bank or other entity exercising executive, legislative, judicial, taxing, regulatory or administrative powers or functions of or pertaining to government, including any self-regulatory organization and any supranational body.
+
+"Insolvency Event" means, with respect to any Person, that (a) that Person commences a voluntary case or other proceeding seeking liquidation, reorganization, winding up, dissolution, arrangement, readjustment of debt or other relief with respect to itself or its debts under any bankruptcy, insolvency or similar law now or later in effect, or seeks the appointment of a trustee, receiver, liquidator, custodian or other similar official for it or for a substantial part of its property; (b) an involuntary case or other proceeding of that kind is commenced against that Person and is not dismissed within 60 days, or an order for relief is entered in that case or proceeding; (c) that Person makes a general assignment for the benefit of creditors, or admits in writing its inability to pay its debts generally as they become due; (d) that Person takes any corporate or limited liability company action to authorize any of the foregoing; or (e) a receiver, trustee, conservator or similar official is appointed for that Person or for all or a substantial part of its assets and is not discharged within 60 days.
+
+"Interest Period" has the meaning given in Section 2.7.
+
+"Investment Company Act" means the Investment Company Act of 1940, and the rules and regulations promulgated under it.
+
+"Lender" means {{lender}}, in its capacity as lender under this Agreement, and its successors and permitted assigns under Section 10.5.
+
+"Lien" means any mortgage, deed of trust, pledge, hypothecation, assignment by way of security, security interest, lien, charge, encumbrance, title retention arrangement, preferential arrangement or other security arrangement of any kind or nature, and any financing statement or similar filing naming a Person as debtor that has not been terminated, whether or not authorized by that Person.
+
+"Loan Tape" means a computer-readable data file, in the format agreed from time to time between the Borrower, the Servicer, the Lender and the Verification Agent, setting out, for each Pool Receivable as of the last day of the relevant Collection Period, the data fields required to determine the Outstanding Balance of that Pool Receivable, whether it is an Eligible Receivable, the category into which it falls for the purposes of Schedule 2 and its payment status.
+
+"Material Adverse Effect" means a material adverse effect on, or a material adverse change in, any of the following: (a) the business, assets, operations, properties or financial condition of the Borrower, or of the Parent and its Subsidiaries taken as a whole; (b) the ability of the Borrower, the Parent or the Servicer to perform its obligations under any Transaction Document to which it is a party; (c) the validity, enforceability or priority of any Transaction Document or of the Liens granted to the Administrative Agent over the Collateral, or the rights and remedies of the Lender or the Administrative Agent under any Transaction Document; or (d) the collectability, value or aggregate amount of the Pool Receivables taken as a whole, or the timing of Collections on them.
+
+"Obligations" means all principal of and interest on the Advances, including interest accruing after the commencement of any proceeding in respect of an Insolvency Event whether or not allowed in that proceeding, and all fees, costs, expenses, indemnities and other amounts, whether direct or indirect, absolute or contingent, due or not yet due, now existing or later arising, that are owing by the Borrower to the Lender, the Administrative Agent or the Verification Agent under or in connection with any Transaction Document.
+
+"Obligor" means, with respect to any Receivable, each Person obligated to make payments under that Receivable, including any co-signer or guarantor of that Receivable.
+
+"Organizational Documents" means, as to any Person, its certificate or articles of formation or incorporation, its limited liability company agreement, operating agreement, by-laws or other constitutive documents, and any agreement among its equity holders relating to its governance, in each case as amended from time to time.
+
+"Originator" means the Parent, in its capacity as seller of Receivables to the Borrower under the Purchase Agreement, and each other Affiliate of the Parent that the Lender approves in writing as an originator or seller of Receivables to the Borrower.
+
+"Payment Date" has the meaning given in Section 2.7.
+
+"Permitted Lien" means (a) any Lien in favor of the Administrative Agent for the benefit of the secured parties under the Transaction Documents; (b) any Lien for taxes, assessments or governmental charges that are not yet due and payable or that are being contested in good faith by appropriate proceedings, for which adequate reserves have been established in accordance with GAAP, and that do not attach to any Pool Receivable or Financed Vehicle; (c) any Lien of a Dealer or an Originator that is released before, or concurrently with, the transfer of the related Receivable to the Borrower; and (d) any Lien of a repairman, mechanic, storage provider or towing operator arising by operation of law on a Financed Vehicle in the ordinary course of business and securing amounts that are not yet delinquent.
+
+"Person" means any individual, corporation, limited liability company, partnership, joint venture, association, trust, unincorporated organization, Governmental Authority or other entity.
+
+"Pool" means, at any time, the aggregate of all Receivables then owned by the Borrower and pledged to the Administrative Agent as Collateral under the Security Agreement.
+
+"Pool Receivable" means each Receivable that is included in the Pool at the time of determination, and that has not been released from the Collateral in accordance with Section 3.3 or repurchased or otherwise removed from the Pool in accordance with the Transaction Documents.
+
+"Purchase Agreement" means the receivables purchase and sale agreement dated on or about the Closing Date between the Originator, as seller, and the Borrower, as purchaser, under which the Originator sells, transfers and assigns Receivables to the Borrower, as amended from time to time with the consent of the Lender.
+
+"Receivable" means any retail installment sale contract or installment loan agreement, whether or not evidenced by a promissory note or electronic record, that is originated or acquired in the United States by a Dealer or the Originator, that is secured by a first priority security interest in a Financed Vehicle, and that evidences the indebtedness of an Obligor in respect of the purchase price or refinancing of that Financed Vehicle, together with (a) all rights of the holder under that contract or agreement, including all rights to payment and all guaranties, (b) the related Certificate of Title and all rights in the Financed Vehicle, (c) all rights under any insurance policy, extended warranty or service contract relating to it, and (d) all documents, files and records relating to it, including all electronic records.
+
+"Replacement Servicer" means any Person appointed to act as servicer of the Pool Receivables under Section 7.3 in succession to the Servicer, on terms and with the approval required by the Servicing Agreement and Section 7.3.
+
+"Responsible Officer" means, with respect to any Person, the chief executive officer, president, chief financial officer, treasurer, controller or any vice president of that Person, or any other officer having substantially the same authority and responsibility, and, in the case of any Person that is a limited liability company without officers, the manager, managing member or authorized signatory of that Person who has been designated as such by written notice to the Lender; and, with respect to financial matters, the chief financial officer, treasurer or controller of that Person.
+
+"Sanctioned Person" means any Person that is (a) listed on, or owned or controlled by a Person listed on, any Sanctions-related list of designated Persons maintained by a Governmental Authority responsible for the administration of Sanctions, (b) located, organized or resident in a Restricted Jurisdiction, or (c) otherwise the target of Sanctions.
+
+"Sanctions" means all economic or financial sanctions, trade embargoes and similar restrictions imposed, administered or enforced from time to time by the United States government, including those administered by the Office of Foreign Assets Control of the United States Department of the Treasury or the United States Department of State, or by any other Governmental Authority having jurisdiction over the Borrower, the Parent, the Servicer or the Lender.
+
+"Security Agreement" means the security agreement dated on or about the Closing Date between the Borrower, as grantor, and the Administrative Agent, as secured party, under which the Borrower grants a security interest in the Collateral to secure the Obligations, as amended from time to time.
+
+"Servicer" means {{servicer}}, in its capacity as servicer of the Pool Receivables under the Servicing Agreement, and any Replacement Servicer.
+
+"Servicer Default" means the occurrence of any event that constitutes a servicer default or a termination event under the Servicing Agreement, including any failure by the Servicer to remit Collections as required and any Insolvency Event with respect to the Servicer.
+
+"Servicer Report" means a report prepared by the Servicer in a form satisfactory to the Lender and signed by a Responsible Officer of the Servicer, setting out for the relevant Collection Period the collections, delinquencies, charge-offs, repossessions, extensions and modifications on the Pool Receivables, the Delinquency Ratio and such other information relating to the Pool as the Lender or the Verification Agent may reasonably request.
+
+"Servicing Agreement" means the servicing agreement dated on or about the Closing Date among the Borrower, the Servicer and the Administrative Agent, under which the Servicer undertakes to service, administer and collect the Pool Receivables, as amended from time to time with the consent of the Lender.
+
+"Subsidiary" means, with respect to any Person, any other Person of which more than half of the outstanding voting equity interests, or of which the power to direct the management and policies, is at the time owned or controlled, directly or indirectly, by that first Person, by one or more of its Subsidiaries, or by that first Person together with one or more of its Subsidiaries.
+
+"Term SOFR" means, for any Interest Period, the forward-looking term rate based on the secured overnight financing rate for a tenor comparable to that Interest Period, as published by the administrator of that rate selected by the Lender, determined by the Lender as of the date two Business Days before the first day of that Interest Period, and subject to Section 2.11 if that rate is unavailable or has been replaced.
+
+"Transaction Documents" means, collectively, this Agreement, the Fee Letter, the Security Agreement, the Servicing Agreement, the Purchase Agreement, each control agreement relating to the Collection Account, each Borrowing Base Certificate, each Advance request, each Servicer Report, each compliance certificate, and each other agreement, instrument, certificate or document executed and delivered by the Borrower, the Parent, the Servicer or the Originator in connection with any of the foregoing, in each case as amended from time to time.
+
+"UCC" means the Uniform Commercial Code as in effect from time to time in the State of New York or, where the context requires in connection with the perfection or priority of a security interest or the effect of perfection or non-perfection, the Uniform Commercial Code as in effect in any other relevant jurisdiction.
+
+"USA PATRIOT Act" means the Uniting and Strengthening America by Providing Appropriate Tools Required to Intercept and Obstruct Terrorism Act of 2001, as amended, and the rules and regulations promulgated under it.
+
+"Vehicle Identification Number" means, for a Financed Vehicle, the unique seventeen-character identification number assigned to that vehicle by its manufacturer and recorded on the related Certificate of Title.

@@ -1,0 +1,63 @@
+"Advance" means a loan made by the Lender to the Borrower under Section 2.2, and "Advances" means all of them.
+
+"Advance Rate" has the meaning given in Section 2.3.
+
+"Availability" means, on any date, the amount by which the lesser of (a) the Borrowing Base and (b) the Facility Limit exceeds the aggregate outstanding principal amount of the Advances on that date.
+
+"Borrowing Base" means, on any date of determination, an amount equal to (a) the Eligible Pool Balance less the Excess Concentration Amount, multiplied by (b) the Advance Rate then in effect, less (c) the Reserve Amount, in each case as shown in the most recent Borrowing Base Certificate and as verified by the Verification Agent. Excess amounts identified under Schedule 2 are excluded from the Eligible Pool Balance for the purposes of this calculation.
+
+"Borrowing Base Certificate" means a certificate substantially in the form of Exhibit A, signed by a Responsible Officer of the Borrower, showing the calculation of the Borrowing Base as of the last day of a Collection Period.
+
+"Borrowing Base Deficiency" means, on any date, that the aggregate outstanding principal amount of the Advances exceeds the lesser of the Borrowing Base and the Facility Limit.
+
+"Business Day" means a day, other than a Saturday or Sunday, on which commercial banks are open for general business in New York, New York, London, England and Plano, Texas.
+
+"Collection Period" means each calendar month.
+
+"Commitment" means the obligation of the Lender to make Advances up to the amount set out against its name in Annex A, as that amount may be reduced under this Agreement.
+
+"Concentration Limits" means the limits set out in Schedule 2.
+
+"Delinquency Ratio" means, for any Collection Period, the percentage equal to (a) the aggregate Outstanding Balance of Pool Receivables that are 60 or more days past due on the last day of that Collection Period, divided by (b) the aggregate Outstanding Balance of all Pool Receivables on that day, in each case excluding Defaulted Receivables that have been charged off.
+
+"Eligible Pool Balance" means, on any date, the aggregate Outstanding Balance of all Pool Receivables that are Eligible Receivables on that date. The percentages in Schedule 2 and the Reserve Amount are each measured against the Eligible Pool Balance before any deduction of the Excess Concentration Amount.
+
+"Eligible Receivable" means, on any date of determination, a Pool Receivable that satisfies each of the criteria set out in Schedule 1 on that date. A Pool Receivable that fails any one of those criteria is not an Eligible Receivable and is excluded in full.
+
+"Excess Concentration Amount" means, on any date, the sum of the amounts determined under Schedule 2 by which the Outstanding Balance of Eligible Receivables in any category exceeds the applicable Concentration Limit. The limits are applied in the order listed in Schedule 2, and an amount excluded under one limit is not counted again under a later limit.
+
+"Facility Limit" means the amount of the Commitment set out in Annex A on the Closing Date, as that amount may be reduced under this Agreement.
+
+"Final Maturity Date" means {{final_maturity}}.
+
+"Leverage Ratio" means, as of any date of determination, the ratio of (a) Total Liabilities to (b) Tangible Net Worth, in each case as adjusted under Section 6.12(c) and determined for the Parent and its consolidated Subsidiaries.
+
+"Liquidity" means, as of any date, the aggregate amount of unrestricted cash and cash equivalents of the Parent and its consolidated Subsidiaries.
+
+"Margin" has the meaning given in Section 2.6.
+
+"Outstanding Balance" means, for a Receivable on any date, the unpaid principal balance of that Receivable on that date.
+
+"Parent" means {{parent}}, a Delaware limited liability company.
+
+"Reserve Amount" means, on any date, an amount equal to {{reserve_pct}} of the Eligible Pool Balance.
+
+"Restricted Jurisdiction" means each state, territory or other jurisdiction listed in Schedule 4.
+
+"Revolving Period" means the period from the Closing Date to the Revolving Period End Date.
+
+"Revolving Period End Date" means {{revolving_end}}, or any earlier date on which the Commitment terminates under this Agreement.
+
+"Secured Parties" means the Lender, the Administrative Agent, the Verification Agent, and each assignee of or Participant in the rights of the Lender.
+
+"Solvent" has the meaning given in Section 4.11.
+
+"Subordinated Debt" means Debt of the Parent that is unsecured and subordinated to the Obligations on terms acceptable to the Lender.
+
+"Tangible Net Worth" means, as of any date of determination, the total members' equity of the Parent and its consolidated Subsidiaries, less (a) goodwill, (b) other intangible assets, and (c) amounts owing to the Parent or any Subsidiary by any Affiliate, in each case determined under GAAP and subject to Section 6.12(c).
+
+"Total Liabilities" means, as of any date of determination, all liabilities of the Parent and its consolidated Subsidiaries that would appear on a balance sheet prepared under GAAP.
+
+"Unused Fee" has the meaning given in the Fee Letter.
+
+"Verification Agent" means the person appointed by the Lender under Section 9.8 to verify each Borrowing Base Certificate and report to the Lender.

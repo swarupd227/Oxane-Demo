@@ -2,9 +2,26 @@ import clsx from "clsx";
 import { motion } from "motion/react";
 import { NavLink, useLocation } from "react-router-dom";
 import { scenes } from "../../lib/scenes";
+import { termStatus, useSession } from "../../lib/session";
+import { useWorkbench } from "../../lib/workbench";
+
+function useCounts(): Record<string, string> {
+  const { data } = useWorkbench();
+  const { state } = useSession();
+  if (!data || !state.intakeDone) {
+    return {};
+  }
+  const approved = data.terms.filter((term) => termStatus(term, state) === "approved").length;
+  const open = data.exceptions.filter((item) => !state.exceptions[item.id]).length;
+  return {
+    "/terms": `${approved}/${data.terms.length}`,
+    "/exceptions": open ? `${open} open` : "Done",
+  };
+}
 
 export function Stepper() {
   const { pathname } = useLocation();
+  const counts = useCounts();
 
   return (
     <nav aria-label="Onboarding steps" className="border-b border-line bg-surface px-6">
@@ -12,7 +29,7 @@ export function Stepper() {
         {scenes.map((scene) => {
           const active = scene.path === pathname;
           return (
-            <li key={scene.path} className="relative min-w-0 flex-1">
+            <li key={scene.path} className="relative flex-auto">
               <NavLink
                 to={scene.path}
                 end
@@ -32,6 +49,11 @@ export function Stepper() {
                   {scene.number}
                 </span>
                 <span className="truncate">{scene.label}</span>
+                {counts[scene.path] && (
+                  <span className="numeric rounded-full bg-sand px-1.5 text-[0.6875rem] font-medium text-muted">
+                    {counts[scene.path]}
+                  </span>
+                )}
               </NavLink>
               {active && (
                 <motion.span

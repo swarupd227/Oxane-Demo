@@ -1,7 +1,8 @@
 import { Command } from "cmdk";
-import { Presentation } from "lucide-react";
+import { Presentation, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { scenes } from "../../lib/scenes";
+import { useSession } from "../../lib/session";
 
 const itemClass =
   "flex h-10 cursor-pointer items-center gap-3 rounded-md px-3 text-sm text-ink data-[selected=true]:bg-sand";
@@ -23,6 +24,7 @@ export function CommandPalette({
   onTogglePresenter,
 }: CommandPaletteProps) {
   const navigate = useNavigate();
+  const { dispatch } = useSession();
 
   function run(action: () => void) {
     onOpenChange(false);
@@ -34,6 +36,8 @@ export function CommandPalette({
       open={open}
       onOpenChange={onOpenChange}
       label="Command menu"
+      // Exact matching, so a typed command can never land on a look-alike step.
+      filter={(value, search) => (value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0)}
       overlayClassName="fixed inset-0 z-40 bg-ink/40"
       contentClassName="fixed top-[18vh] left-1/2 z-50 w-[34rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-line bg-surface shadow-overlay"
     >
@@ -66,6 +70,19 @@ export function CommandPalette({
           >
             <Presentation aria-hidden className="size-4 text-muted" />
             {presenter ? "Turn off presenter mode" : "Turn on presenter mode"}
+          </Command.Item>
+          <Command.Item
+            value="reset demo start again"
+            className={itemClass}
+            onSelect={() =>
+              run(() => {
+                dispatch({ type: "reset" });
+                navigate("/");
+              })
+            }
+          >
+            <RotateCcw aria-hidden className="size-4 text-muted" />
+            Reset the demo
           </Command.Item>
         </Command.Group>
       </Command.List>

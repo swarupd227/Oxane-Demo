@@ -109,7 +109,7 @@ export function TierBadge({ tier }: { tier: 1 | 2 | 3 }) {
   return (
     <span
       className={clsx(
-        "numeric inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-semibold",
+        "numeric inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap",
         tier === 1 ? "bg-ink text-white" : "bg-sand text-muted",
       )}
     >

@@ -5,10 +5,17 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/shell/AppShell";
-import { scenes } from "./lib/scenes";
+import { SessionProvider } from "./lib/session";
+import { ApprovePage } from "./pages/ApprovePage";
 import { DealCardPage } from "./pages/DealCardPage";
 import { DesignSystemPage } from "./pages/DesignSystemPage";
-import { ScenePlaceholder } from "./pages/ScenePlaceholder";
+import { ExceptionsPage } from "./pages/ExceptionsPage";
+import { IntakePage } from "./pages/IntakePage";
+import { MappingPage } from "./pages/MappingPage";
+import { RulesPage } from "./pages/RulesPage";
+import { ScorecardPage } from "./pages/ScorecardPage";
+import { TermsPage } from "./pages/TermsPage";
+import { ValidationPage } from "./pages/ValidationPage";
 import "./styles.css";
 
 const queryClient = new QueryClient({
@@ -22,17 +29,24 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <MotionConfig reducedMotion="user">
         <Tooltip.Provider delayDuration={200}>
+          <SessionProvider>
           <BrowserRouter>
             <Routes>
               <Route element={<AppShell />}>
                 <Route index element={<DealCardPage />} />
-                {scenes.slice(1).map((scene) => (
-                  <Route key={scene.path} path={scene.path} element={<ScenePlaceholder />} />
-                ))}
+                <Route path="/intake" element={<IntakePage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/rules" element={<RulesPage />} />
+                <Route path="/mapping" element={<MappingPage />} />
+                <Route path="/validation" element={<ValidationPage />} />
+                <Route path="/exceptions" element={<ExceptionsPage />} />
+                <Route path="/approve" element={<ApprovePage />} />
+                <Route path="/results" element={<ScorecardPage />} />
                 <Route path="/design" element={<DesignSystemPage />} />
               </Route>
             </Routes>
           </BrowserRouter>
+          </SessionProvider>
         </Tooltip.Provider>
       </MotionConfig>
     </QueryClientProvider>

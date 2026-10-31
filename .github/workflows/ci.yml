@@ -79,12 +79,17 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://oxane:oxane_dev@localhost:5432/oxane
       DEAL_FILE: ${{ github.workspace }}/deal-kit/deal.yaml
+      DEAL_KIT_OUTPUT: ${{ github.workspace }}/deal-kit/output
+      RULESET_FILE: ${{ github.workspace }}/packages/engine/rulesets/calderwood-bramble.v1.json
+      PYTHONPATH: ${{ github.workspace }}/packages/engine
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install -e ".[dev]"
+      - run: pip install -e "../../deal-kit" -e ".[dev]"
+      - run: python -m dealkit.build
+        working-directory: deal-kit
       - run: ruff check .
       - run: alembic upgrade head
       - run: pytest

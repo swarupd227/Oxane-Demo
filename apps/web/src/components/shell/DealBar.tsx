@@ -3,6 +3,7 @@ import { FlaskConical, Radio, Rewind, RotateCw, Search } from "lucide-react";
 import type { CaseStatus, CaseView, LlmMode } from "../../lib/api";
 import { useCase } from "../../lib/api";
 import { formatUsdShort } from "../../lib/format";
+import { useSession } from "../../lib/session";
 import { Kbd } from "../ui/badges";
 import { Button } from "../ui/Button";
 import { Skeleton } from "../ui/layout";
@@ -31,7 +32,13 @@ const modes: Record<LlmMode, { label: string; hint: string; icon: typeof Radio }
 
 function DealIdentity({ data }: { data: CaseView }) {
   const { deal } = data;
-  const status = caseStatuses[data.status];
+  const { state } = useSession();
+  const live: CaseStatus = state.approvedAt
+    ? "approved_with_open_items"
+    : state.intakeDone
+      ? "in_review"
+      : data.status;
+  const status = caseStatuses[live];
   return (
     <>
       <div className="min-w-0">

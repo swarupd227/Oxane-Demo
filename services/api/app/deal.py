@@ -3,7 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.config import settings
 
@@ -55,6 +55,8 @@ class Analysts(BaseModel):
 
 
 class Deal(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     case: CaseConfig
     lender: Lender
     borrower: Borrower

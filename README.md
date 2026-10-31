@@ -63,6 +63,14 @@ docker compose run --rm deal-kit pytest
 
 The answer key is for scoring only. The pipeline must never read `deal-kit/output/answer-key/`.
 
+## Test the engine
+
+Build the deal pack first, because the tests compare the engine with the answer key.
+
+```bash
+docker compose run --rm engine pytest
+```
+
 ## Layout
 
 | Path | Contents |
@@ -70,4 +78,5 @@ The answer key is for scoring only. The pipeline must never read `deal-kit/outpu
 | `apps/web` | React workbench |
 | `services/api` | FastAPI service and database migrations |
 | `deal-kit` | `deal.yaml`, the document generators, the answer key and the independent checker |
+| `packages/engine` | Deterministic rules engine, borrowing base, reconciliation and covenants |
 | `docs` | Development plan |

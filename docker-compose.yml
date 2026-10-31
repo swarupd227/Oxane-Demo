@@ -57,5 +57,12 @@ services:
     volumes:
       - ./deal-kit:/deal-kit
 
+  engine:
+    profiles: [tools]
+    build: ./packages/engine
+    volumes:
+      - ./packages/engine:/engine
+      - ./deal-kit:/deal-kit:ro
+
 volumes:
   db-data:

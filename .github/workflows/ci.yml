@@ -40,6 +40,24 @@ jobs:
       - run: python -m dealkit.build
       - run: git diff --exit-code pack.manifest.json
 
+  engine:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/engine
+    env:
+      DEAL_KIT_OUTPUT: ${{ github.workspace }}/deal-kit/output
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e "../../deal-kit" -e ".[dev]"
+      - run: python -m dealkit.build
+        working-directory: deal-kit
+      - run: ruff check .
+      - run: pytest
+
   api:
     runs-on: ubuntu-latest
     defaults:

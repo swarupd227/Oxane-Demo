@@ -7,8 +7,8 @@ import { Button } from "../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../components/ui/layout";
 import { NeedsIntake, PageHeader } from "../components/ui/PageHeader";
 import { formatUsd } from "../lib/format";
-import { ANALYST, APPROVER, termStatus, useSession } from "../lib/session";
-import { useValidationRun, useWorkbench, type RunResult, type Workbench } from "../lib/workbench";
+import { ANALYST, APPROVER, useSession } from "../lib/session";
+import { useValidationRun, useWorkbench } from "../lib/workbench";
 
 function Check_({ passed, label }: { passed: boolean; label: string }) {
   return (
@@ -17,29 +17,6 @@ function Check_({ passed, label }: { passed: boolean; label: string }) {
       <StatusPill status={passed ? "approved" : "review"} label={passed ? "Done" : "Outstanding"} />
     </li>
   );
-}
-
-function downloadLoadFile(data: Workbench, run: RunResult, openItems: string[], approvedAt: string) {
-  const payload = {
-    note: "Demo layout. Not a Panorama format. All data is synthetic.",
-    case: "0412",
-    approved_at: approvedAt,
-    prepared_by: ANALYST,
-    approved_by: APPROVER,
-    run_digest: run.digest,
-    provisional: run.provisional,
-    open_items: openItems,
-    terms: data.terms.map(({ name, tier, value, clause }) => ({ name, tier, value, clause })),
-    borrowing_base: run.system,
-  };
-  const url = URL.createObjectURL(
-    new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
-  );
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "case-0412-load-file.json";
-  link.click();
-  URL.revokeObjectURL(url);
 }
 
 export function ApprovePage() {
@@ -56,20 +33,13 @@ export function ApprovePage() {
     return <Skeleton className="h-96 w-full" />;
   }
 
-  const tier1 = data.terms.filter((term) => term.tier === 1 && term.status !== "missing");
-  const tier1Done = tier1.every((term) => termStatus(term, state) === "approved");
-  const unworked = data.exceptions.filter((item) => !state.exceptions[item.id]);
+  const tier1Count = data.terms.filter(
+    (term) => term.tier === 1 && term.status !== "missing",
+  ).length;
+  const { readiness, openItems } = state;
   const ruleOpen = state.ruleEdit?.status === "pending";
-  const open = data.exceptions.filter(
-    (item) => item.blocking && state.exceptions[item.id] !== "accepted",
-  );
-  const openItems = [
-    ...open.map((item) => `${item.id}: ${item.title} (${item.owner})`),
-    "Restricted Jurisdictions: open until Schedule 4 arrives",
-  ];
   const approver = state.actor === "approver";
-  const ready =
-    tier1Done && unworked.length === 0 && state.ran && !ruleOpen && carried && Boolean(run);
+  const ready = Object.values(readiness).every(Boolean) && carried;
   const approved = Boolean(state.approvedAt);
 
   return (
@@ -92,10 +62,13 @@ export function ApprovePage() {
           <Card className="p-5">
             <h2 className="font-semibold">Change summary</h2>
             <ul className="mt-2 divide-y divide-sand">
-              <Check_ passed={tier1Done} label={`All ${tier1.length} Tier 1 values with a source approved`} />
-              <Check_ passed={unworked.length === 0} label="All exceptions worked" />
-              <Check_ passed={state.ran} label="Validation run complete" />
-              <Check_ passed={!ruleOpen} label="No rule change pending" />
+              <Check_
+                passed={readiness.tier1_approved}
+                label={`All ${tier1Count} Tier 1 values with a source approved`}
+              />
+              <Check_ passed={readiness.exceptions_worked} label="All exceptions worked" />
+              <Check_ passed={readiness.run_complete} label="Validation run complete" />
+              <Check_ passed={readiness.no_rule_pending} label="No rule change pending" />
             </ul>
             {run && (
               <div className="numeric mt-3 grid grid-cols-3 gap-4 border-t border-line pt-3">
@@ -164,8 +137,14 @@ export function ApprovePage() {
           </Card>
 
           <Card className="overflow-hidden">
-            <h2 className="border-b border-line px-5 py-3 font-semibold">Audit log</h2>
-            <ol className="max-h-72 overflow-y-auto">
+            <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3">
+              <h2 className="font-semibold">Audit log</h2>
+              <StatusPill
+                status={state.chainIntact ? "approved" : "missing"}
+                label={state.chainIntact ? "Chain verified" : "Chain broken"}
+              />
+            </div>
+            <ol tabIndex={0} aria-label="Audit log entries" className="max-h-72 overflow-y-auto">
               {[...state.audit].reverse().map((entry, index) => (
                 <li key={`${entry.at}-${index}`} className="border-b border-sand px-5 py-2 last:border-0">
                   <p className="text-sm">
@@ -218,27 +197,26 @@ export function ApprovePage() {
               size="lg"
               className="mt-4 w-full"
               disabled={!approver || !ready}
-              onClick={() => dispatch({ type: "approve-load", openItems: openItems.length })}
+              onClick={() => dispatch({ type: "approve-load" })}
             >
               <Check aria-hidden className="size-4" />
               Approve with {openItems.length} open items
             </Button>
           )}
-          {approved && run && state.approvedAt && (
+          {approved && (
             <div className="mt-4 space-y-3">
               <p className="flex items-center gap-2 rounded-lg bg-ok-tint p-3 text-sm font-medium text-ok">
                 <ShieldCheck aria-hidden className="size-4 shrink-0" />
                 Approved with {openItems.length} open items by {APPROVER}
               </p>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full"
-                onClick={() => downloadLoadFile(data, run, openItems, state.approvedAt as string)}
+              <a
+                href="/api/load-file"
+                download
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-[0.9375rem] font-medium hover:border-stone hover:bg-canvas"
               >
                 <Download aria-hidden className="size-4" />
                 Download load file
-              </Button>
+              </a>
               <p className="text-xs text-muted">
                 Demo layout. Mapping to Panorama's real format is a discovery task.
               </p>

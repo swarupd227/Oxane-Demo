@@ -86,6 +86,12 @@ docker compose exec api python -m app.pipeline.run --mode record
 docker compose exec api python -m app.pipeline.run --mode replay
 ```
 
+## Controls
+
+The session is an append-only log in PostgreSQL. A database trigger refuses updates and deletes, and each event carries the hash of the one before it. The API enforces four-eyes approval, so a preparer cannot approve their own case. The load file exists only after approval, and "Reset the demo" starts a new session without deleting the old one.
+
+Sign-in arrives with Azure in phase 7. Until then the analyst name is whatever the client sends, so the API limits it to the two demo roles.
+
 ## Test the engine
 
 Build the deal pack first, because the tests compare the engine with the answer key.

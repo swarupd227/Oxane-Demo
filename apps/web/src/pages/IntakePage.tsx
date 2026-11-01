@@ -151,7 +151,7 @@ export function IntakePage() {
               </tr>
             </thead>
             <tbody>
-              {data.documents.slice(0, revealed).map((doc, index) => (
+              {data.documents.slice(0, state.intakeDone ? undefined : revealed).map((doc, index) => (
                 <FileRow
                   key={doc.id}
                   doc={doc}

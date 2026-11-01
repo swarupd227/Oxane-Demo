@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { usePresenterMode } from "../../lib/presenter";
 import { sceneForPath, scenes } from "../../lib/scenes";
+import { useSession } from "../../lib/session";
 import { useWorkbench } from "../../lib/workbench";
 import { Button } from "../ui/Button";
 import { CommandPalette } from "./CommandPalette";
@@ -23,6 +24,7 @@ export function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const presenter = usePresenterMode();
   const workbench = useWorkbench();
+  const { refusal, clearRefusal } = useSession();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -59,6 +61,17 @@ export function AppShell() {
         transition={{ duration: 0.12, ease: "easeOut" }}
         className="mx-auto w-full max-w-[88rem] flex-1 px-6 py-8"
       >
+        {refusal && (
+          <div
+            role="alert"
+            className="mb-4 flex items-center justify-between gap-4 rounded-lg bg-warn-tint px-4 py-3 text-sm"
+          >
+            <span className="font-medium text-warn">{refusal}</span>
+            <Button variant="secondary" size="sm" onClick={clearRefusal}>
+              Dismiss
+            </Button>
+          </div>
+        )}
         {workbench.isError && (
           <div
             role="alert"

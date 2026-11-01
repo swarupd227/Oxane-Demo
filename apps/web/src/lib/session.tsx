@@ -1,11 +1,11 @@
-/* The analyst's session. Phase 5 moves this state to the server. */
+/* The analyst's session lives on the server. Controls are enforced there, not in this file. */
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
+  useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useReducer,
-  type Dispatch,
+  useState,
   type ReactNode,
 } from "react";
 import type { Term, Workbench } from "./workbench";
@@ -17,7 +17,7 @@ export interface AuditEntry {
   at: string;
   actor: string;
   action: string;
-  reason?: string;
+  reason?: string | null;
   earlier?: boolean;
 }
 
@@ -42,25 +42,21 @@ export interface SessionState {
   exceptions: Record<string, ExceptionOutcome>;
   ruleEdit: RuleEdit | null;
   approvedAt: string | null;
+  approvedBy: string | null;
   audit: AuditEntry[];
+  readiness: {
+    tier1_approved: boolean;
+    exceptions_worked: boolean;
+    run_complete: boolean;
+    no_rule_pending: boolean;
+  };
+  openItems: string[];
+  chainIntact: boolean;
+  chainHead: string;
 }
 
 export const ANALYST = "Onboarding analyst";
 export const APPROVER = "Second analyst";
-
-// These are worked live on stage. Everything else was done before the demo, and says so.
-const LIVE_TERMS = new Set(["Facility limit", "Advance rate"]);
-const TERM_EXCEPTIONS: Record<string, string> = {
-  "Advance rate": "X1",
-  "Facility limit": "X3",
-};
-const EARLIER_EXCEPTIONS: Record<string, ExceptionOutcome> = {
-  X2: "queried",
-  X7: "queried",
-  X8: "accepted",
-  X9: "accepted",
-  X10: "accepted",
-};
 
 const initial: SessionState = {
   startedAt: null,
@@ -74,7 +70,17 @@ const initial: SessionState = {
   exceptions: {},
   ruleEdit: null,
   approvedAt: null,
+  approvedBy: null,
   audit: [],
+  readiness: {
+    tier1_approved: false,
+    exceptions_worked: false,
+    run_complete: false,
+    no_rule_pending: true,
+  },
+  openItems: [],
+  chainIntact: true,
+  chainHead: "",
 };
 
 type Action =
@@ -89,169 +95,97 @@ type Action =
   | { type: "propose-rule"; edit: Omit<RuleEdit, "status"> }
   | { type: "decline-rule"; reason: string }
   | { type: "set-actor"; actor: Actor }
-  | { type: "approve-load"; openItems: number }
+  | { type: "approve-load" }
   | { type: "reset" };
 
-function log(state: SessionState, action: string, reason?: string): AuditEntry[] {
-  const actor = state.actor === "analyst" ? ANALYST : APPROVER;
-  return [...state.audit, { at: new Date().toISOString(), actor, action, reason }];
-}
-
-function withEarlierWork(state: SessionState, terms: Term[]): SessionState {
-  const earlier = terms.filter(
-    (term) => term.tier === 1 && term.confidence === "high" && !LIVE_TERMS.has(term.name),
-  );
-  const approvals = { ...state.termApprovals };
-  const audit = [...state.audit];
-  for (const term of earlier) {
-    approvals[term.name] = "approved";
-    audit.push({
-      at: new Date().toISOString(),
-      actor: ANALYST,
-      action: `Approved ${term.name}`,
-      earlier: true,
-    });
-  }
-  for (const [id, outcome] of Object.entries(EARLIER_EXCEPTIONS)) {
-    audit.push({
-      at: new Date().toISOString(),
-      actor: ANALYST,
-      action: `${id}: ${outcome}`,
-      earlier: true,
-    });
-  }
-  return {
-    ...state,
-    termApprovals: approvals,
-    exceptions: { ...EARLIER_EXCEPTIONS, ...state.exceptions },
-    audit,
-  };
-}
-
-function reducer(state: SessionState, action: Action): SessionState {
+function payloadOf(action: Action): Record<string, unknown> {
   switch (action.type) {
     case "intake-done":
-      return withEarlierWork(
-        {
-          ...state,
-          intakeDone: true,
-          startedAt: state.startedAt ?? new Date().toISOString(),
-          audit: log(state, "Uploaded 8-file document pack"),
-        },
-        action.workbench.terms,
-      );
-    case "approve-term": {
-      // Confirming these values is also what closes their exception.
-      const closes = TERM_EXCEPTIONS[action.name];
-      return {
-        ...state,
-        termApprovals: { ...state.termApprovals, [action.name]: "approved" },
-        exceptions: closes ? { ...state.exceptions, [closes]: "accepted" } : state.exceptions,
-        audit: log(state, `Approved ${action.name}`),
-      };
-    }
-    case "bulk-approve":
-      return {
-        ...state,
-        termApprovals: {
-          ...state.termApprovals,
-          ...Object.fromEntries(action.names.map((name) => [name, "approved" as const])),
-        },
-        audit: log(state, `Bulk approved ${action.names.length} Tier 2 and 3 values`),
-      };
-    case "queue-term":
-      return {
-        ...state,
-        termApprovals: { ...state.termApprovals, [action.name]: "queued" },
-        audit: log(state, `Sent ${action.name} to the queue`),
-      };
-    case "edit-term":
-      return {
-        ...state,
-        termEdits: { ...state.termEdits, [action.name]: action.value },
-        audit: log(state, `Edited ${action.name} to ${action.value}`, action.reason),
-      };
-    case "accept-mapping":
-      return { ...state, mappingAccepted: true, audit: log(state, "Accepted tape mapping") };
-    case "run":
-      return state.ran
-        ? state
-        : {
-            ...state,
-            ran: true,
-            audit: log(state, "Ran the April tape: 16 rules run, E7 not evaluated"),
-          };
-    case "work-exception":
-      return {
-        ...state,
-        exceptions: { ...state.exceptions, [action.id]: action.outcome },
-        dealerMatched: state.dealerMatched || (action.id === "X6" && action.outcome === "accepted"),
-        audit: log(state, `${action.id}: ${action.outcome}`, action.note),
-      };
+      return {};
     case "propose-rule":
-      return {
-        ...state,
-        ruleEdit: { ...action.edit, status: "pending" },
-        audit: log(
-          state,
-          `Proposed ${action.edit.rule_id}: ${action.edit.from} to ${action.edit.to}`,
-          action.edit.reason,
-        ),
-      };
-    case "decline-rule":
-      return state.ruleEdit
-        ? {
-            ...state,
-            ruleEdit: { ...state.ruleEdit, status: "declined", decline_reason: action.reason },
-            audit: log(state, `Declined rule change to ${state.ruleEdit.rule_id}`, action.reason),
-          }
-        : state;
-    case "set-actor":
-      return { ...state, actor: action.actor };
+      return action.edit;
     case "approve-load":
-      return {
-        ...state,
-        approvedAt: new Date().toISOString(),
-        audit: log(
-          state,
-          action.openItems
-            ? `Approved load file with ${action.openItems} open items`
-            : "Approved load file",
-        ),
-      };
-    case "reset":
-      return initial;
+      return { carry_forward: true };
+    default: {
+      const payload: Record<string, unknown> = { ...action };
+      delete payload.type;
+      return payload;
+    }
   }
 }
 
-const STORAGE_KEY = "workbench.session.v1";
-
-function restore(): SessionState {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? { ...initial, ...JSON.parse(stored) } : initial;
-  } catch {
-    return initial;
+async function send(path: string, body?: unknown): Promise<Omit<SessionState, "actor">> {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const failure = await response.json().catch(() => null);
+    throw new Error(failure?.detail ?? "The server could not record that action.");
   }
+  return response.json();
 }
 
-const SessionContext = createContext<{
+interface SessionValue {
   state: SessionState;
-  dispatch: Dispatch<Action>;
-} | null>(null);
+  dispatch: (action: Action) => void;
+  refusal: string | null;
+  clearRefusal: () => void;
+}
+
+const SessionContext = createContext<SessionValue | null>(null);
+const SESSION_KEY = ["session"];
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, restore);
+  const client = useQueryClient();
+  const [actor, setActor] = useState<Actor>("analyst");
+  const [refusal, setRefusal] = useState<string | null>(null);
+  const { data, isError } = useQuery({
+    queryKey: SESSION_KEY,
+    queryFn: async (): Promise<Omit<SessionState, "actor">> => {
+      const response = await fetch("/api/session", { signal: AbortSignal.timeout(10_000) });
+      if (!response.ok) {
+        throw new Error(`Session request failed with ${response.status}`);
+      }
+      return response.json();
+    },
+    staleTime: Infinity,
+  });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // A reload loses the session if storage is blocked. The demo itself still works.
-    }
-  }, [state]);
+  const dispatch = useCallback(
+    (action: Action) => {
+      if (action.type === "set-actor") {
+        setActor(action.actor);
+        return;
+      }
+      setRefusal(null);
+      const request =
+        action.type === "reset"
+          ? send("/api/session/reset")
+          : send("/api/session/events", { type: action.type, actor, payload: payloadOf(action) });
+      request
+        .then((next) => {
+          client.setQueryData(SESSION_KEY, next);
+          if (action.type === "reset") {
+            setActor("analyst");
+          }
+        })
+        .catch((error: Error) => setRefusal(error.message));
+    },
+    [actor, client],
+  );
 
-  const value = useMemo(() => ({ state, dispatch }), [state]);
+  const value = useMemo(
+    () => ({
+      state: { ...initial, ...data, actor },
+      dispatch,
+      // An unreachable session must not look like a case with no work done.
+      refusal: refusal ?? (isError ? "The session service is not responding." : null),
+      clearRefusal: () => setRefusal(null),
+    }),
+    [data, actor, dispatch, refusal, isError],
+  );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 

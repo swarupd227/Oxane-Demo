@@ -6,17 +6,19 @@ from decimal import Decimal
 from typing import Annotated, Any, Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Response, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app import session as case_session
 from app.config import settings
 from app.db import get_session
 from app.deal import Deal, load_deal
 from app.engine_service import active_files, pack_path, rule_preview, validation_run
 from app.models import OnboardingCase
+from app.scoring import scorecard
 from app.seed import workbench
 
 
@@ -67,12 +69,80 @@ def get_case(session: SessionDep) -> CaseView:
     )
 
 
-@app.get("/api/workbench")
-def get_workbench() -> dict[str, Any]:
+def current_workbench() -> dict[str, Any]:
     recorded = settings.pipeline_dir / "workbench.json"
     if recorded.exists():
         return json.loads(recorded.read_text(encoding="utf-8"))
     return workbench()
+
+
+@app.get("/api/workbench")
+def get_workbench() -> dict[str, Any]:
+    return current_workbench()
+
+
+@app.get("/api/session")
+def get_session_state(session: SessionDep) -> dict[str, Any]:
+    return case_session.view(session, current_workbench())
+
+
+class SessionEvent(BaseModel):
+    type: str
+    actor: str
+    payload: dict[str, Any] = {}
+
+
+@app.post("/api/session/events")
+def post_event(event: SessionEvent, session: SessionDep) -> dict[str, Any]:
+    run = current_workbench()
+    try:
+        case_session.record(session, run, event.actor, event.type, event.payload)
+    except case_session.Refused as refused:
+        raise HTTPException(status_code=409, detail=str(refused)) from refused
+    return case_session.view(session, run)
+
+
+@app.post("/api/session/reset")
+def post_reset(session: SessionDep) -> dict[str, Any]:
+    case_session.reset(session)
+    return case_session.view(session, current_workbench())
+
+
+@app.get("/api/load-file")
+def get_load_file(session: SessionDep) -> JSONResponse:
+    run = current_workbench()
+    state = case_session.view(session, run)
+    if not state["approvedAt"]:
+        raise HTTPException(status_code=409, detail="The load file needs a second analyst first")
+    result = validation_run(state["dealerMatched"])
+    edits = state["termEdits"]
+    return JSONResponse(
+        {
+            "note": "Demo layout, not a Panorama format. All data is synthetic.",
+            "case": load_deal().case.number,
+            "approved_at": state["approvedAt"],
+            "prepared_by": case_session.ACTOR_NAMES[case_session.ANALYST],
+            "approved_by": case_session.ACTOR_NAMES[state["approvedBy"]],
+            "run_digest": result["digest"],
+            "provisional": result["provisional"],
+            "audit_chain_head": state["chainHead"],
+            "open_items": state["openItems"],
+            "terms": [
+                {"name": term["name"], "tier": term["tier"], "clause": term["clause"],
+                 "value": edits.get(term["name"], term["value"]),
+                 "edited": term["name"] in edits}
+                for term in run["terms"]
+            ],
+            "borrowing_base": result["system"],
+        },
+        headers={"Content-Disposition": 'attachment; filename="case-0412-load-file.json"'},
+    )
+
+
+@app.get("/api/scorecard")
+def get_scorecard(session: SessionDep) -> dict[str, Any]:
+    run = current_workbench()
+    return scorecard(run, case_session.view(session, run))
 
 
 @app.get("/api/pack/{file_name}")

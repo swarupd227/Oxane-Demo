@@ -3,8 +3,7 @@
   "configurations": [
     {
       "name": "workbench",
-      "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up", "--build"],
+      "url": "http://localhost:5180",
       "port": 5180
     }
   ]

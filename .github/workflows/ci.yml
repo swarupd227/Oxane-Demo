@@ -81,6 +81,8 @@ jobs:
       DEAL_FILE: ${{ github.workspace }}/deal-kit/deal.yaml
       DEAL_KIT_OUTPUT: ${{ github.workspace }}/deal-kit/output
       RULESET_FILE: ${{ github.workspace }}/packages/engine/rulesets/calderwood-bramble.v1.json
+      PIPELINE_DIR: ${{ github.workspace }}/fixtures/run
+      LLM_FIXTURES: ${{ github.workspace }}/fixtures/llm
       PYTHONPATH: ${{ github.workspace }}/packages/engine
     steps:
       - uses: actions/checkout@v4

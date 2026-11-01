@@ -21,7 +21,7 @@ function Check_({ passed, label }: { passed: boolean; label: string }) {
 
 export function ApprovePage() {
   const { data } = useWorkbench();
-  const { state, dispatch } = useSession();
+  const { state, dispatch, me } = useSession();
   const navigate = useNavigate();
   const run = useValidationRun(state.dealerMatched, state.ran).data;
   const [carried, setCarried] = useState(false);
@@ -166,8 +166,12 @@ export function ApprovePage() {
         </div>
 
         <Card className="sticky top-32 p-5">
-          <SectionLabel>Acting as</SectionLabel>
-          <div className="mt-2 flex items-center gap-2 rounded-lg bg-canvas p-1">
+          <SectionLabel>{me?.signed_in ? "Signed in as" : "Acting as"}</SectionLabel>
+          {me?.signed_in && <p className="mt-2 text-sm font-medium">{me.user}</p>}
+          <div
+            className="mt-2 flex items-center gap-2 rounded-lg bg-canvas p-1"
+            hidden={me?.signed_in}
+          >
             {(["analyst", "approver"] as const).map((actor) => (
               <button
                 key={actor}

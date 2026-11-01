@@ -127,8 +127,15 @@ async function send(path: string, body?: unknown): Promise<Omit<SessionState, "a
   return response.json();
 }
 
+interface SignedIn {
+  signed_in: boolean;
+  user: string | null;
+  role: Actor | null;
+}
+
 interface SessionValue {
   state: SessionState;
+  me: SignedIn | null;
   dispatch: (action: Action) => void;
   refusal: string | null;
   clearRefusal: () => void;
@@ -141,6 +148,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
   const [actor, setActor] = useState<Actor>("analyst");
   const [refusal, setRefusal] = useState<string | null>(null);
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: async (): Promise<SignedIn> => (await fetch("/api/me")).json(),
+    staleTime: Infinity,
+  });
   const { data, isError } = useQuery({
     queryKey: SESSION_KEY,
     queryFn: async (): Promise<Omit<SessionState, "actor">> => {
@@ -178,13 +190,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      state: { ...initial, ...data, actor },
+      state: { ...initial, ...data, actor: me?.role ?? actor },
+      me: me ?? null,
       dispatch,
       // An unreachable session must not look like a case with no work done.
       refusal: refusal ?? (isError ? "The session service is not responding." : null),
       clearRefusal: () => setRefusal(null),
     }),
-    [data, actor, dispatch, refusal, isError],
+    [data, actor, me, dispatch, refusal, isError],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

@@ -43,7 +43,8 @@ def _initial() -> dict[str, Any]:
     return {
         "startedAt": None, "intakeDone": False, "termApprovals": {}, "termEdits": {},
         "mappingAccepted": False, "ran": False, "dealerMatched": False, "exceptions": {},
-        "ruleEdit": None, "approvedAt": None, "approvedBy": None, "audit": [],
+        "ruleEdit": None, "approvedAt": None, "approvedBy": None, "approvedByName": None,
+        "preparedBy": ACTOR_NAMES[ANALYST], "audit": [],
     }
 
 
@@ -75,6 +76,7 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
         if kind == "intake-done":
             state["intakeDone"] = True
             state["startedAt"] = at
+            state["preparedBy"] = p.get("user") or ACTOR_NAMES[ANALYST]
         elif kind == "approve-term":
             state["termApprovals"][p["name"]] = "approved"
             if p["name"] in TERM_EXCEPTIONS:
@@ -101,9 +103,11 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
         elif kind == "approve-load":
             state["approvedAt"] = at
             state["approvedBy"] = event.actor
+            state["approvedByName"] = p.get("user") or ACTOR_NAMES.get(event.actor)
         action, reason = _describe(event)
-        state["audit"].append({"at": at, "actor": ACTOR_NAMES.get(event.actor, event.actor),
-                               "action": action, "reason": reason, "earlier": event.earlier})
+        shown = p.get("user") or ACTOR_NAMES.get(event.actor, event.actor)
+        state["audit"].append({"at": at, "actor": shown, "action": action, "reason": reason,
+                               "earlier": event.earlier})
     return state
 
 
@@ -194,8 +198,11 @@ def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, 
         raise Refused("This case is approved and can no longer be changed")
     if kind in PREPARER_EVENTS and actor != ANALYST:
         raise Refused("The second analyst cannot change a case under review")
+    user = payload.get("user")
     if kind in REVIEWER_EVENTS and any(
-        event.actor == actor and event.type in PREPARER_EVENTS for event in events
+        event.type in PREPARER_EVENTS and not event.earlier
+        and (event.actor == actor or (user and event.payload.get("user") == user))
+        for event in events
     ):
         raise Refused("You prepared this case, so a second analyst has to review it")
     if kind != "intake-done" and not state["intakeDone"]:

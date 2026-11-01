@@ -13,6 +13,19 @@ class Settings(BaseSettings):
     llm_fixtures: Path = Path("/fixtures/llm")
     llm_provider: Literal["anthropic", "foundry"] = "anthropic"
     llm_mode: Literal["replay", "record", "live"] = "replay"
+    # With sign-in on, identity comes from the platform and never from the request body.
+    auth_required: bool = False
+    analyst_users: str = ""
+    approver_users: str = ""
+    static_dir: Path | None = None
+
+    def role_of(self, user: str) -> str | None:
+        def listed(names: str) -> bool:
+            return user.lower() in {name.strip().lower() for name in names.split(",")}
+
+        if listed(self.approver_users):
+            return "approver"
+        return "analyst" if listed(self.analyst_users) else None
 
 
 settings = Settings()

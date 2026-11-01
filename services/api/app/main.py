@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 
-from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import text
@@ -29,7 +29,28 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(title="Oxane onboarding workbench API", lifespan=lifespan)
+# The API description is for local work. It is not part of the signed-in product.
+app = FastAPI(
+    title="Onboarding workbench API",
+    lifespan=lifespan,
+    docs_url=None if settings.auth_required else "/docs",
+    redoc_url=None,
+    openapi_url=None if settings.auth_required else "/openapi.json",
+)
+PRINCIPAL_HEADER = "x-ms-client-principal-name"
+
+
+def signed_in_user(request: Request) -> str | None:
+    """The platform sets this header after sign-in, and strips any copy a client sends."""
+    return request.headers.get(PRINCIPAL_HEADER)
+
+
+@app.middleware("http")
+async def require_sign_in(request: Request, call_next: Any) -> Any:
+    open_path = request.url.path == "/api/health" or not request.url.path.startswith("/api")
+    if settings.auth_required and not open_path and not signed_in_user(request):
+        return JSONResponse({"detail": "Sign-in required"}, status_code=401)
+    return await call_next(request)
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -81,6 +102,13 @@ def get_workbench() -> dict[str, Any]:
     return current_workbench()
 
 
+@app.get("/api/me")
+def get_me(request: Request) -> dict[str, Any]:
+    user = signed_in_user(request) if settings.auth_required else None
+    return {"signed_in": bool(user), "user": user,
+            "role": settings.role_of(user) if user else None}
+
+
 @app.get("/api/session")
 def get_session_state(session: SessionDep) -> dict[str, Any]:
     return case_session.view(session, current_workbench())
@@ -93,17 +121,24 @@ class SessionEvent(BaseModel):
 
 
 @app.post("/api/session/events")
-def post_event(event: SessionEvent, session: SessionDep) -> dict[str, Any]:
+def post_event(event: SessionEvent, request: Request, session: SessionDep) -> dict[str, Any]:
     run = current_workbench()
+    actor, payload = event.actor, dict(event.payload)
+    if settings.auth_required:
+        user = signed_in_user(request) or ""
+        actor = settings.role_of(user) or "unassigned"
+        payload["user"] = user
     try:
-        case_session.record(session, run, event.actor, event.type, event.payload)
+        case_session.record(session, run, actor, event.type, payload)
     except case_session.Refused as refused:
         raise HTTPException(status_code=409, detail=str(refused)) from refused
     return case_session.view(session, run)
 
 
 @app.post("/api/session/reset")
-def post_reset(session: SessionDep) -> dict[str, Any]:
+def post_reset(request: Request, session: SessionDep) -> dict[str, Any]:
+    if settings.auth_required and not settings.role_of(signed_in_user(request) or ""):
+        raise HTTPException(status_code=403, detail="User not recognised")
     case_session.reset(session)
     return case_session.view(session, current_workbench())
 
@@ -122,8 +157,8 @@ def get_load_file(session: SessionDep) -> JSONResponse:
             "note": "Sandbox output, not a Panorama import format. All data is synthetic.",
             "case": load_deal().case.number,
             "approved_at": state["approvedAt"],
-            "prepared_by": case_session.ACTOR_NAMES[case_session.ANALYST],
-            "approved_by": case_session.ACTOR_NAMES[state["approvedBy"]],
+            "prepared_by": state["preparedBy"],
+            "approved_by": state["approvedByName"],
             "run_digest": result["digest"],
             "provisional": result["provisional"],
             "audit_chain_head": state["chainHead"],
@@ -174,3 +209,17 @@ def post_preview(request: PreviewRequest) -> dict[str, Any]:
         return rule_preview(request.rule_id, request.value)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+if settings.static_dir:
+    root = settings.static_dir.resolve()
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def serve_workbench(path: str) -> FileResponse:
+        """Serve built files, and hand every other path to the single-page app."""
+        if path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not found")
+        target = (root / path).resolve()
+        if path and target.is_relative_to(root) and target.is_file():
+            return FileResponse(target)
+        return FileResponse(root / "index.html")

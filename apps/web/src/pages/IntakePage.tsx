@@ -12,6 +12,8 @@ import { useWorkbench, type DocumentInfo } from "../lib/workbench";
 
 const STEP_MS = 420;
 
+const shownDate = (value: string | null) => (value ? formatDate(value) : "Not stated");
+
 function FileRow({ doc, done, links }: { doc: DocumentInfo; done: boolean; links?: string }) {
   return (
     <motion.tr
@@ -33,9 +35,9 @@ function FileRow({ doc, done, links }: { doc: DocumentInfo; done: boolean; links
       </td>
       <td className="py-3 pr-4 text-sm text-muted">{done ? doc.kind : ""}</td>
       <td className="numeric py-3 pr-4 text-sm text-muted">{done ? doc.version : ""}</td>
-      <td className="numeric py-3 pr-4 text-sm text-muted">{done ? formatDate(doc.dated) : ""}</td>
+      <td className="numeric py-3 pr-4 text-sm text-muted">{done ? shownDate(doc.dated) : ""}</td>
       <td className="numeric py-3 pr-4 text-sm font-medium">
-        {done ? formatDate(doc.effective) : ""}
+        {done ? shownDate(doc.effective) : ""}
       </td>
       <td className="numeric py-3 pr-4 text-sm text-muted">{done ? doc.size : ""}</td>
       <td className="py-3 pr-5 text-xs text-muted">
@@ -97,9 +99,11 @@ export function IntakePage() {
           )
         }
       />
-      <SeedNotice>
-        Seed data: this step shows the expected result. The real classifier arrives in phase 4.
-      </SeedNotice>
+      {data?.seed && (
+        <SeedNotice>
+          Seed data: this step shows the expected result. No model has run yet.
+        </SeedNotice>
+      )}
 
       {!started && (
         <button

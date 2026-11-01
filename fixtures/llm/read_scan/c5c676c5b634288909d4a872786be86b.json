@@ -1,0 +1,13 @@
+{
+ "task": "read_scan",
+ "model": "claude-opus-5-5",
+ "text": "{\"text\":\"Credit Agreement - Execution Version\\n\\nANNEX A\\n\\nCOMMITMENT SCHEDULE\\n\\nLender | Commitment\\nCalderwood Bank plc | US$250,000,000\\nTotal | US$250,000,000\\n\\nInitialled for identification on the Closing Date.\\n\\n/s/ R.A. /s/ M.T.\\n\\n61\",\"legibility\":\"clear\",\"x0\":0.226,\"x1\":0.768,\"top\":0.271,\"bottom\":0.336}",
+ "usage": {
+  "task": "read_scan",
+  "input_tokens": 2993,
+  "output_tokens": 373,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false
+ }
+}

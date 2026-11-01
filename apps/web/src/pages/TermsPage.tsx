@@ -31,10 +31,12 @@ const FILTERS: { id: Filter; label: string }[] = [
 const START = Date.UTC(2026, 0, 15);
 const END = Date.UTC(2026, 3, 30);
 const DAY = 86_400_000;
-const EFFECTIVE = Date.UTC(2026, 2, 1);
 
 function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citation) => void }) {
   const [time, setTime] = useState(END);
+  const EFFECTIVE = Date.parse(`${term.effective_from ?? "2026-03-01"}T00:00:00Z`);
+  const original = term.original_value ?? "85%";
+  const current = term.amended_value ?? "82.5%";
   const amended = time >= EFFECTIVE;
   const iso = new Date(time).toISOString().slice(0, 10);
   const markerPct = ((EFFECTIVE - START) / (END - START)) * 100;
@@ -63,10 +65,10 @@ function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citatio
             transition={{ duration: 0.18 }}
             className="numeric text-[2rem] leading-none font-semibold tracking-tight"
           >
-            {amended ? "82.5%" : "85%"}
+            {amended ? current : original}
           </motion.span>
         </AnimatePresence>
-        {amended && <s className="numeric text-lg text-muted">85%</s>}
+        {amended && <s className="numeric text-lg text-muted">{original}</s>}
         <span className="text-[0.8125rem] text-muted">
           {amended ? "Amendment No. 1, 2(a)" : "Credit Agreement 2.3"}
         </span>
@@ -227,9 +229,11 @@ export function TermsPage() {
           </Button>
         }
       />
-      <SeedNotice>
-        Seed data: these values come from the answer key. Highlights are found in the real PDFs.
-      </SeedNotice>
+      {data.seed && (
+        <SeedNotice>
+          Seed data: these values come from the answer key. Highlights are found in the real PDFs.
+        </SeedNotice>
+      )}
 
       <div className="grid grid-cols-[minmax(0,1fr)_34rem] items-start gap-5">
         <Card className="overflow-hidden">

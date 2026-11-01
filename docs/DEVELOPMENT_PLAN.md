@@ -120,7 +120,7 @@ Each screen goes through a design review against a screenshot before it counts a
 | Data store | PostgreSQL 16 in Docker, SQLAlchemy, Alembic | As the spec requires; audit table is append only |
 | Rules engine | Pure Python, rules as versioned JSON | No `eval`. Rule logic is a small validated expression format, and the result is keyed by a hash of tape and rule set |
 | PDF parsing | pdfplumber and pypdfium2 | Keeps page and character positions. PyMuPDF is avoided because of its AGPL licence |
-| OCR | Adapter: Azure Document Intelligence, with results recorded for local replay | One real scanned page is enough, so no local OCR engine is needed |
+| OCR | Adapter: the model reads the scan through the gateway for now, recorded for replay. Azure Document Intelligence can replace it in phase 7 | One real scanned page is enough, so no local OCR engine is needed, and this avoids a second cloud dependency before Azure exists |
 | LLM | Anthropic Python SDK behind our gateway, `claude-opus-5-5` by default, set in config | Matches the spec's model-agnostic gateway |
 
 ### How AI output is kept honest

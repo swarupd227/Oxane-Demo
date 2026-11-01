@@ -1,0 +1,13 @@
+{
+ "task": "classify",
+ "model": "claude-opus-5-5",
+ "text": "{\"documents\":[{\"file\":\"BAF_Financial_Statements_Q1_2026.pdf\",\"kind\":\"Financials\",\"title\":\"Bramble Auto Finance LLC Unaudited Consolidated Financial Statements for the quarter ended 31 March 2026\",\"dated\":\"2026-03-31\",\"version\":\"Q1 2026 unaudited\",\"effective\":null,\"amends_file\":null},{\"file\":\"BAF_Loan_Tape_2026-04.csv\",\"kind\":\"Loan tape\",\"title\":\"Bramble Auto Finance loan tape, cutoff 2026-04-30\",\"dated\":\"2026-04-30\",\"version\":\"April 2026\",\"effective\":null,\"amends_file\":null},{\"file\":\"BAF_Servicer_Report_April_2026.pdf\",\"kind\":\"Servicer report\",\"title\":\"Monthly Servicer Report: April 2026\",\"dated\":\"2026-04-30\",\"version\":\"April 2026\",\"effective\":null,\"amends_file\":null},{\"file\":\"Bramble_Amendment_No_1.pdf\",\"kind\":\"Amendment\",\"title\":\"Amendment No. 1 to Credit Agreement\",\"dated\":\"2026-02-20\",\"version\":\"Amendment No. 1\",\"effective\":\"2026-03-01\",\"amends_file\":\"Bramble_Credit_Agreement_Executed.pdf\"},{\"file\":\"Bramble_BBC_April_2026.xlsx\",\"kind\":\"Certificate\",\"title\":\"Borrowing Base Certificate, Collection Period ended 2026-04-30\",\"dated\":\"2026-04-30\",\"version\":\"April 2026\",\"effective\":null,\"amends_file\":null},{\"file\":\"Bramble_Credit_Agreement_Executed.pdf\",\"kind\":\"Agreement\",\"title\":\"Credit Agreement - Senior Secured Revolving Warehouse Facility\",\"dated\":\"2026-01-15\",\"version\":\"Execution Version\",\"effective\":null,\"amends_file\":null},{\"file\":\"Bramble_Fee_Letter.pdf\",\"kind\":\"Fee letter\",\"title\":\"Fee Letter: Senior Secured Revolving Warehouse Facility\",\"dated\":\"2026-01-15\",\"version\":\"Signed by lender\",\"effective\":null,\"amends_file\":null},{\"file\":\"Calderwood_Requirements.xlsx\",\"kind\":\"Requirements\",\"title\":\"Calderwood Bank plc: monitoring requirements\",\"dated\":null,\"version\":\"Undated\",\"effective\":null,\"amends_file\":null}]}",
+ "usage": {
+  "task": "classify",
+  "input_tokens": 4477,
+  "output_tokens": 1212,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 717,
+  "from_replay": false
+ }
+}

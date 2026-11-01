@@ -1,0 +1,379 @@
+{
+ "version": 1,
+ "facility_limit_cents": 25000000000,
+ "reserve_pct": "1",
+ "advance_rates": [
+  {
+   "pct": "85",
+   "effective_from": "2026-01-15",
+   "source": "Credit Agreement 2.3"
+  },
+  {
+   "pct": "82.5",
+   "effective_from": "2026-03-01",
+   "source": "Amendment No. 1, 2(a)"
+  }
+ ],
+ "lists": {
+  "us_states": [
+   "AL",
+   "AK",
+   "AZ",
+   "AR",
+   "CA",
+   "CO",
+   "CT",
+   "DE",
+   "FL",
+   "GA",
+   "HI",
+   "ID",
+   "IL",
+   "IN",
+   "IA",
+   "KS",
+   "KY",
+   "LA",
+   "ME",
+   "MD",
+   "MA",
+   "MI",
+   "MN",
+   "MS",
+   "MO",
+   "MT",
+   "NE",
+   "NV",
+   "NH",
+   "NJ",
+   "NM",
+   "NY",
+   "NC",
+   "ND",
+   "OH",
+   "OK",
+   "OR",
+   "PA",
+   "RI",
+   "SC",
+   "SD",
+   "TN",
+   "TX",
+   "UT",
+   "VT",
+   "VA",
+   "WA",
+   "WV",
+   "WI",
+   "WY",
+   "DC"
+  ],
+  "excluded_statuses": [
+   "CHARGED_OFF",
+   "REPO"
+  ],
+  "used_conditions": [
+   "USED"
+  ],
+  "schedule_4": null
+ },
+ "eligibility": [
+  {
+   "id": "E1",
+   "plain_english": "Days past due at the cut-off date must be 30 or fewer.",
+   "clause_ref": "Schedule 1, paragraph 1",
+   "clause_text": "No scheduled payment on the Receivable is more than 30 days past due.",
+   "test": {
+    "kind": "compare",
+    "op": "<=",
+    "left": {
+     "kind": "field",
+     "name": "days_past_due"
+    },
+    "right": {
+     "kind": "const",
+     "value": "30"
+    }
+   }
+  },
+  {
+   "id": "E2",
+   "plain_english": "The loan must not be charged off and the vehicle must not have been repossessed.",
+   "clause_ref": "Schedule 1, paragraph 2",
+   "clause_text": "The Receivable has not been charged off and the related Financed Vehicle has not been repossessed.",
+   "test": {
+    "kind": "member",
+    "value": {
+     "kind": "field",
+     "name": "status"
+    },
+    "list": "excluded_statuses",
+    "negate": true
+   }
+  },
+  {
+   "id": "E3",
+   "plain_english": "Original term must be 84 months or less.",
+   "clause_ref": "Schedule 1, paragraph 3",
+   "clause_text": "The original term of the Receivable is 84 months or less.",
+   "test": {
+    "kind": "compare",
+    "op": "<=",
+    "left": {
+     "kind": "field",
+     "name": "original_term"
+    },
+    "right": {
+     "kind": "const",
+     "value": "84"
+    }
+   }
+  },
+  {
+   "id": "E4",
+   "plain_english": "FICO score at origination must be 540 or higher.",
+   "clause_ref": "Schedule 1, paragraph 4",
+   "clause_text": "The Obligor's FICO score at origination is 540 or higher.",
+   "test": {
+    "kind": "compare",
+    "op": ">=",
+    "left": {
+     "kind": "field",
+     "name": "fico"
+    },
+    "right": {
+     "kind": "const",
+     "value": "540"
+    }
+   }
+  },
+  {
+   "id": "E5",
+   "plain_english": "Outstanding Balance must not exceed US$75,000. Mapped to current_balance (unpaid principal at the cut-off date).",
+   "clause_ref": "Schedule 1, paragraph 5",
+   "clause_text": "The Outstanding Balance of the Receivable does not exceed US$75,000.",
+   "test": {
+    "kind": "compare",
+    "op": "<=",
+    "left": {
+     "kind": "field",
+     "name": "current_balance"
+    },
+    "right": {
+     "kind": "const",
+     "value": "75000"
+    }
+   }
+  },
+  {
+   "id": "E6",
+   "plain_english": "Obligor's billing address must be in one of the 50 US states or DC. The tape gives obligor_state, not the billing address itself.",
+   "clause_ref": "Schedule 1, paragraph 6",
+   "clause_text": "The Obligor's billing address is in one of the fifty states of the United States or the District of Columbia.",
+   "test": {
+    "kind": "member",
+    "value": {
+     "kind": "field",
+     "name": "obligor_state"
+    },
+    "list": "us_states",
+    "negate": false
+   }
+  },
+  {
+   "id": "E7",
+   "plain_english": "Obligor's billing address must not be in a Restricted Jurisdiction. The schedules provided do not list which jurisdictions are Restricted Jurisdictions.",
+   "clause_ref": "Schedule 1, paragraph 7",
+   "clause_text": "The Obligor's billing address is not in a Restricted Jurisdiction.",
+   "test": {
+    "kind": "member",
+    "value": {
+     "kind": "field",
+     "name": "obligor_state"
+    },
+    "list": "schedule_4",
+    "negate": true
+   }
+  },
+  {
+   "id": "E8",
+   "plain_english": "The loan may have been modified at most once since origination.",
+   "clause_ref": "Schedule 1, paragraph 8",
+   "clause_text": "The terms of the Receivable have been modified no more than once since origination.",
+   "test": {
+    "kind": "compare",
+    "op": "<=",
+    "left": {
+     "kind": "field",
+     "name": "modification_count"
+    },
+    "right": {
+     "kind": "const",
+     "value": "1"
+    }
+   }
+  },
+  {
+   "id": "E9",
+   "plain_english": "APR must be between 6.00% and 29.99% inclusive. Limits are expressed in percent; confirm the tape's APR units.",
+   "clause_ref": "Schedule 1, paragraph 9",
+   "clause_text": "The annual percentage rate of the Receivable is not less than 6.00% and not more than 29.99%.",
+   "test": {
+    "kind": "between",
+    "value": {
+     "kind": "field",
+     "name": "apr"
+    },
+    "low": "6.00",
+    "high": "29.99"
+   }
+  },
+  {
+   "id": "E10",
+   "plain_english": "Vehicle model year must be no more than ten years before the year of origination.",
+   "clause_ref": "Schedule 1, paragraph 10",
+   "clause_text": "The model year of the Financed Vehicle is no more than ten years before the year of origination of the Receivable.",
+   "test": {
+    "kind": "compare",
+    "op": "<=",
+    "left": {
+     "kind": "subtract",
+     "left": {
+      "kind": "year_of",
+      "of": {
+       "kind": "field",
+       "name": "origination_date"
+      }
+     },
+     "right": {
+      "kind": "field",
+      "name": "model_year"
+     }
+    },
+    "right": {
+     "kind": "const",
+     "value": "10"
+    }
+   }
+  },
+  {
+   "id": "E11",
+   "plain_english": "The obligor must have made at least one scheduled payment.",
+   "clause_ref": "Schedule 1, paragraph 11",
+   "clause_text": "The Obligor has made at least one scheduled payment on the Receivable.",
+   "test": {
+    "kind": "compare",
+    "op": ">=",
+    "left": {
+     "kind": "field",
+     "name": "payments_made"
+    },
+    "right": {
+     "kind": "const",
+     "value": "1"
+    }
+   }
+  },
+  {
+   "id": "E12",
+   "plain_english": "The VIN must not appear on any other loan in the pool.",
+   "clause_ref": "Schedule 1, paragraph 12",
+   "clause_text": "The Financed Vehicle is identified by a Vehicle Identification Number that appears on no other Receivable in the Pool.",
+   "test": {
+    "kind": "unique",
+    "value": {
+     "kind": "field",
+     "name": "vin"
+    }
+   }
+  }
+ ],
+ "concentration": [
+  {
+   "id": "C1",
+   "plain_english": "Eligible receivables with obligors billed in any one state may not exceed 20% of the Eligible Pool Balance. The excess is an excess concentration amount.",
+   "clause_ref": "Schedule 2, row 1",
+   "clause_text": "Obligors with a billing address in any one state",
+   "limit_pct": "20",
+   "effective_from": null,
+   "group_by": {
+    "kind": "field",
+    "name": "obligor_state"
+   },
+   "where": null
+  },
+  {
+   "id": "C2",
+   "plain_english": "Eligible receivables from any one Dealer may not exceed 5% of the Eligible Pool Balance. Dealers under common ownership or trading under variations of one name count as one Dealer. The tape has dealer_name only, so common-ownership groupings cannot be identified from the tape alone.",
+   "clause_ref": "Schedule 2, row 2",
+   "clause_text": "Receivables originated by any one Dealer, treating Dealers under common ownership or trading under variations of one name as one Dealer",
+   "limit_pct": "5",
+   "effective_from": null,
+   "group_by": {
+    "kind": "field",
+    "name": "dealer_name"
+   },
+   "where": null
+  },
+  {
+   "id": "C3",
+   "plain_english": "Eligible receivables with an original term of more than 72 months may not exceed 25% of the Eligible Pool Balance.",
+   "clause_ref": "Schedule 2, row 3",
+   "clause_text": "Receivables with an original term of more than 72 months",
+   "limit_pct": "25",
+   "effective_from": null,
+   "group_by": null,
+   "where": {
+    "kind": "compare",
+    "op": ">",
+    "left": {
+     "kind": "field",
+     "name": "original_term"
+    },
+    "right": {
+     "kind": "const",
+     "value": "72"
+    }
+   }
+  },
+  {
+   "id": "C5",
+   "plain_english": "Eligible receivables secured by used vehicles may not exceed 70% of the Eligible Pool Balance.",
+   "clause_ref": "Schedule 2, row 4",
+   "clause_text": "Receivables secured by used Financed Vehicles",
+   "limit_pct": "70",
+   "effective_from": null,
+   "group_by": null,
+   "where": {
+    "kind": "member",
+    "value": {
+     "kind": "field",
+     "name": "vehicle_condition"
+    },
+    "list": "used_conditions",
+    "negate": false
+   }
+  },
+  {
+   "id": "C4",
+   "plain_english": "Added by Amendment No. 1 with effect from 1 March 2026. Eligible receivables with an origination FICO below 600 may not exceed 35% of the Eligible Pool Balance. It applies to Borrowing Base Certificates for Collection Periods ending on or after 1 March 2026. The amendment is also subject to the conditions to effectiveness in its Section 3.",
+   "clause_ref": "Amendment No. 1, Section 2(b) (Schedule 2, row 5)",
+   "clause_text": "5. Receivables with an Obligor FICO score at origination below 600: 35%",
+   "limit_pct": "35",
+   "effective_from": "2026-03-01",
+   "group_by": null,
+   "where": {
+    "kind": "compare",
+    "op": "<",
+    "left": {
+     "kind": "field",
+     "name": "fico"
+    },
+    "right": {
+     "kind": "const",
+     "value": "600"
+    }
+   }
+  }
+ ]
+}

@@ -146,10 +146,12 @@ export function ExceptionsPage() {
           </Button>
         }
       />
-      <SeedNotice>
-        Seed data: this queue comes from the answer key. Loans and recalculations are real engine
-        results.
-      </SeedNotice>
+      {data.seed && (
+        <SeedNotice>
+          Seed data: this queue comes from the answer key. Loans and recalculations are real engine
+          results.
+        </SeedNotice>
+      )}
 
       <div className="grid grid-cols-[26rem_minmax(0,1fr)] items-start gap-5">
         <Card className="sticky top-32 overflow-hidden">

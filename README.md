@@ -63,6 +63,29 @@ docker compose run --rm deal-kit pytest
 
 The answer key is for scoring only. The pipeline must never read `deal-kit/output/answer-key/`.
 
+## Record a pipeline run
+
+The workbench shows labelled seed data until a run exists. Recording needs a model key once. After that, replay works with no key and no network.
+
+1. Copy `.env.example` to `.env` and set `ANTHROPIC_API_KEY`. For Claude on Microsoft Foundry, set `LLM_PROVIDER=foundry` and the two Foundry values instead. Git ignores `.env`.
+2. Recreate the API container so it picks up the key.
+
+```bash
+docker compose up -d --force-recreate --no-deps api
+```
+
+3. Record the run. Responses are saved to `fixtures/llm` and the output to `fixtures/run`.
+
+```bash
+docker compose exec api python -m app.pipeline.run --mode record
+```
+
+4. Check that replay reproduces it without calling the model.
+
+```bash
+docker compose exec api python -m app.pipeline.run --mode replay
+```
+
 ## Test the engine
 
 Build the deal pack first, because the tests compare the engine with the answer key.
@@ -76,7 +99,8 @@ docker compose run --rm engine pytest
 | Path | Contents |
 |---|---|
 | `apps/web` | React workbench |
-| `services/api` | FastAPI service and database migrations |
+| `services/api` | FastAPI service, AI pipeline and database migrations |
+| `fixtures` | Recorded model responses and pipeline output |
 | `deal-kit` | `deal.yaml`, the document generators, the answer key and the independent checker |
 | `packages/engine` | Deterministic rules engine, borrowing base, reconciliation and covenants |
 | `docs` | Development plan |

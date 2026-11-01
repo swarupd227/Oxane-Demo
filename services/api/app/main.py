@@ -1,3 +1,4 @@
+import json
 import threading
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -14,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import get_session
 from app.deal import Deal, load_deal
-from app.engine_service import pack_path, read_key, rule_preview, validation_run
+from app.engine_service import active_files, pack_path, rule_preview, validation_run
 from app.models import OnboardingCase
 from app.seed import workbench
 
@@ -68,13 +69,16 @@ def get_case(session: SessionDep) -> CaseView:
 
 @app.get("/api/workbench")
 def get_workbench() -> dict[str, Any]:
+    recorded = settings.pipeline_dir / "workbench.json"
+    if recorded.exists():
+        return json.loads(recorded.read_text(encoding="utf-8"))
     return workbench()
 
 
 @app.get("/api/pack/{file_name}")
 def get_pack_file(file_name: str) -> FileResponse:
     # Only names from the pack list are served, so a path can never escape the folder.
-    if file_name not in read_key("pack").values():
+    if file_name not in active_files():
         raise HTTPException(status_code=404, detail="Not in the pack")
     return FileResponse(pack_path(file_name))
 

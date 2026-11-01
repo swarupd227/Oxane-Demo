@@ -198,10 +198,11 @@ export function RulesPage() {
         title="Rules from the agreement"
         summary={`${formatCount(data.rules.length)} tests, each shown three ways. The model drafts them. A deterministic engine runs them.`}
       />
-      <SeedNotice>
-        Seed data: rule set v1 was written by hand. The rule drafter arrives in phase 4. Previews
-        are real engine runs.
-      </SeedNotice>
+      {data.seed && (
+        <SeedNotice>
+          Seed data: rule set v1 was written by hand. Previews are real engine runs.
+        </SeedNotice>
+      )}
 
       {edit && (
         <div className="flex items-start gap-3 rounded-lg border border-warn/30 bg-warn-tint p-3 text-sm">

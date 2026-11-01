@@ -46,26 +46,48 @@ def pack_path(file_name: str) -> Path:
     return settings.deal_kit_output / "pack" / file_name
 
 
+def _pipeline_file(name: str) -> Path | None:
+    path = settings.pipeline_dir / name
+    return path if path.exists() else None
+
+
+def _active(name: str) -> Any:
+    """Use the pipeline's own output once a run exists. The key only backs the seed view."""
+    path = _pipeline_file(f"{name}.json")
+    return json.loads(path.read_text(encoding="utf-8")) if path else read_key(name)
+
+
+def reset() -> None:
+    """Forget cached inputs, after a pipeline run has replaced them."""
+    for cached in (rules, tape_rows, loans, certificate):
+        cached.cache_clear()
+
+
+def active_files() -> list[str]:
+    return list(_active("pack").values())
+
+
 @lru_cache
 def rules() -> RuleSet:
-    return load_ruleset(settings.ruleset_file.read_text(encoding="utf-8"))
+    path = _pipeline_file("ruleset.json") or settings.ruleset_file
+    return load_ruleset(path.read_text(encoding="utf-8"))
 
 
 @lru_cache
 def tape_rows() -> tuple[dict[str, str], ...]:
-    with pack_path(read_key("pack")["loan_tape"]).open(encoding="utf-8", newline="") as handle:
+    with pack_path(_active("pack")["loan_tape"]).open(encoding="utf-8", newline="") as handle:
         return tuple(csv.DictReader(handle))
 
 
 @lru_cache
 def loans() -> tuple[Loan, ...]:
-    columns = read_key("mapping")["columns"]
+    columns = _active("mapping")["columns"]
     return tuple(coerce_loan({columns[k]: v for k, v in row.items()}) for row in tape_rows())
 
 
 @lru_cache
 def certificate() -> Certificate:
-    book = load_workbook(pack_path(read_key("pack")["borrowing_base_certificate"]))
+    book = load_workbook(pack_path(_active("pack")["borrowing_base_certificate"]))
     sheet = book["BBC Summary"]
 
     def money(cell: str) -> int:
@@ -121,27 +143,43 @@ def _figures(result: RunResult) -> dict[str, Any]:
     }
 
 
+def _covenant_inputs() -> dict[str, Any]:
+    """Read from the statements after a pipeline run. The seed view uses the deal file."""
+    facts = _pipeline_file("facts.json")
+    if facts:
+        return json.loads(facts.read_text(encoding="utf-8"))
+    raw = load_deal().model_extra or {}
+    f, t, history = raw["financials"], raw["terms"], raw["servicer_history"]
+    return {
+        "financials": {name: f[name] for name in (
+            "total_equity", "goodwill", "intangibles", "related_party_receivables",
+            "subordinated_debt", "total_liabilities", "unrestricted_cash")},
+        "delinquency_history": [history["february_pct"], history["march_pct"]],
+        "covenants": {
+            "min_tangible_net_worth": t["min_tangible_net_worth_usd"],
+            "max_leverage_ratio": t["max_leverage_ratio"],
+            "min_liquidity": t["min_liquidity_usd"],
+            "subordinated_debt_cap": t["subordinated_debt_cap_usd"],
+            "delinquency_trigger_pct": t["delinquency_trigger_pct"],
+        },
+    }
+
+
 def _covenants() -> dict[str, Any]:
-    deal = load_deal()
-    raw = deal.model_extra or {}
-    f, t = raw["financials"], raw["terms"]
-    figures = Financials(
-        total_equity=f["total_equity"], goodwill=f["goodwill"], intangibles=f["intangibles"],
-        related_party_receivables=f["related_party_receivables"],
-        subordinated_debt=f["subordinated_debt"], total_liabilities=f["total_liabilities"],
-        unrestricted_cash=f["unrestricted_cash"],
-    )
+    facts = _covenant_inputs()
+    figures = Financials(**facts["financials"])
+    limits = facts["covenants"]
     terms = CovenantTerms(
-        min_tangible_net_worth=t["min_tangible_net_worth_usd"] // 1000,
-        max_leverage_ratio=Decimal(str(t["max_leverage_ratio"])),
-        min_liquidity=t["min_liquidity_usd"] // 1000,
-        subordinated_debt_cap=t["subordinated_debt_cap_usd"] // 1000,
+        min_tangible_net_worth=limits["min_tangible_net_worth"] // 1000,
+        max_leverage_ratio=Decimal(str(limits["max_leverage_ratio"])),
+        min_liquidity=limits["min_liquidity"] // 1000,
+        subordinated_debt_cap=limits["subordinated_debt_cap"] // 1000,
     )
-    history = raw["servicer_history"]
+    february, march, *_ = facts["delinquency_history"]
     april = delinquency_ratio(list(loans()))
     trigger = delinquency_trigger(
-        (Decimal(str(history["february_pct"])), Decimal(str(history["march_pct"])), april),
-        Decimal(str(t["delinquency_trigger_pct"])),
+        (Decimal(str(february)), Decimal(str(march)), april),
+        Decimal(str(limits["delinquency_trigger_pct"])),
     )
     return {
         "tests": [
@@ -150,7 +188,7 @@ def _covenants() -> dict[str, Any]:
         ],
         "leverage_without_carve_out": float(leverage_without_carve_out(figures)),
         "delinquency": {
-            "monthly_pct": [history["february_pct"], history["march_pct"], float(april)],
+            "monthly_pct": [february, march, float(april)],
             "average_pct": float(trigger.average_pct),
             "trigger_pct": float(trigger.trigger_pct),
             "tripped": trigger.tripped,

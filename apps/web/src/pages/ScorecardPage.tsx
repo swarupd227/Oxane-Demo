@@ -78,9 +78,9 @@ export function ScorecardPage() {
     },
     {
       name: "Processing cost",
-      formula: "Logged LLM and OCR usage for the pack",
+      formula: "Logged model usage for the pack",
       target: "Reported as measured",
-      value: null,
+      value: data.usage ? `US$${data.usage.cost_usd.toFixed(2)}, ${data.usage.calls} calls` : null,
     },
     {
       name: "Analyst effort",
@@ -103,8 +103,9 @@ export function ScorecardPage() {
         summary={`Oxane's success measures, each with its formula. ${processed} fields and rules in scope.`}
       />
       <SeedNotice>
-        Seed data: no model has run yet, so accuracy cannot be claimed. These rows fill in from the
-        real pipeline in phase 5.
+        {data.seed
+          ? "Seed data: no model has run yet, so accuracy cannot be claimed."
+          : "Accuracy rows fill in once the run is scored against the answer key in phase 5."}
       </SeedNotice>
 
       <Card className="overflow-hidden">

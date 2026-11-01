@@ -1,0 +1,79 @@
+"""The fields to extract, and platform fields to map to. Names and tiers only, never values."""
+
+# (name, tier, what to look for)
+FIELDS: tuple[tuple[str, int, str], ...] = (
+    ("Facility limit", 1, "The Commitment amount in the commitment schedule."),
+    ("Advance rate", 1, "The Advance Rate as stated in the credit agreement."),
+    ("Eligibility criteria", 1, "How many criteria the eligibility schedule lists."),
+    ("Concentration limits", 1, "How many limits the concentration schedule lists."),
+    ("Excess concentration treatment", 1, "How excess amounts affect the borrowing base."),
+    ("Reserve amount", 1, "The Reserve Amount."),
+    ("Delinquency trigger", 1, "The delinquency trigger test and its level."),
+    ("Minimum tangible net worth covenant", 1, "The covenant amount."),
+    ("Maximum leverage covenant", 1, "The covenant ratio."),
+    ("Minimum liquidity covenant", 1, "The covenant amount."),
+    ("Restricted jurisdictions", 1, "The list of Restricted Jurisdictions."),
+    ("Margin", 2, "The interest margin over the benchmark."),
+    ("Unused fee", 2, "The Unused Fee, in the fee letter."),
+    ("Interest period and payment date", 2, "Interest period length and payment day."),
+    ("Borrowing base reporting date", 2, "When the Borrowing Base Certificate is due."),
+    ("Financial statement reporting", 2, "Both the quarterly and the annual deadline."),
+    ("Revolving period end", 2, "The Revolving Period End Date."),
+    ("Final maturity", 2, "The Final Maturity Date."),
+    ("Event of default list", 2, "How many Events of Default are listed."),
+    ("Lender alert thresholds", 2, "How many alerts the lender requirements sheet lists."),
+    ("Borrower, parent and servicer names", 3, "The three party names."),
+    ("Lender and agent names", 3, "The lender and administrative agent."),
+    ("Governing law", 3, "The governing law."),
+    ("Signing date", 3, "The date of the agreement."),
+    ("Amendment dates", 3, "When Amendment No. 1 was signed and took effect."),
+    ("Notice addresses", 3, "The notice addresses of borrower and lender."),
+)
+
+TIERS = {name: tier for name, tier, _ in FIELDS}
+
+PLATFORM_FIELDS: dict[str, str] = {
+    "loan_id": "Unique loan number",
+    "vin": "Vehicle Identification Number",
+    "origination_date": "Date the loan was originated",
+    "first_payment_date": "Date of the first scheduled payment",
+    "maturity_date": "Final scheduled payment date",
+    "original_balance": "Principal at origination",
+    "current_balance": "Unpaid principal at the cut-off date",
+    "apr": "Annual percentage rate",
+    "original_term": "Original term in months",
+    "remaining_term": "Remaining term in months",
+    "payments_made": "Number of scheduled payments made",
+    "monthly_payment": "Scheduled monthly payment",
+    "fico": "FICO score at origination",
+    "obligor_state": "Obligor's state",
+    "obligor_zip3": "First three digits of the obligor's ZIP code",
+    "employment_type": "Obligor's employment type",
+    "stated_monthly_income": "Obligor's stated monthly income",
+    "payment_to_income": "Payment to income ratio",
+    "dealer_name": "Originating dealer",
+    "dealer_state": "Dealer's state",
+    "vehicle_make": "Vehicle make",
+    "vehicle_model": "Vehicle model",
+    "model_year": "Vehicle model year",
+    "vehicle_condition": "New or used",
+    "odometer_at_origination": "Mileage at origination",
+    "amount_financed": "Amount financed",
+    "vehicle_book_value": "Vehicle book value",
+    "loan_to_value": "Loan to value ratio",
+    "days_past_due": "Days past due at the cut-off date",
+    "last_payment_date": "Date of the last payment",
+    "next_due_date": "Date the next payment is due",
+    "modification_count": "Number of modifications",
+    "status": "Loan status",
+    "charge_off_date": "Charge-off date",
+    "charge_off_amount": "Charge-off amount",
+    "repossession_date": "Repossession date",
+    "servicer_code": "Servicer identifier",
+    "cutoff_date": "Pool cut-off date",
+}
+
+US_STATES = (
+    "AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ "
+    "NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC"
+).split()

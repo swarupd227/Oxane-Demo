@@ -20,9 +20,9 @@ export interface DocumentInfo {
   file: string;
   title: string;
   kind: string;
-  dated: string;
+  dated: string | null;
   version: string;
-  effective: string;
+  effective: string | null;
   size: string;
   note?: string;
   links_to?: string;
@@ -41,6 +41,9 @@ export interface Term {
   document: string;
   source: Citation | null;
   also_cited: Citation[];
+  original_value?: string;
+  amended_value?: string;
+  effective_from?: string;
 }
 
 export interface Rule {
@@ -88,6 +91,7 @@ export interface ExceptionItem {
 
 export interface Workbench {
   seed: boolean;
+  usage?: { model: string; calls: number; cost_usd: number };
   period_end: string;
   documents: DocumentInfo[];
   missing_documents: { name: string; reason: string }[];

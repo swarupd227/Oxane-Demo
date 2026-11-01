@@ -55,9 +55,9 @@ export function MappingPage() {
           )
         }
       />
-      <SeedNotice>
-        Seed data: the mapping comes from the answer key. The real mapper arrives in phase 4.
-      </SeedNotice>
+      {data.seed && (
+        <SeedNotice>Seed data: the mapping comes from the answer key.</SeedNotice>
+      )}
 
       <div className="grid grid-cols-[minmax(0,1fr)_24rem] items-start gap-5">
         <Card className="overflow-hidden">

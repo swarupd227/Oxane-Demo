@@ -99,7 +99,7 @@ function log(state: SessionState, action: string, reason?: string): AuditEntry[]
 
 function withEarlierWork(state: SessionState, terms: Term[]): SessionState {
   const earlier = terms.filter(
-    (term) => term.tier === 1 && term.status === "approved" && !LIVE_TERMS.has(term.name),
+    (term) => term.tier === 1 && term.confidence === "high" && !LIVE_TERMS.has(term.name),
   );
   const approvals = { ...state.termApprovals };
   const audit = [...state.audit];

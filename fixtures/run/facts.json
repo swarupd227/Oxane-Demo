@@ -1,0 +1,23 @@
+{
+ "covenants": {
+  "delinquency_trigger_pct": "6.0",
+  "max_leverage_ratio": "6.00",
+  "min_liquidity": 10000000,
+  "min_tangible_net_worth": 40000000,
+  "subordinated_debt_cap": 15000000
+ },
+ "delinquency_history": [
+  0.71,
+  0.76,
+  0.79
+ ],
+ "financials": {
+  "goodwill": 6000,
+  "intangibles": 3500,
+  "related_party_receivables": 2000,
+  "subordinated_debt": 12000,
+  "total_equity": 58000,
+  "total_liabilities": 320800,
+  "unrestricted_cash": 12600
+ }
+}

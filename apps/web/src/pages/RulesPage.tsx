@@ -32,7 +32,7 @@ function EditRuleDialog({ rule, onClose }: { rule: Rule; onClose: () => void }) 
     <Dialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title={`Change ${rule.id}`}
+      title={`Edit ${rule.id} threshold`}
       description={rule.plain_english}
     >
       <form
@@ -59,7 +59,7 @@ function EditRuleDialog({ rule, onClose }: { rule: Rule; onClose: () => void }) 
 
         <div className="rounded-lg bg-canvas p-3" aria-live="polite">
           <SectionLabel>What this would change</SectionLabel>
-          {!changed && <p className="mt-1 text-sm text-muted">Enter a new value to see.</p>}
+          {!changed && <p className="mt-1 text-sm text-muted">Enter a new threshold to preview the impact.</p>}
           {changed && preview.data && (
             <dl className="numeric mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               <dt className="text-muted">Loans becoming eligible</dt>
@@ -156,7 +156,7 @@ function RuleGroup(props: {
             <th className="py-2 pr-5">Clause as written</th>
             <th className="py-2 pr-5">Plain English</th>
             <th className="py-2 pr-5">Test logic</th>
-            <th className="py-2 pr-5">State</th>
+            <th className="py-2 pr-5">Status</th>
             <th>
               <span className="sr-only">Actions</span>
             </th>
@@ -195,12 +195,12 @@ export function RulesPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Rules from the agreement"
-        summary={`${formatCount(data.rules.length)} tests, each shown three ways. The model drafts them. A deterministic engine runs them.`}
+        title="Eligibility and concentration rules"
+        summary={`${formatCount(data.rules.length)} rules from Schedules 1 and 2, as amended.`}
       />
       {data.seed && (
         <SeedNotice>
-          Seed data: rule set v1 was written by hand. Previews are real engine runs.
+          Reference data: rule set v1 was entered manually. Previews are calculated.
         </SeedNotice>
       )}
 
@@ -219,7 +219,7 @@ export function RulesPage() {
       {data.rules.some((rule) => rule.status === "not_evaluated") && (
         <div className="flex items-center gap-3 rounded-lg bg-danger-tint p-3 text-sm">
           <CircleAlert aria-hidden className="size-4 shrink-0 text-danger" />
-          E7 cannot run until Schedule 4 arrives, so every result stays provisional.
+          E7 cannot run until Schedule 4 is received, so every result stays provisional.
         </div>
       )}
 
@@ -232,7 +232,7 @@ export function RulesPage() {
       />
       <RuleGroup
         title="Concentration limits"
-        summary="Schedule 2, as amended. The amount above each limit is cut, in schedule order."
+        summary="Schedule 2, as amended. The amount above each limit is deducted, in schedule order."
         rules={data.rules.filter((rule) => rule.group === "concentration")}
         onEdit={setEditing}
       />

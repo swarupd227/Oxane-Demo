@@ -26,7 +26,7 @@ export function bridgeSteps(run: RunResult): Step[] {
     steps.push({
       id: "C2",
       label: "Dealer concentration",
-      detail: "Sunrise Motors, once matched, is over the 5% limit",
+      detail: "Sunrise Motors, as matched, exceeds the 5% limit",
       amount: run.system.excess,
       drill: false,
     });
@@ -128,7 +128,7 @@ export function Bridge({ run, selected, onSelect }: BridgeProps) {
         })}
       </div>
       <Total
-        label={run.system.excess > 0 ? "System pool after excess" : "System eligible pool"}
+        label={run.system.excess > 0 ? "System eligible pool after excess concentration" : "System eligible pool"}
         value={run.system.eligible_pool - run.system.excess}
         note={`Unexplained: ${formatUsd(run.pool_bridge.unexplained)}`}
       />

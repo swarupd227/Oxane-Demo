@@ -279,7 +279,7 @@ def rule_views() -> list[dict[str, Any]]:
         {"id": rule.id, "group": "concentration", "plain_english": rule.plain_english,
          "clause_ref": rule.clause_ref, "clause_text": rule.clause_text,
          "logic": f"largest group <= {rule.limit_pct}% of eligible pool" if rule.group_by
-         else f"{describe(rule.where)} <= {rule.limit_pct}% of eligible pool",
+         else f"share({describe(rule.where)}) <= {rule.limit_pct}% of eligible pool",
          "threshold": None, "status": "ready",
          "effective_from": rule.effective_from.isoformat() if rule.effective_from else None}
         for rule in ruleset.concentration

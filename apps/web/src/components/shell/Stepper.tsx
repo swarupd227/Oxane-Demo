@@ -26,7 +26,7 @@ export function Stepper() {
   return (
     <nav aria-label="Onboarding steps" className="border-b border-line bg-surface px-6">
       <ol className="flex items-stretch gap-1">
-        {scenes.map((scene) => {
+        {scenes.map((scene, index) => {
           const active = scene.path === pathname;
           return (
             <li key={scene.path} className="relative flex-auto">
@@ -46,7 +46,7 @@ export function Stepper() {
                     active ? "bg-ink text-white" : "bg-sand text-muted",
                   )}
                 >
-                  {scene.number}
+                  {index + 1}
                 </span>
                 <span className="truncate">{scene.label}</span>
                 {counts[scene.path] && (

@@ -50,29 +50,31 @@ export function CommandPalette({
           No matching command.
         </Command.Empty>
         <Command.Group heading="Steps" className={groupHeadingClass}>
-          {scenes.map((scene) => (
+          {scenes.map((scene, index) => (
             <Command.Item
               key={scene.path}
-              value={`${scene.number} ${scene.label} ${scene.title}`}
+              value={`${index + 1} ${scene.label}`}
               className={itemClass}
               onSelect={() => run(() => navigate(scene.path))}
             >
-              <span className="numeric w-4 text-center text-muted">{scene.number}</span>
-              {scene.title}
+              <span className="numeric w-4 text-center text-muted">{index + 1}</span>
+              {scene.label}
             </Command.Item>
           ))}
         </Command.Group>
         <Command.Group heading="View" className={groupHeadingClass}>
           <Command.Item
-            value="presenter mode larger type"
+            value="large text"
             className={itemClass}
             onSelect={() => run(onTogglePresenter)}
           >
             <Presentation aria-hidden className="size-4 text-muted" />
-            {presenter ? "Turn off presenter mode" : "Turn on presenter mode"}
+            {presenter ? "Turn off large text" : "Turn on large text"}
           </Command.Item>
+        </Command.Group>
+        <Command.Group heading="Case" className={groupHeadingClass}>
           <Command.Item
-            value="reset demo start again"
+            value="reset sandbox case"
             className={itemClass}
             onSelect={() =>
               run(() => {
@@ -82,7 +84,7 @@ export function CommandPalette({
             }
           >
             <RotateCcw aria-hidden className="size-4 text-muted" />
-            Reset the demo
+            Reset sandbox case
           </Command.Item>
         </Command.Group>
       </Command.List>

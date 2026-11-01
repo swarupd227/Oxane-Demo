@@ -93,19 +93,19 @@ export function ScorecardPage() {
     <div>
       <PageHeader
         title="Scorecard"
-        summary="Oxane's success measures, scored against the answer key. Open a row for its formula."
+        summary="Results for case 0412 against the reference set. Open a row for its formula."
       />
       {data.available ? (
         <SeedNotice>{data.caveat}</SeedNotice>
       ) : (
-        <SeedNotice>Seed data: no model has run yet, so nothing can be scored.</SeedNotice>
+        <SeedNotice>Reference data: extraction has not run, so no results are available.</SeedNotice>
       )}
 
       {data.available && (
         <Card className="overflow-hidden">
           <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.1fr)] gap-4 border-b border-line px-5 py-2.5 text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
             <span className="pl-5">Measure</span>
-            <span>Demo target</span>
+            <span>Target</span>
             <span>Result</span>
           </div>
           {data.measures.map((measure) => (
@@ -115,11 +115,11 @@ export function ScorecardPage() {
       )}
 
       <div className="mt-4">
-        <SectionLabel>What this does not claim</SectionLabel>
+        <SectionLabel>Scope of these results</SectionLabel>
         <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-muted">
-          <li>No time saving is quoted. There is no Oxane baseline yet.</li>
-          <li>These figures are for a synthetic pack, not Oxane's real deals.</li>
-          <li>Double-pledging checks cover this pool only, not other lenders' data.</li>
+          <li>Time saving is not reported. No baseline is available.</li>
+          <li>Figures cover a synthetic document pack, not live facilities.</li>
+          <li>Double-pledging checks cover this pool only.</li>
         </ul>
       </div>
     </div>

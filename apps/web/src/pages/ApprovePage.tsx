@@ -46,11 +46,11 @@ export function ApprovePage() {
     <div>
       <PageHeader
         title="Approve and load"
-        summary="No data reaches the platform without a second analyst."
+        summary="Second-analyst review before the load file is released."
         actions={
           approved && (
             <Button size="lg" onClick={() => navigate("/results")}>
-              See the scorecard
+              View scorecard
               <ArrowRight aria-hidden className="size-4" />
             </Button>
           )
@@ -60,11 +60,11 @@ export function ApprovePage() {
       <div className="grid grid-cols-[minmax(0,1fr)_28rem] items-start gap-5">
         <div className="space-y-4">
           <Card className="p-5">
-            <h2 className="font-semibold">Change summary</h2>
+            <h2 className="font-semibold">Approval checklist</h2>
             <ul className="mt-2 divide-y divide-sand">
               <Check_
                 passed={readiness.tier1_approved}
-                label={`All ${tier1Count} Tier 1 values with a source approved`}
+                label={`All sourced Tier 1 terms approved (${tier1Count})`}
               />
               <Check_ passed={readiness.exceptions_worked} label="All exceptions worked" />
               <Check_ passed={readiness.run_complete} label="Validation run complete" />
@@ -114,7 +114,7 @@ export function ApprovePage() {
           <Card className="p-5">
             <h2 className="font-semibold">Open items carried forward</h2>
             <p className="mt-0.5 text-[0.8125rem] text-muted">
-              These wait on outside parties, so they stay open after approval and go in the load
+              Awaiting third parties. These remain open after approval and are included in the load
               file.
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
@@ -141,7 +141,7 @@ export function ApprovePage() {
               <h2 className="font-semibold">Audit log</h2>
               <StatusPill
                 status={state.chainIntact ? "approved" : "missing"}
-                label={state.chainIntact ? "Chain verified" : "Chain broken"}
+                label={state.chainIntact ? "Log integrity verified" : "Log integrity failed"}
               />
             </div>
             <ol tabIndex={0} aria-label="Audit log entries" className="max-h-72 overflow-y-auto">
@@ -152,7 +152,7 @@ export function ApprovePage() {
                     <span className="text-muted">: {entry.action}</span>
                     {entry.earlier && (
                       <span className="ml-2 rounded bg-sand px-1.5 py-0.5 text-xs text-muted">
-                        Before the demo
+                        Preloaded
                       </span>
                     )}
                   </p>
@@ -166,7 +166,7 @@ export function ApprovePage() {
         </div>
 
         <Card className="sticky top-32 p-5">
-          <SectionLabel>Signed in as</SectionLabel>
+          <SectionLabel>Acting as</SectionLabel>
           <div className="mt-2 flex items-center gap-2 rounded-lg bg-canvas p-1">
             {(["analyst", "approver"] as const).map((actor) => (
               <button
@@ -218,7 +218,7 @@ export function ApprovePage() {
                 Download load file
               </a>
               <p className="text-xs text-muted">
-                Demo layout. Mapping to Panorama's real format is a discovery task.
+                Sandbox output. This layout is not a Panorama import format.
               </p>
             </div>
           )}

@@ -15,7 +15,6 @@ docker compose up --build
 | Service | Address |
 |---|---|
 | Workbench | http://localhost:5180 |
-| Design system | http://localhost:5180/design |
 | API docs | http://localhost:8010/docs |
 | PostgreSQL | localhost:5546 |
 
@@ -91,6 +90,30 @@ docker compose exec api python -m app.pipeline.run --mode replay
 The session is an append-only log in PostgreSQL. A database trigger refuses updates and deletes, and each event carries the hash of the one before it. The API enforces four-eyes approval, so a preparer cannot approve their own case. The load file exists only after approval, and "Reset the demo" starts a new session without deleting the old one.
 
 Sign-in arrives with Azure in phase 7. Until then the analyst name is whatever the client sends, so the API limits it to the two demo roles.
+
+## Rehearse
+
+The browser suite covers the full path, every screen, failure drills and keyboard control. Run the `npm install` line once.
+
+```bash
+docker compose --profile tools run --rm e2e npm install
+```
+
+```bash
+docker compose --profile tools run --rm e2e npx playwright test --project=stage
+```
+
+Record the fallback videos into `tests/e2e/fallback-recordings`:
+
+```bash
+docker compose --profile tools run --rm e2e npx playwright test --project=fallback
+```
+
+To measure accuracy across fresh model runs, which needs a key and costs about US$1 a run:
+
+```bash
+docker compose exec api python -m app.evaluate --runs 3
+```
 
 ## Test the engine
 

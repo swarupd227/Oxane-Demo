@@ -89,7 +89,7 @@ export function IntakePage() {
     <div>
       <PageHeader
         title="Document intake"
-        summary="Know what was received, and what is missing, before anyone reads a page."
+        summary="Documents received, classified by type, version and effective date."
         actions={
           classified && (
             <Button size="lg" onClick={() => navigate("/terms")}>
@@ -101,7 +101,7 @@ export function IntakePage() {
       />
       {data?.seed && (
         <SeedNotice>
-          Seed data: this step shows the expected result. No model has run yet.
+          Reference data: expected classification. Extraction has not run for this case.
         </SeedNotice>
       )}
 
@@ -125,10 +125,10 @@ export function IntakePage() {
           )}
         >
           <UploadCloud aria-hidden className="size-8 text-muted" />
-          <span className="mt-3 text-lg font-medium">Drop the document pack here</span>
+          <span className="mt-3 text-lg font-medium">Sandbox document pack</span>
           <span className="mt-1 text-sm text-muted">8 files for onboarding case 0412</span>
           <span className="mt-4 inline-flex h-10 items-center rounded-lg bg-ink px-4 text-sm font-medium text-white">
-            Upload pack
+            Load document pack
           </span>
         </button>
       )}

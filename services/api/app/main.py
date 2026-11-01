@@ -113,12 +113,13 @@ def get_load_file(session: SessionDep) -> JSONResponse:
     run = current_workbench()
     state = case_session.view(session, run)
     if not state["approvedAt"]:
-        raise HTTPException(status_code=409, detail="The load file needs a second analyst first")
+        raise HTTPException(status_code=409,
+                            detail="The load file is available after second-analyst approval")
     result = validation_run(state["dealerMatched"])
     edits = state["termEdits"]
     return JSONResponse(
         {
-            "note": "Demo layout, not a Panorama format. All data is synthetic.",
+            "note": "Sandbox output, not a Panorama import format. All data is synthetic.",
             "case": load_deal().case.number,
             "approved_at": state["approvedAt"],
             "prepared_by": case_session.ACTOR_NAMES[case_session.ANALYST],
@@ -149,7 +150,7 @@ def get_scorecard(session: SessionDep) -> dict[str, Any]:
 def get_pack_file(file_name: str) -> FileResponse:
     # Only names from the pack list are served, so a path can never escape the folder.
     if file_name not in active_files():
-        raise HTTPException(status_code=404, detail="Not in the pack")
+        raise HTTPException(status_code=404, detail="File not in the document pack")
     return FileResponse(pack_path(file_name))
 
 

@@ -122,6 +122,20 @@ def check_tape(rows: list[dict[str, str]], calc: dict, rules: dict, exceptions: 
     check(low_fico <= pool * Decimal("0.35"), "FICO below 600 is under 35%")
     check(used <= pool * Decimal("0.70"), "Used vehicles are under 70%")
 
+    late = [row for row in rows if int(row["DPD"]) > 0]
+    check(all(row["NextDueDate"] < row["CutoffDate"] for row in late),
+          "Every past-due loan has a next due date before the cut-off")
+    current = [row for row in rows if int(row["DPD"]) == 0]
+    check(all(row["NextDueDate"] > row["CutoffDate"] for row in current),
+          "Every current loan has a next due date after the cut-off")
+    check(all(row["LastPmtDate"] < row["NextDueDate"] for row in rows),
+          "Every last payment comes before the next due date")
+    prefixes = defaultdict(set)
+    for row in rows:
+        prefixes[row["BorrZip3"]].add(row["BorrState"])
+    check(all(len(states) == 1 for code, states in prefixes.items() if code),
+          "No ZIP prefix appears in two states")
+
     x4 = exceptions["X4"]
     total_x4 = sum((balances[i] for i in x4["loan_ids"]), ZERO)
     check(x4["loans"] == 41, "X4: 41 loans")

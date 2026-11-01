@@ -8,6 +8,7 @@ can never silently reuse an old answer.
 
 import hashlib
 import json
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -37,6 +38,7 @@ class Usage:
     cache_read_tokens: int = 0
     cache_write_tokens: int = 0
     from_replay: bool = False
+    seconds: float = 0.0
 
     def cost_usd(self, model: str) -> float:
         rates = PRICES.get(model)
@@ -146,8 +148,10 @@ class Gateway:
             if self.client_factory is None:
                 raise ModelError("No model client is configured")
             self._client = self.client_factory()
+        started = time.perf_counter()
         text, usage = self._client.request(payload)
-        usage = Usage(**{**asdict(usage), "task": task})
+        usage = Usage(**{**asdict(usage), "task": task,
+                         "seconds": round(time.perf_counter() - started, 1)})
         self.usage.append(usage)
         parsed = schema.model_validate_json(text)  # Refuse to save an answer that fails here.
         if self.mode == "record":

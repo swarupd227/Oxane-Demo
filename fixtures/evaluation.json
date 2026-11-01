@@ -1,0 +1,236 @@
+[
+ {
+  "run": 1,
+  "status": "completed",
+  "seconds": 199,
+  "measures": {
+   "Field-level accuracy, Tier 1, before review": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Field-level accuracy, Tier 1, after review": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Field-level accuracy, Tier 2 and 3": {
+    "value": "15 of 15",
+    "details": []
+   },
+   "Material errors and omissions": {
+    "value": "0",
+    "details": []
+   },
+   "Exceptions found": {
+    "value": "10 of 10",
+    "details": []
+   },
+   "False items": {
+    "value": "1",
+    "details": [
+     "Q1"
+    ]
+   },
+   "Rule results": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Exception rate": {
+    "value": "11 of 43 (25.6%)",
+    "details": []
+   },
+   "Processing cost": {
+    "value": "US$0.97",
+    "details": [
+     "9 calls to claude-opus-5-5",
+     "44,961 tokens outside the cache"
+    ]
+   },
+   "Pipeline run time": {
+    "value": "199 s",
+    "details": []
+   },
+   "Analyst effort": {
+    "value": "0 actions, 0 terms approved",
+    "details": [
+     "0 more were logged as worked before the demo"
+    ]
+   },
+   "Onboarding time": {
+    "value": "Not finished yet",
+    "details": []
+   }
+  },
+  "queue": [
+   "X1",
+   "X2",
+   "X3",
+   "X4",
+   "X5",
+   "X6",
+   "X7",
+   "X8",
+   "X9",
+   "X10",
+   "Q1"
+  ],
+  "low_confidence": [
+   "Facility limit",
+   "Delinquency trigger"
+  ]
+ },
+ {
+  "run": 2,
+  "status": "completed",
+  "seconds": 200,
+  "measures": {
+   "Field-level accuracy, Tier 1, before review": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Field-level accuracy, Tier 1, after review": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Field-level accuracy, Tier 2 and 3": {
+    "value": "13 of 15",
+    "details": [
+     "Financial statement reporting: Not found",
+     "Amendment dates: Dated 20 February 2026; effective date not stated"
+    ]
+   },
+   "Material errors and omissions": {
+    "value": "0",
+    "details": []
+   },
+   "Exceptions found": {
+    "value": "10 of 10",
+    "details": []
+   },
+   "False items": {
+    "value": "0",
+    "details": []
+   },
+   "Rule results": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Exception rate": {
+    "value": "10 of 43 (23.3%)",
+    "details": []
+   },
+   "Processing cost": {
+    "value": "US$0.59",
+    "details": [
+     "9 calls to claude-opus-5-5",
+     "44,841 tokens outside the cache"
+    ]
+   },
+   "Pipeline run time": {
+    "value": "200 s",
+    "details": []
+   },
+   "Analyst effort": {
+    "value": "0 actions, 0 terms approved",
+    "details": [
+     "0 more were logged as worked before the demo"
+    ]
+   },
+   "Onboarding time": {
+    "value": "Not finished yet",
+    "details": []
+   }
+  },
+  "queue": [
+   "X1",
+   "X2",
+   "X3",
+   "X4",
+   "X5",
+   "X6",
+   "X7",
+   "X8",
+   "X9",
+   "X10"
+  ],
+  "low_confidence": [
+   "Facility limit"
+  ]
+ },
+ {
+  "run": 3,
+  "status": "completed",
+  "seconds": 203,
+  "measures": {
+   "Field-level accuracy, Tier 1, before review": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Field-level accuracy, Tier 1, after review": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Field-level accuracy, Tier 2 and 3": {
+    "value": "14 of 15",
+    "details": [
+     "Amendment dates: Signed 20 February 2026; effective date not stated"
+    ]
+   },
+   "Material errors and omissions": {
+    "value": "0",
+    "details": []
+   },
+   "Exceptions found": {
+    "value": "10 of 10",
+    "details": []
+   },
+   "False items": {
+    "value": "0",
+    "details": []
+   },
+   "Rule results": {
+    "value": "11 of 11",
+    "details": []
+   },
+   "Exception rate": {
+    "value": "10 of 43 (23.3%)",
+    "details": []
+   },
+   "Processing cost": {
+    "value": "US$0.96",
+    "details": [
+     "9 calls to claude-opus-5-5",
+     "45,596 tokens outside the cache"
+    ]
+   },
+   "Pipeline run time": {
+    "value": "203 s",
+    "details": []
+   },
+   "Analyst effort": {
+    "value": "0 actions, 0 terms approved",
+    "details": [
+     "0 more were logged as worked before the demo"
+    ]
+   },
+   "Onboarding time": {
+    "value": "Not finished yet",
+    "details": []
+   }
+  },
+  "queue": [
+   "X1",
+   "X2",
+   "X3",
+   "X4",
+   "X5",
+   "X6",
+   "X7",
+   "X8",
+   "X9",
+   "X10"
+  ],
+  "low_confidence": [
+   "Facility limit"
+  ]
+ }
+]

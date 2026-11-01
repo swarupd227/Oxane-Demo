@@ -66,6 +66,14 @@ STATE_WEIGHTS = {
     "IN": 1.5, "KY": 1.5, "MI": 1.5, "VA": 1.5,
 }
 
+# First three ZIP digits by state, from the USPS allocation.
+ZIP3_RANGES = {
+    "TX": (750, 799), "FL": (320, 349), "CA": (900, 961), "GA": (300, 319), "NC": (270, 289),
+    "OH": (430, 458), "AZ": (850, 865), "TN": (370, 385), "IL": (600, 629), "PA": (150, 196),
+    "SC": (290, 299), "AL": (350, 369), "OK": (730, 749), "LA": (700, 714), "MO": (630, 658),
+    "NV": (889, 898), "IN": (460, 479), "KY": (400, 427), "MI": (480, 499), "VA": (220, 246),
+}
+
 MAKES = {
     "Toyota": ["Camry", "Corolla", "RAV4", "Tacoma"],
     "Ford": ["F-150", "Escape", "Explorer", "Fusion"],
@@ -302,6 +310,33 @@ def _plant_x6(rows: list[dict[str, Any]], pool: list[int], names: list[str],
     return groups
 
 
+def _finish_rows(rows: list[dict[str, Any]], cutoff: date) -> None:
+    """Make ZIP codes and payment dates agree with the rest of each row.
+
+    This runs after planting and uses no random numbers, so no balance, rule
+    result or planted exception can change.
+    """
+    for row in rows:
+        ranges = ZIP3_RANGES.get(row["obligor_state"])
+        if ranges:
+            low, high = ranges
+            row["obligor_zip3"] = f"{low + int(row['obligor_zip3']) % (high - low + 1):03d}"
+        else:
+            row["obligor_zip3"] = ""
+
+        due_day = row["first_payment_date"].day
+        due = date(cutoff.year, cutoff.month, min(due_day, 28))
+        if due > cutoff:
+            due = _add_months(due, -1)
+        if row["days_past_due"]:
+            # The oldest unpaid instalment fell due this many days before the cut-off.
+            row["next_due_date"] = cutoff - timedelta(days=row["days_past_due"])
+            row["last_payment_date"] = _add_months(row["next_due_date"], -1)
+        else:
+            row["last_payment_date"] = due
+            row["next_due_date"] = _add_months(due, 1)
+
+
 def _format_date(value: date | None) -> str:
     return "" if value is None else value.strftime("%Y-%m-%d")
 
@@ -350,6 +385,7 @@ def generate_tape(deal: dict[str, Any]) -> Tape:
     remaining = remaining[planted["x5_shared_vins"] * 2:]
     x6 = _plant_x6(rows, remaining, planted["x6_dealer_names"], planted["x6_dealer_share_pct"])
     x9 = _plant_x9(rows, planted["x9_mixed_date_rows"], rng)
+    _finish_rows(rows, cutoff)
 
     return Tape(rows=rows, planted={
         "baseline": baseline, "x4_loans": x4, "x5_clusters": x5, "x6_groups": x6,

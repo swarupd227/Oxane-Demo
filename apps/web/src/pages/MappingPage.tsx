@@ -44,7 +44,7 @@ export function MappingPage() {
         actions={
           state.mappingAccepted ? (
             <Button size="lg" onClick={() => navigate("/validation")}>
-              Go to validation
+              View validation
               <ArrowRight aria-hidden className="size-4" />
             </Button>
           ) : (
@@ -56,7 +56,7 @@ export function MappingPage() {
         }
       />
       {data.seed && (
-        <SeedNotice>Seed data: the mapping comes from the answer key.</SeedNotice>
+        <SeedNotice>Reference data: mapping is from the reference set.</SeedNotice>
       )}
 
       <div className="grid grid-cols-[minmax(0,1fr)_24rem] items-start gap-5">
@@ -102,7 +102,7 @@ export function MappingPage() {
         <div className="sticky top-32 space-y-4">
           <Card className="p-5">
             <h2 className="font-semibold">Lender requirements</h2>
-            <p className="text-[0.8125rem] text-muted">What Calderwood asked to see in the platform.</p>
+            <p className="text-[0.8125rem] text-muted">Reporting fields required by Calderwood Bank plc.</p>
             <ul className="mt-2">
               {requirements.map((item) => (
                 <RequirementRow key={item.name} item={item} />
@@ -116,7 +116,8 @@ export function MappingPage() {
             </div>
             <p className="numeric mt-2 text-2xl font-semibold tracking-tight">{dates.mixed_rows} rows</p>
             <p className="mt-1 text-[0.8125rem] leading-snug text-muted">
-              Mixed MM/DD and DD/MM. {dates.method}. {dates.uncertain} row stays uncertain.
+              Mixed MM/DD and DD/MM. {dates.method}. {dates.uncertain} {dates.uncertain === 1 ? "row remains" : "rows remain"}{" "}
+              unresolved.
             </p>
           </Card>
         </div>

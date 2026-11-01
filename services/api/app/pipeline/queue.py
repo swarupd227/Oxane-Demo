@@ -6,6 +6,7 @@ should be, which is what lets the scorecard measure found and false items.
 
 from typing import Any
 
+from app.pipeline.assemble import long_date
 from app.pipeline.checks import DateReview
 
 
@@ -24,8 +25,8 @@ def build_queue(terms: list[dict[str, Any]], problems: list[dict[str, Any]],
             "title": "Advance rate changed by Amendment No. 1", "owner": "Onboarding analyst",
             "where": rate["clause"],
             "evidence": [f"Credit Agreement 2.3 states {rate['original_value']}.",
-                         f"The amendment replaces it with {rate['amended_value']} from "
-                         f"{rate['effective_from']}."],
+                         f"Amendment No. 1 replaces it with {rate['amended_value']} from "
+                         f"{long_date(rate['effective_from'])}."],
             "suggestion": f"Confirm {rate['amended_value']} for the April period.",
             "actions": ["accept"], "tier1": True, "source": rate["source"],
         })
@@ -45,9 +46,9 @@ def build_queue(terms: list[dict[str, Any]], problems: list[dict[str, Any]],
     if limit["confidence"] == "low":
         items.append({
             "id": "X3", "type": "ambiguous", "label": "Low confidence",
-            "title": "Facility limit read from a poor scan", "owner": "Onboarding analyst",
+            "title": "Facility limit read from a low-quality scan", "owner": "Onboarding analyst",
             "where": limit["clause"],
-            "evidence": ["The page is an image.", f"The value reads as {limit['value']}."],
+            "evidence": ["Annex A is an image-only page.", f"The value reads as {limit['value']}."],
             "suggestion": "Confirm against the signed page.", "actions": ["accept"],
             "tier1": True, "source": limit["source"],
         })
@@ -58,7 +59,7 @@ def build_queue(terms: list[dict[str, Any]], problems: list[dict[str, Any]],
                 "id": "X4", "type": "conflicting", "label": "Certificate vs tape",
                 "title": f"{line['loans']} loans over 30 days past due counted as eligible",
                 "owner": "Borrower", "where": "Borrowing base certificate and loan tape",
-                "evidence": ["The certificate tests a different past-due limit from Schedule 1.",
+                "evidence": ["The certificate tests 60 days past due. Schedule 1 says 30.",
                              f"{line['loans']} loans are affected.",
                              f"They total US${line['amount']:,.2f}."],
                 "suggestion": "Query the borrower and ask for a corrected certificate.",
@@ -93,15 +94,16 @@ def build_queue(terms: list[dict[str, Any]], problems: list[dict[str, Any]],
     for label, page in blanks:
         items.append({
             "id": "X7", "type": "missing", "label": "Blank field",
-            "title": f"The servicer report has no figure for {label.replace(' (US$)', '')}",
+            "title": f"Servicer report has no figure for {label.replace(' (US$)', '').lower()}",
             "owner": "Servicer", "where": f"Servicer report, page {page}",
             "evidence": [f"{label} has no value."],
-            "suggestion": "Ask the servicer for the figure.", "actions": ["query"],
+            "suggestion": "Request the figure from the servicer.", "actions": ["query"],
         })
 
     derived = [item for item in requirements if item["status"] == "derived"]
     for number, requirement in enumerate(derived):
-        evidence = [f"Formula: {requirement['detail']}."]
+        expression = requirement["detail"].removeprefix("Formula: ").rstrip(".")
+        evidence = [f"Formula: {expression}."]
         if "APR" in requirement["requirement"]:
             evidence.insert(0, f"Calculated from the tape: {run['weighted_average_apr']:.2f}%.")
         items.append({
@@ -119,24 +121,29 @@ def build_queue(terms: list[dict[str, Any]], problems: list[dict[str, Any]],
             "title": f"Origination dates mix formats in {dates.mixed_rows} rows",
             "owner": "Onboarding analyst", "where": "Loan tape, origination date column",
             "evidence": ["Each row was resolved against its first payment date.",
-                         f"{len(dates.uncertain_rows)} rows stay uncertain."],
+                         f"{len(dates.uncertain_rows)} rows remain unresolved."],
             "suggestion": "Accept the resolution.", "actions": ["accept"],
         })
 
     if formula["parts"]:
+        clauses = sorted({"1.1" if "Definition" in part["clause"] else part["clause"]
+                          for part in formula["parts"]})
+        expression = formula["formula"].removeprefix(f"{formula['term']} = ")
+        # The model may remark on what it was shown, which means nothing to an analyst.
+        conditions = [line for line in formula["conditions"] if "provided" not in line.lower()]
         items.append({
             "id": "X10", "type": "ambiguous", "label": "Cross-reference",
             "title": f"{formula['term']} depends on more than one clause",
             "owner": "Onboarding analyst",
-            "where": ", ".join(part["clause"] for part in formula["parts"]),
-            "evidence": [f"Full formula: {formula['formula']}."],
+            "where": "Credit Agreement " + ", ".join(clauses),
+            "evidence": [f"{formula['term']} = {expression}.", *conditions[:4]],
             "suggestion": "Confirm the full formula.", "actions": ["accept"], "tier1": True,
             "source": next((p["source"] for p in formula["parts"] if p["source"]), None),
         })
 
     for number, problem in enumerate(problems, start=1):
         items.append({
-            "id": f"Q{number}", "type": "ambiguous", "label": "Needs checking",
+            "id": f"Q{number}", "type": "ambiguous", "label": "Unverified",
             "title": f"{problem['field']} could not be confirmed", "owner": "Onboarding analyst",
             "where": problem["clause"], "evidence": [problem["why"]],
             "suggestion": "Check the value against the source.", "actions": ["accept"],

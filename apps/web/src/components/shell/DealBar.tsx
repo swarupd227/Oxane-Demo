@@ -18,8 +18,8 @@ const caseStatuses: Record<CaseStatus, { label: string; className: string }> = {
 
 const modes: Record<LlmMode, { label: string; hint: string; icon: typeof Radio }> = {
   replay: {
-    label: "Replay",
-    hint: "Results come from a recorded run. No model is being called.",
+    label: "Recorded run",
+    hint: "Results are from a recorded run. No model calls are being made.",
     icon: Rewind,
   },
   record: {
@@ -117,13 +117,13 @@ export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <Tooltip content="All documents and data are invented for this demo. Not connected to Panorama.">
+        <Tooltip content="Sandbox environment. All documents and data are synthetic. Not connected to Panorama.">
           <span
             tabIndex={0}
             className="inline-flex h-7 items-center gap-1.5 rounded-md bg-ink px-2.5 text-xs font-medium text-white"
           >
             <FlaskConical aria-hidden className="size-3.5 text-accent" />
-            Synthetic data
+            Sandbox
           </span>
         </Tooltip>
         {data && <ModeLabel mode={data.llm_mode} />}

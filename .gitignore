@@ -11,4 +11,7 @@ __pycache__/
 *.log
 .DS_Store
 deal-kit/output/
+tests/e2e/test-results/
+tests/e2e/fallback-recordings/
 .claude/settings.local.json
+tests/e2e/rehearsal-*.log

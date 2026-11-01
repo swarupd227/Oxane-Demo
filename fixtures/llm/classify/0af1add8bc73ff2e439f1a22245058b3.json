@@ -1,0 +1,14 @@
+{
+ "task": "classify",
+ "model": "claude-opus-5-5",
+ "text": "{\"documents\":[{\"file\":\"BAF_Financial_Statements_Q1_2026.pdf\",\"kind\":\"Financials\",\"title\":\"Financials: Bramble Auto Finance LLC unaudited consolidated financial statements, quarter ended 31 Mar 2026\",\"dated\":\"2026-03-31\",\"version\":\"Unaudited Q1 2026\",\"effective\":null,\"amends_file\":null},{\"file\":\"BAF_Loan_Tape_2026-04.csv\",\"kind\":\"Loan tape\",\"title\":\"Loan tape: Bramble Auto Finance loan-level data, cutoff 30 Apr 2026\",\"dated\":\"2026-04-30\",\"version\":\"2026-04\",\"effective\":null,\"amends_file\":null},{\"file\":\"BAF_Servicer_Report_April_2026.pdf\",\"kind\":\"Servicer report\",\"title\":\"Servicer report: Bramble Auto Receivables I LLC monthly report, collection period ended 30 Apr 2026\",\"dated\":\"2026-04-30\",\"version\":\"April 2026\",\"effective\":null,\"amends_file\":null},{\"file\":\"Bramble_Amendment_No_1.pdf\",\"kind\":\"Amendment\",\"title\":\"Amendment: Amendment No. 1 to Credit Agreement dated 15 Jan 2026, signed 20 Feb 2026\",\"dated\":\"2026-02-20\",\"version\":\"Amendment No. 1\",\"effective\":\"2026-03-01\",\"amends_file\":\"Bramble_Credit_Agreement_Executed.pdf\"},{\"file\":\"Bramble_BBC_April_2026.xlsx\",\"kind\":\"Certificate\",\"title\":\"Certificate: Bramble Auto Receivables I LLC borrowing base certificate, collection period ended 30 Apr 2026\",\"dated\":\"2026-04-30\",\"version\":\"April 2026\",\"effective\":null,\"amends_file\":null},{\"file\":\"Bramble_Credit_Agreement_Executed.pdf\",\"kind\":\"Agreement\",\"title\":\"Agreement: Bramble Auto Receivables I LLC senior secured revolving warehouse credit agreement, 15 Jan 2026\",\"dated\":\"2026-01-15\",\"version\":\"Execution Version\",\"effective\":null,\"amends_file\":null},{\"file\":\"Bramble_Fee_Letter.pdf\",\"kind\":\"Fee letter\",\"title\":\"Fee letter: Bramble Auto Receivables I LLC senior secured revolving warehouse facility, 15 Jan 2026\",\"dated\":\"2026-01-15\",\"version\":\"Lender-signed\",\"effective\":null,\"amends_file\":null},{\"file\":\"Calderwood_Requirements.xlsx\",\"kind\":\"Requirements\",\"title\":\"Requirements: Calderwood Bank plc monitoring requirements\",\"dated\":null,\"version\":\"Undated\",\"effective\":null,\"amends_file\":null}]}",
+ "usage": {
+  "task": "classify",
+  "input_tokens": 4505,
+  "output_tokens": 1547,
+  "cache_read_tokens": 717,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 13.6
+ }
+}

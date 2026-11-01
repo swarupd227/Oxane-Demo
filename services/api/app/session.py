@@ -21,6 +21,7 @@ ANALYST = "analyst"
 APPROVER = "approver"
 ACTOR_NAMES = {ANALYST: "Onboarding analyst", APPROVER: "Second analyst"}
 GENESIS = "0" * 64
+OUTCOME_LABELS = {"accepted": "Accepted", "queried": "Query drafted", "escalated": "Escalated"}
 
 # These are worked live on stage. Everything else was done before the demo, and says so.
 LIVE_TERMS = {"Facility limit", "Advance rate"}
@@ -50,14 +51,14 @@ def _describe(event: CaseEvent) -> tuple[str, str | None]:
     """The audit line for an event, and its reason."""
     p = event.payload
     return {
-        "intake-done": ("Uploaded 8-file document pack", None),
+        "intake-done": ("Loaded 8-file document pack", None),
         "approve-term": (f"Approved {p.get('name')}", None),
         "bulk-approve": (f"Bulk approved {len(p.get('names', []))} Tier 2 and 3 values", None),
-        "queue-term": (f"Sent {p.get('name')} to the queue", None),
+        "queue-term": (f"Held {p.get('name')} for review", None),
         "edit-term": (f"Edited {p.get('name')} to {p.get('value')}", p.get("reason")),
         "accept-mapping": ("Accepted tape mapping", None),
         "run": ("Ran the April tape: 16 rules run, E7 not evaluated", None),
-        "work-exception": (f"{p.get('id')}: {p.get('outcome')}", p.get("note")),
+        "work-exception": (f"{p.get('id')}: {OUTCOME_LABELS.get(p.get('outcome'))}", p.get("note")),
         "propose-rule": (f"Proposed {p.get('rule_id')}: {p.get('from')} to {p.get('to')}",
                          p.get("reason")),
         "decline-rule": (f"Declined rule change to {p.get('rule_id')}", p.get("reason")),
@@ -160,7 +161,7 @@ def open_items(state: dict[str, Any], workbench: dict[str, Any]) -> list[str]:
     items = [f"{item['id']}: {item['title']} ({item['owner']})"
              for item in workbench["exceptions"]
              if item.get("blocking") and state["exceptions"].get(item["id"]) != "accepted"]
-    items += [f"{term['name']}: open until the source arrives"
+    items += [f"{term['name']}: open pending source document"
               for term in workbench["terms"] if term["status"] == "missing"]
     return items
 
@@ -180,7 +181,7 @@ def readiness(state: dict[str, Any], workbench: dict[str, Any]) -> dict[str, boo
 READINESS_TEXT = {
     "tier1_approved": "Every Tier 1 value needs an approval first",
     "exceptions_worked": "Every exception must be worked first",
-    "run_complete": "The validation run has not been done",
+    "run_complete": "The validation run is not complete",
     "no_rule_pending": "A rule change is still waiting for a decision",
 }
 
@@ -188,11 +189,11 @@ READINESS_TEXT = {
 def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, Any], actor: str,
            kind: str, payload: dict[str, Any]) -> None:
     if actor not in ACTOR_NAMES:
-        raise Refused("Unknown analyst")
+        raise Refused("User not recognised")
     if state["approvedAt"]:
         raise Refused("This case is approved and can no longer be changed")
     if kind in PREPARER_EVENTS and actor != ANALYST:
-        raise Refused("A reviewer cannot change the case they are reviewing")
+        raise Refused("The second analyst cannot change a case under review")
     if kind in REVIEWER_EVENTS and any(
         event.actor == actor and event.type in PREPARER_EVENTS for event in events
     ):
@@ -206,14 +207,15 @@ def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, 
                  if name not in terms or terms[name]["tier"] == 1
                  or terms[name]["confidence"] != "high"]
         if wrong:
-            raise Refused(f"Only high-confidence Tier 2 and 3 values can be bulk approved: {wrong}")
+            raise Refused("Only high-confidence Tier 2 and 3 terms can be bulk approved: "
+                          + ", ".join(wrong))
     if kind == "approve-term" and terms.get(payload["name"], {}).get("status") == "missing":
         raise Refused("A value that was not found cannot be approved")
     if kind in ("edit-term", "propose-rule", "decline-rule") and not payload.get("reason"):
         raise Refused("A reason is required")
     if kind == "decline-rule" and not (state["ruleEdit"]
                                        and state["ruleEdit"]["status"] == "pending"):
-        raise Refused("There is no rule change waiting")
+        raise Refused("No rule change is pending")
     if kind == "approve-load":
         unmet = [READINESS_TEXT[name] for name, done in readiness(state, workbench).items()
                  if not done]
@@ -233,7 +235,7 @@ def record(db: Session, workbench: dict[str, Any], actor: str, kind: str,
     if kind == "run" and state["ran"]:
         return
     if kind not in PREPARER_EVENTS | REVIEWER_EVENTS:
-        raise Refused(f"Unknown action: {kind}")
+        raise Refused("This action is not available")
     _check(state, events, workbench, actor, kind, payload)
     if kind == "approve-load":
         payload = {**payload, "open_items": len(open_items(state, workbench))}

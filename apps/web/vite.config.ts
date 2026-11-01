@@ -22,6 +22,8 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     strictPort: true,
+    // The browser tests reach this server by its Compose service name.
+    allowedHosts: ["web"],
     watch: { usePolling: process.env.VITE_USE_POLLING === "true" },
     proxy: {
       "/api": process.env.API_TARGET ?? "http://localhost:8010",

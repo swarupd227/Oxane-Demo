@@ -8,7 +8,7 @@
    "kind": "Agreement",
    "links_to": null,
    "size": "64 pages",
-   "title": "Credit Agreement - Senior Secured Revolving Warehouse Facility",
+   "title": "Agreement: Bramble Auto Receivables I LLC senior secured revolving warehouse credit agreement, 15 Jan 2026",
    "version": "Execution Version"
   },
   {
@@ -19,7 +19,7 @@
    "kind": "Amendment",
    "links_to": "credit_agreement",
    "size": "6 pages",
-   "title": "Amendment No. 1 to Credit Agreement",
+   "title": "Amendment: Amendment No. 1 to Credit Agreement dated 15 Jan 2026, signed 20 Feb 2026",
    "version": "Amendment No. 1"
   },
   {
@@ -30,8 +30,8 @@
    "kind": "Fee letter",
    "links_to": null,
    "size": "2 pages",
-   "title": "Fee Letter: Senior Secured Revolving Warehouse Facility",
-   "version": "Signed by lender"
+   "title": "Fee letter: Bramble Auto Receivables I LLC senior secured revolving warehouse facility, 15 Jan 2026",
+   "version": "Lender-signed"
   },
   {
    "dated": "2026-04-30",
@@ -41,8 +41,8 @@
    "kind": "Loan tape",
    "links_to": null,
    "size": "2,400 rows, 38 columns",
-   "title": "Bramble Auto Finance loan tape, cutoff 2026-04-30",
-   "version": "April 2026"
+   "title": "Loan tape: Bramble Auto Finance loan-level data, cutoff 30 Apr 2026",
+   "version": "2026-04"
   },
   {
    "dated": "2026-04-30",
@@ -52,7 +52,7 @@
    "kind": "Servicer report",
    "links_to": null,
    "size": "9 pages",
-   "title": "Monthly Servicer Report: April 2026",
+   "title": "Servicer report: Bramble Auto Receivables I LLC monthly report, collection period ended 30 Apr 2026",
    "version": "April 2026"
   },
   {
@@ -63,7 +63,7 @@
    "kind": "Certificate",
    "links_to": null,
    "size": "Workbook",
-   "title": "Borrowing Base Certificate, Collection Period ended 2026-04-30",
+   "title": "Certificate: Bramble Auto Receivables I LLC borrowing base certificate, collection period ended 30 Apr 2026",
    "version": "April 2026"
   },
   {
@@ -74,8 +74,8 @@
    "kind": "Financials",
    "links_to": null,
    "size": "14 pages",
-   "title": "Bramble Auto Finance LLC Unaudited Consolidated Financial Statements for the quarter ended 31 March 2026",
-   "version": "Q1 2026 unaudited"
+   "title": "Financials: Bramble Auto Finance LLC unaudited consolidated financial statements, quarter ended 31 Mar 2026",
+   "version": "Unaudited Q1 2026"
   },
   {
    "dated": null,
@@ -85,7 +85,7 @@
    "kind": "Requirements",
    "links_to": null,
    "size": "Workbook",
-   "title": "Calderwood Bank plc: monitoring requirements",
+   "title": "Requirements: Calderwood Bank plc monitoring requirements",
    "version": "Undated"
   }
  ],
@@ -96,7 +96,7 @@
    ],
    "evidence": [
     "Credit Agreement 2.3 states 85%.",
-    "The amendment replaces it with 82.5% from 2026-03-01."
+    "Amendment No. 1 replaces it with 82.5% from 1 Mar 2026."
    ],
    "id": "X1",
    "label": "Amended term",
@@ -141,7 +141,7 @@
     "accept"
    ],
    "evidence": [
-    "The page is an image.",
+    "Annex A is an image-only page.",
     "The value reads as US$250,000,000."
    ],
    "id": "X3",
@@ -152,16 +152,16 @@
     "page": 61,
     "rects": [
      {
-      "bottom": 0.336,
+      "bottom": 0.335,
       "top": 0.271,
       "x0": 0.226,
-      "x1": 0.768
+      "x1": 0.767
      }
     ]
    },
    "suggestion": "Confirm against the signed page.",
    "tier1": true,
-   "title": "Facility limit read from a poor scan",
+   "title": "Facility limit read from a low-quality scan",
    "type": "ambiguous",
    "where": "Annex A (Commitment Schedule)"
   },
@@ -172,7 +172,7 @@
    "blocking": true,
    "drill": "E1",
    "evidence": [
-    "The certificate tests a different past-due limit from Schedule 1.",
+    "The certificate tests 60 days past due. Schedule 1 says 30.",
     "41 loans are affected.",
     "They total US$1,109,324.88."
    ],
@@ -231,8 +231,8 @@
    "id": "X7",
    "label": "Blank field",
    "owner": "Servicer",
-   "suggestion": "Ask the servicer for the figure.",
-   "title": "The servicer report has no figure for Recoveries",
+   "suggestion": "Request the figure from the servicer.",
+   "title": "Servicer report has no figure for recoveries",
    "type": "missing",
    "where": "Servicer report, page 3"
   },
@@ -242,7 +242,7 @@
    ],
    "evidence": [
     "Calculated from the tape: 21.47%.",
-    "Formula: Formula: sum(NoteRate x CurrBal) / sum(CurrBal), weighted by current balance as the notes require. This relies on NoteRate being accepted as APR.."
+    "Formula: sum(NoteRate \u00d7 CurrBal) / sum(CurrBal)."
    ],
    "id": "X8",
    "label": "Derived field",
@@ -258,7 +258,7 @@
    ],
    "evidence": [
     "Each row was resolved against its first payment date.",
-    "7 rows stay uncertain."
+    "7 rows remain unresolved."
    ],
    "id": "X9",
    "label": "Format conflict",
@@ -273,7 +273,11 @@
     "accept"
    ],
    "evidence": [
-    "Full formula: Leverage Ratio = (Total Liabilities \u2212 S) \u00f7 (Tangible Net Worth + S), where S = the amount of Subordinated Debt applied under Section 6.12(c), up to an aggregate of US$15,000,000. The same S is added to the denominator and deducted from the numerator. All figures are for the Parent and its consolidated Subsidiaries as of the date of determination. Covenant: the ratio at the end of each fiscal quarter of the Parent must not exceed 6.00 to 1.00. The Subordinated Debt adjustment applies only to the Leverage Ratio. It does not apply to the stand-alone Tangible Net Worth covenant in Section 6.12(a), which uses unadjusted Tangible Net Worth of at least US$40,000,000. GAPS: the provided pages do not define 'Total Liabilities', 'Tangible Net Worth' or 'Subordinated Debt'. The page 11 definitions run alphabetically from 'Lender' to 'Payment Date' and do not reach the S or T entries. The components therefore cannot be broken down further from these documents. The text also does not state whether S is mandatory at the lower of actual Subordinated Debt and US$15,000,000, or elective. It says only 'up to US$15,000,000 shall be added'.."
+    "Leverage Ratio = (Total Liabilities \u2212 SD_adj) \u00f7 (Tangible Net Worth + SD_adj), where Tangible Net Worth = total members' equity \u2212 goodwill \u2212 other intangible assets \u2212 amounts owing to the Parent or any Subsidiary by any Affiliate, and SD_adj = Subordinated Debt up to US$15,000,000.",
+    "It is determined for the Parent and its consolidated Subsidiaries as of a date of determination.",
+    "Total Liabilities are all liabilities that would appear on a balance sheet prepared under GAAP.",
+    "Tangible Net Worth deductions are determined under GAAP.",
+    "The Subordinated Debt adjustment applies solely to the Leverage Ratio under Section 6.12(b)."
    ],
    "id": "X10",
    "label": "Cross-reference",
@@ -306,7 +310,7 @@
    "tier1": true,
    "title": "Leverage Ratio depends on more than one clause",
    "type": "ambiguous",
-   "where": "Section 1.1 (page 11) \u2013 definition of \"Leverage Ratio\", Section 6.12(c) \u2013 Treatment of Subordinated Debt (cross-referenced adjustment), Section 6.12(b) \u2013 Maximum Leverage Ratio (test level and timing), Section 6.12(a) \u2013 Minimum Tangible Net Worth (carve-out: unadjusted TNW used here), Section 1.1 (page 11) \u2013 definition of \"Parent\" (entity whose consolidated figures are used), Exhibit C \u2013 Form of Compliance Certificate (reporting format)"
+   "where": "Credit Agreement 1.1, 6.12(b), 6.12(c)"
   }
  ],
  "mapping": {
@@ -317,112 +321,112 @@
   },
   "requirements": [
    {
-    "detail": "Tape column LoanNumber.",
+    "detail": "Tape column LoanNumber",
     "name": "Loan ID",
     "status": "met"
    },
    {
-    "detail": "Tape column VIN. The note 'Must be unique across the pool' is a check run on this column, which supports the Duplicate VIN alert.",
+    "detail": "Tape column VIN",
     "name": "VIN",
     "status": "met"
    },
    {
-    "detail": "Tape column OrigDate. The 'ISO format' note is a formatting requirement. The tape column list does not show the date format.",
+    "detail": "Tape column OrigDate",
     "name": "Origination date",
     "status": "met"
    },
    {
-    "detail": "Tape column OrigBal.",
+    "detail": "Tape column OrigBal",
     "name": "Original balance",
     "status": "met"
    },
    {
-    "detail": "Tape column CurrBal.",
+    "detail": "Tape column CurrBal",
     "name": "Current balance",
     "status": "met"
    },
    {
-    "detail": "Tape column NoteRate. The tape labels this a note rate, not an APR. Confirm with the borrower that NoteRate is the APR the lender wants.",
+    "detail": "Tape column NoteRate",
     "name": "APR",
     "status": "met"
    },
    {
-    "detail": "Tape column OrigTerm.",
+    "detail": "Tape column OrigTerm",
     "name": "Original term",
     "status": "met"
    },
    {
-    "detail": "Tape column RemTerm.",
+    "detail": "Tape column RemTerm",
     "name": "Remaining term",
     "status": "met"
    },
    {
-    "detail": "Tape column CreditScore. The tape does not say whether this is a FICO score or whether it was taken at origination. Confirm with the borrower.",
+    "detail": "Tape column CreditScore",
     "name": "FICO at origination",
     "status": "met"
    },
    {
-    "detail": "Tape column BorrState.",
+    "detail": "Tape column BorrState",
     "name": "Obligor state",
     "status": "met"
    },
    {
-    "detail": "Tape column DealerName. The note 'Group dealers under one parent where known' cannot be applied from the tape alone, because no tape column gives a dealer parent.",
+    "detail": "Tape column DealerName",
     "name": "Dealer name",
     "status": "met"
    },
    {
-    "detail": "Tape column DPD.",
+    "detail": "Tape column DPD",
     "name": "Days past due",
     "status": "met"
    },
    {
-    "detail": "Tape column ModCount.",
+    "detail": "Tape column ModCount",
     "name": "Modification count",
     "status": "met"
    },
    {
-    "detail": "Tape column LoanStatus.",
+    "detail": "Tape column LoanStatus",
     "name": "Status",
     "status": "met"
    },
    {
-    "detail": "Tape column ChgOffDate. This field is marked Required: N.",
+    "detail": "Tape column ChgOffDate",
     "name": "Charge-off date",
     "status": "met"
    },
    {
-    "detail": "Tape column NewUsed.",
+    "detail": "Tape column NewUsed",
     "name": "New or used",
     "status": "met"
    },
    {
-    "detail": "Tape column ModelYr.",
+    "detail": "Tape column ModelYr",
     "name": "Model year",
     "status": "met"
    },
    {
-    "detail": "Formula: sum(NoteRate x CurrBal) / sum(CurrBal), weighted by current balance as the notes require. This relies on NoteRate being accepted as APR.",
+    "detail": "sum(NoteRate \u00d7 CurrBal) / sum(CurrBal)",
     "name": "Weighted average APR",
     "status": "derived"
    },
    {
-    "detail": "Plain total of the CurrBal column.",
+    "detail": "Sum of CurrBal",
     "name": "Pool balance",
     "status": "calculated"
    },
    {
-    "detail": "Comes from the borrowing base calculation, after eligibility exclusions.",
+    "detail": "From borrowing base calculation",
     "name": "Eligible pool balance",
     "status": "calculated"
    },
    {
-    "detail": "Comes from the borrowing base calculation.",
+    "detail": "From borrowing base calculation",
     "name": "Borrowing base",
     "status": "calculated"
    },
    {
-    "detail": "Comes from the borrowing base calculation. The facility outstanding amount needed for it is not a tape column.",
+    "detail": "From borrowing base calculation",
     "name": "Availability",
     "status": "calculated"
    }
@@ -446,7 +450,7 @@
     "column": "OrigDate",
     "confidence": "high",
     "field": "origination_date",
-    "note": "Format is MM/DD/YYYY (e.g. \"04/17/2025\"), while every other date column is YYYY-MM-DD. The parser needs to handle this column separately.",
+    "note": "This date is in month/day/year format, unlike the other dates on the tape, so it needs converting consistently.",
     "sample": "04/17/2025"
    },
    {
@@ -481,7 +485,7 @@
     "column": "NoteRate",
     "confidence": "medium",
     "field": "apr",
-    "note": "The column is labeled note rate, not APR, and the two can differ. Values are percentages (e.g. \"21.73\"). Confirm with the originator which one is reported.",
+    "note": "The tape gives a note rate rather than an APR, so confirm with the originator that the two are the same.",
     "sample": "21.73"
    },
    {
@@ -500,9 +504,9 @@
    },
    {
     "column": "PmtsMade",
-    "confidence": "high",
+    "confidence": "medium",
     "field": "payments_made",
-    "note": null,
+    "note": "This appears to count instalments due to date, including for a loan currently in arrears, so confirm whether it reflects payments actually received.",
     "sample": "12"
    },
    {
@@ -516,7 +520,7 @@
     "column": "CreditScore",
     "confidence": "medium",
     "field": "fico",
-    "note": "The label does not say the score is FICO or that it was taken at origination. Confirm the score type and timing.",
+    "note": "The tape does not say this is a FICO score taken at origination, so confirm the score type and timing.",
     "sample": "614"
    },
    {
@@ -530,8 +534,8 @@
     "column": "BorrZip3",
     "confidence": "high",
     "field": "obligor_zip3",
-    "note": "In 3 of the 4 sample rows, the ZIP3 does not match the state under standard USPS prefixes: CA/\"561\", NC/\"203\" and TX/\"366\". Data quality needs review.",
-    "sample": "349"
+    "note": null,
+    "sample": "339"
    },
    {
     "column": "EmployType",
@@ -544,14 +548,14 @@
     "column": "StatedIncome",
     "confidence": "high",
     "field": "stated_monthly_income",
-    "note": "The label does not say monthly. The sample PTI values agree with a monthly figure, but this should be confirmed.",
+    "note": null,
     "sample": "8680.34"
    },
    {
     "column": "PTI",
     "confidence": "high",
     "field": "payment_to_income",
-    "note": "Expressed as a percentage (e.g. \"14.91\"), not a decimal.",
+    "note": null,
     "sample": "14.91"
    },
    {
@@ -600,35 +604,35 @@
     "column": "Mileage",
     "confidence": "medium",
     "field": "odometer_at_origination",
-    "note": "The label does not say the mileage is at origination. The low values on new vehicles suggest it is, but confirm it is not current mileage.",
+    "note": "The column name does not say whether this is mileage at origination or current mileage, so confirm with the originator.",
     "sample": "30"
    },
    {
     "column": "AmtFinanced",
     "confidence": "high",
     "field": "amount_financed",
-    "note": "Identical to OrigBal in all sample rows. Confirm whether it is a separate data point or a copy.",
+    "note": null,
     "sample": "51840.15"
    },
    {
     "column": "BookValue",
     "confidence": "high",
     "field": "vehicle_book_value",
-    "note": "The book value source and type (e.g. wholesale or retail) are not stated.",
+    "note": null,
     "sample": "52666.15"
    },
    {
     "column": "LTV",
     "confidence": "high",
     "field": "loan_to_value",
-    "note": "Expressed as a percentage (e.g. \"98.43\"), not a decimal.",
+    "note": null,
     "sample": "98.43"
    },
    {
     "column": "DPD",
     "confidence": "high",
     "field": "days_past_due",
-    "note": "Inconsistent with the payment dates. BAF100002 shows DPD \"26\" and BAF100003 shows DPD \"3\", yet both have recent LastPmtDate values and a NextDueDate after the \"2026-04-30\" cutoff. Needs review.",
+    "note": null,
     "sample": "0"
    },
    {
@@ -636,14 +640,14 @@
     "confidence": "high",
     "field": "last_payment_date",
     "note": null,
-    "sample": "2026-04-19"
+    "sample": "2026-04-18"
    },
    {
     "column": "NextDueDate",
-    "confidence": "high",
+    "confidence": "medium",
     "field": "next_due_date",
-    "note": "In every sample row, NextDueDate equals LastPmtDate plus one month rather than following the FirstPmtDate due day (e.g. BAF100001: first payment \"2025-05-19\", next due \"2026-05-24\"). Confirm how this field is derived.",
-    "sample": "2026-05-19"
+    "note": "For some loans the next due date falls on a different day of the month from the first payment date, so arrears figures should be checked.",
+    "sample": "2026-05-18"
    },
    {
     "column": "ModCount",
@@ -656,28 +660,28 @@
     "column": "LoanStatus",
     "confidence": "high",
     "field": "status",
-    "note": "Only \"ACTIVE\" appears in the samples. The full list of status codes is not shown.",
+    "note": null,
     "sample": "ACTIVE"
    },
    {
     "column": "ChgOffDate",
     "confidence": "high",
     "field": "charge_off_date",
-    "note": "Blank in all sample rows, so the format cannot be checked.",
+    "note": null,
     "sample": ""
    },
    {
     "column": "ChgOffAmt",
     "confidence": "high",
     "field": "charge_off_amount",
-    "note": "Blank in all sample rows, so the format cannot be checked.",
+    "note": null,
     "sample": ""
    },
    {
     "column": "RepoDate",
     "confidence": "high",
     "field": "repossession_date",
-    "note": "Blank in all sample rows, so the format cannot be checked.",
+    "note": null,
     "sample": ""
    },
    {
@@ -702,7 +706,7 @@
    "reason": "Referred to in the credit agreement but not in the pack"
   }
  ],
- "pack_digest": "4f94c3f6ee84bd0bc813d5f761a77be709566825d14d8e1a2e80417b3569e641",
+ "pack_digest": "21e1e2b8d7341c41d52f62d3a0d82d513cbaeeeff2fd9700b02cbb1cbc4775b7",
  "period_end": "2026-04-30",
  "rules": [
   {
@@ -711,7 +715,7 @@
    "group": "eligibility",
    "id": "E1",
    "logic": "days_past_due <= 30",
-   "plain_english": "Days past due at the cut-off date must be 30 or fewer.",
+   "plain_english": "Days past due at the cut-off must be 30 or fewer.",
    "status": "ready",
    "threshold": 30.0
   },
@@ -721,7 +725,7 @@
    "group": "eligibility",
    "id": "E2",
    "logic": "status not in excluded_statuses",
-   "plain_english": "The loan must not be charged off and the vehicle must not have been repossessed.",
+   "plain_english": "The loan must not be charged off and the vehicle must not be repossessed.",
    "status": "ready",
    "threshold": null
   },
@@ -751,7 +755,7 @@
    "group": "eligibility",
    "id": "E5",
    "logic": "current_balance <= 75,000",
-   "plain_english": "Outstanding Balance must not exceed US$75,000. Mapped to current_balance (unpaid principal at the cut-off date).",
+   "plain_english": "Outstanding Balance (tape current_balance) must not exceed US$75,000.",
    "status": "ready",
    "threshold": 75000.0
   },
@@ -761,7 +765,7 @@
    "group": "eligibility",
    "id": "E6",
    "logic": "obligor_state in us_states",
-   "plain_english": "Obligor's billing address must be in one of the 50 US states or DC. The tape gives obligor_state, not the billing address itself.",
+   "plain_english": "The obligor's billing address must be in one of the fifty US states or DC. The tape has obligor_state but not a separate billing-address field.",
    "status": "ready",
    "threshold": null
   },
@@ -771,7 +775,7 @@
    "group": "eligibility",
    "id": "E7",
    "logic": "obligor_state not in schedule_4",
-   "plain_english": "Obligor's billing address must not be in a Restricted Jurisdiction. The schedules provided do not list which jurisdictions are Restricted Jurisdictions.",
+   "plain_english": "The obligor's billing address must not be in a Restricted Jurisdiction. The definition of Restricted Jurisdiction is not in the provided excerpts.",
    "status": "not_evaluated",
    "threshold": null
   },
@@ -791,7 +795,7 @@
    "group": "eligibility",
    "id": "E9",
    "logic": "6.00 <= apr <= 29.99",
-   "plain_english": "APR must be between 6.00% and 29.99% inclusive. Limits are expressed in percent; confirm the tape's APR units.",
+   "plain_english": "APR must be between 6.00% and 29.99% inclusive. Confirm whether the tape stores apr as a percentage or a decimal.",
    "status": "ready",
    "threshold": null
   },
@@ -801,7 +805,7 @@
    "group": "eligibility",
    "id": "E10",
    "logic": "year(origination_date) - model_year <= 10",
-   "plain_english": "Vehicle model year must be no more than ten years before the year of origination.",
+   "plain_english": "The vehicle model year must be no more than ten years before the year of origination, comparing model_year with the year of origination_date.",
    "status": "ready",
    "threshold": 10.0
   },
@@ -811,7 +815,7 @@
    "group": "eligibility",
    "id": "E11",
    "logic": "payments_made >= 1",
-   "plain_english": "The obligor must have made at least one scheduled payment.",
+   "plain_english": "At least one scheduled payment must have been made.",
    "status": "ready",
    "threshold": 1.0
   },
@@ -832,7 +836,7 @@
    "group": "concentration",
    "id": "C1",
    "logic": "largest group <= 20% of eligible pool",
-   "plain_english": "Eligible receivables with obligors billed in any one state may not exceed 20% of the Eligible Pool Balance. The excess is an excess concentration amount.",
+   "plain_english": "Balance of obligors with a billing address in any single state is limited to 20% of the Eligible Pool Balance.",
    "status": "ready",
    "threshold": null
   },
@@ -843,7 +847,7 @@
    "group": "concentration",
    "id": "C2",
    "logic": "largest group <= 5% of eligible pool",
-   "plain_english": "Eligible receivables from any one Dealer may not exceed 5% of the Eligible Pool Balance. Dealers under common ownership or trading under variations of one name count as one Dealer. The tape has dealer_name only, so common-ownership groupings cannot be identified from the tape alone.",
+   "plain_english": "Balance originated by any one dealer is limited to 5% of the Eligible Pool Balance. Dealers under common ownership or trading under variations of one name count as one dealer, which dealer_name alone may not show.",
    "status": "ready",
    "threshold": null
   },
@@ -853,8 +857,8 @@
    "effective_from": null,
    "group": "concentration",
    "id": "C3",
-   "logic": "original_term > 72 <= 25% of eligible pool",
-   "plain_english": "Eligible receivables with an original term of more than 72 months may not exceed 25% of the Eligible Pool Balance.",
+   "logic": "share(original_term > 72) <= 25% of eligible pool",
+   "plain_english": "Balance of loans with an original term of more than 72 months (strictly greater) is limited to 25% of the Eligible Pool Balance.",
    "status": "ready",
    "threshold": null
   },
@@ -864,19 +868,19 @@
    "effective_from": null,
    "group": "concentration",
    "id": "C5",
-   "logic": "vehicle_condition in used_conditions <= 70% of eligible pool",
-   "plain_english": "Eligible receivables secured by used vehicles may not exceed 70% of the Eligible Pool Balance.",
+   "logic": "share(vehicle_condition in used_conditions) <= 70% of eligible pool",
+   "plain_english": "Balance of loans secured by used vehicles is limited to 70% of the Eligible Pool Balance.",
    "status": "ready",
    "threshold": null
   },
   {
-   "clause_ref": "Amendment No. 1, Section 2(b) (Schedule 2, row 5)",
-   "clause_text": "5. Receivables with an Obligor FICO score at origination below 600: 35%",
+   "clause_ref": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))",
+   "clause_text": "Receivables with an Obligor FICO score at origination below 600",
    "effective_from": "2026-03-01",
    "group": "concentration",
    "id": "C4",
-   "logic": "fico < 600 <= 35% of eligible pool",
-   "plain_english": "Added by Amendment No. 1 with effect from 1 March 2026. Eligible receivables with an origination FICO below 600 may not exceed 35% of the Eligible Pool Balance. It applies to Borrowing Base Certificates for Collection Periods ending on or after 1 March 2026. The amendment is also subject to the conditions to effectiveness in its Section 3.",
+   "logic": "share(fico < 600) <= 35% of eligible pool",
+   "plain_english": "From 1 March 2026, the balance of loans with an origination FICO below 600 (strictly less) is limited to 35% of the Eligible Pool Balance. Amendment No. 1 also has conditions to effectiveness in its Section 3.",
    "status": "ready",
    "threshold": null
   }
@@ -895,10 +899,10 @@
     "page": 61,
     "rects": [
      {
-      "bottom": 0.336,
+      "bottom": 0.335,
       "top": 0.271,
       "x0": 0.226,
-      "x1": 0.768
+      "x1": 0.767
      }
     ]
    },
@@ -961,22 +965,16 @@
     "page": 58,
     "rects": [
      {
-      "bottom": 0.13709413162385575,
-      "top": 0.12516229802911927,
-      "x0": 0.1277083353279463,
-      "x1": 0.8720341102749694
-     },
-     {
-      "bottom": 0.15051138521444918,
-      "top": 0.14132389877781726,
-      "x0": 0.12772548899931066,
-      "x1": 0.17296813516055837
+      "bottom": 0.5188989735612966,
+      "top": 0.5069803950762508,
+      "x0": 0.170531852572572,
+      "x1": 0.32155467014686734
      }
     ]
    },
    "status": "review",
    "tier": 1,
-   "value": "12",
+   "value": "12 criteria",
    "verified": true
   },
   {
@@ -1026,7 +1024,7 @@
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1 (definition of Borrowing Base)",
+   "clause": "Section 1.1, definition of Borrowing Base",
    "confidence": "high",
    "document": "credit_agreement",
    "name": "Excess concentration treatment",
@@ -1051,12 +1049,12 @@
    },
    "status": "review",
    "tier": 1,
-   "value": "Deducted from Eligible Pool Balance before Advance Rate",
+   "value": "Deducted from Eligible Pool Balance before applying Advance Rate",
    "verified": true
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1 (definition of Reserve Amount)",
+   "clause": "Section 1.1, definition of Reserve Amount",
    "confidence": "high",
    "document": "credit_agreement",
    "name": "Reserve amount",
@@ -1067,15 +1065,15 @@
     "rects": [
      {
       "bottom": 0.6434072244046914,
-      "top": 0.6313693499324298,
-      "x0": 0.12887499690834991,
-      "x1": 0.7723947163500817
+      "top": 0.6314753908099551,
+      "x0": 0.41395341960433263,
+      "x1": 0.7689461302913092
      }
     ]
    },
    "status": "review",
    "tier": 1,
-   "value": "1% of the Eligible Pool Balance",
+   "value": "1% of Eligible Pool Balance",
    "verified": true
   },
   {
@@ -1092,14 +1090,14 @@
      {
       "bottom": 0.29921529750631315,
       "top": 0.28728346391157666,
-      "x0": 0.1277083353279463,
+      "x0": 0.3750232871061836,
       "x1": 0.8723944371042688
      },
      {
       "bottom": 0.3129109854650016,
       "top": 0.30344506466027465,
       "x0": 0.127931370454676,
-      "x1": 0.3669366774216197
+      "x1": 0.3617209889530356
      }
     ]
    },
@@ -1119,6 +1117,12 @@
     "document": "credit_agreement",
     "page": 43,
     "rects": [
+     {
+      "bottom": 0.329770868474787,
+      "top": 0.3178390348800505,
+      "x0": 0.41521887685738357,
+      "x1": 0.8725657743566176
+     },
      {
       "bottom": 0.3449115945835306,
       "top": 0.3334173337377683,
@@ -1177,13 +1181,7 @@
       "bottom": 0.4817910242562342,
       "top": 0.46927585023822205,
       "x0": 0.338349884631587,
-      "x1": 0.8723258224188113
-     },
-     {
-      "bottom": 0.4952083549114189,
-      "top": 0.4860208299424913,
-      "x0": 0.16905636257595485,
-      "x1": 0.27798526738983353
+      "x1": 0.6985650156058517
      }
     ]
    },
@@ -1194,7 +1192,7 @@
   },
   {
    "also_cited": [],
-   "clause": "",
+   "clause": "Schedule 4",
    "confidence": "none",
    "document": "",
    "name": "Restricted jurisdictions",
@@ -1243,7 +1241,7 @@
      {
       "bottom": 0.45148799395320394,
       "top": 0.43955616035846745,
-      "x0": 0.27549145268458947,
+      "x0": 0.25376518099915746,
       "x1": 0.4778505213120404
      }
     ]
@@ -1274,7 +1272,7 @@
    },
    "status": "review",
    "tier": 2,
-   "value": "One month; 15th of each calendar month",
+   "value": "One month; 15th of each month",
    "verified": true
   },
   {
@@ -1345,7 +1343,7 @@
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1 (definition of Revolving Period End Date)",
+   "clause": "Section 1.1, definition of Revolving Period End Date",
    "confidence": "high",
    "document": "credit_agreement",
    "name": "Revolving period end",
@@ -1364,12 +1362,12 @@
    },
    "status": "review",
    "tier": 2,
-   "value": "January 15, 2028",
+   "value": "15 Jan 2028",
    "verified": true
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1 (definition of Final Maturity Date)",
+   "clause": "Section 1.1, definition of Final Maturity Date",
    "confidence": "high",
    "document": "credit_agreement",
    "name": "Final maturity",
@@ -1388,7 +1386,7 @@
    },
    "status": "review",
    "tier": 2,
-   "value": "January 15, 2029",
+   "value": "15 Jan 2029",
    "verified": true
   },
   {
@@ -1400,24 +1398,24 @@
    "provenance": "ai",
    "source": {
     "document": "credit_agreement",
-    "page": 46,
+    "page": 47,
     "rects": [
      {
-      "bottom": 0.6143668203642874,
-      "top": 0.602434986769551,
-      "x0": 0.1276568618475222,
-      "x1": 0.4487476224213644
+      "bottom": 0.31259918212890625,
+      "top": 0.30076013430200443,
+      "x0": 0.16945097181532118,
+      "x1": 0.3545248742197074
      }
     ]
    },
    "status": "review",
    "tier": 2,
-   "value": "14",
+   "value": "14 events",
    "verified": true
   },
   {
    "also_cited": [],
-   "clause": "Sheet Alerts",
+   "clause": "Alerts sheet",
    "confidence": "high",
    "document": "lender_requirements",
    "name": "Lender alert thresholds",
@@ -1425,7 +1423,7 @@
    "source": null,
    "status": "review",
    "tier": 2,
-   "value": "6",
+   "value": "6 alerts",
    "verified": true
   },
   {
@@ -1521,7 +1519,7 @@
    },
    "status": "review",
    "tier": 3,
-   "value": "State of New York",
+   "value": "New York",
    "verified": true
   },
   {
@@ -1545,7 +1543,7 @@
    },
    "status": "review",
    "tier": 3,
-   "value": "January 15, 2026",
+   "value": "15 Jan 2026",
    "verified": true
   },
   {
@@ -1605,15 +1603,16 @@
    },
    "status": "review",
    "tier": 3,
-   "value": "Borrower: 2100 Larkspur Parkway, Suite 900, Plano, Texas 75024, United States; Lender: 40 Lothbury Square, London EC2R 7HH, United Kingdom",
+   "value": "Borrower: 2100 Larkspur Parkway, Suite 900, Plano, Texas 75024; Lender: 40 Lothbury Square, London EC2R 7HH",
    "verified": true
   }
  ],
  "usage": {
   "calls": 9,
-  "cost_usd": 0.6001,
-  "input_tokens": 21222,
+  "cost_usd": 0.9668,
+  "input_tokens": 24840,
   "model": "claude-opus-5-5",
-  "output_tokens": 23485
+  "model_seconds": 198,
+  "output_tokens": 23723
  }
 }

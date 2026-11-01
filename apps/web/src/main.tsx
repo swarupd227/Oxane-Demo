@@ -8,7 +8,6 @@ import { AppShell } from "./components/shell/AppShell";
 import { SessionProvider } from "./lib/session";
 import { ApprovePage } from "./pages/ApprovePage";
 import { DealCardPage } from "./pages/DealCardPage";
-import { DesignSystemPage } from "./pages/DesignSystemPage";
 import { ExceptionsPage } from "./pages/ExceptionsPage";
 import { IntakePage } from "./pages/IntakePage";
 import { MappingPage } from "./pages/MappingPage";
@@ -42,7 +41,6 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/exceptions" element={<ExceptionsPage />} />
                 <Route path="/approve" element={<ApprovePage />} />
                 <Route path="/results" element={<ScorecardPage />} />
-                <Route path="/design" element={<DesignSystemPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

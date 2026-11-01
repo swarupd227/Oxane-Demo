@@ -67,7 +67,7 @@ const DRAFTS: Record<string, { to: string; body: string }> = {
   },
   X4: {
     to: "Bramble Auto Receivables I LLC, Treasurer",
-    body: "Your April certificate tests 60 days past due. Schedule 1, paragraph 1 says 30. Please reissue it. The 41 affected loans are attached.",
+    body: "Your April 2026 certificate applies a 60-day past-due test. Schedule 1, paragraph 1 specifies 30 days. Please reissue the certificate. 41 loans are affected.",
   },
   X7: {
     to: "Bramble Auto Finance LLC, Servicing",
@@ -138,18 +138,18 @@ export function ExceptionsPage() {
     <div>
       <PageHeader
         title="Exception queue"
-        summary={`${open.length} open of ${items.length}. Missing, conflicting and ambiguous items, each with its evidence.`}
+        summary={`${open.length} open of ${items.length}.`}
         actions={
           <Button size="lg" onClick={() => navigate("/approve")}>
-            Go to approval
+            View approval
             <ArrowRight aria-hidden className="size-4" />
           </Button>
         }
       />
       {data.seed && (
         <SeedNotice>
-          Seed data: this queue comes from the answer key. Loans and recalculations are real engine
-          results.
+          Reference data: queue items are from the reference set. Loans and recalculations are
+          calculated.
         </SeedNotice>
       )}
 
@@ -255,7 +255,7 @@ export function ExceptionsPage() {
                 Excess of {formatUsd(run.system.excess)} takes availability from{" "}
                 {formatUsd(earlier.system.availability)} to{" "}
                 <span className="font-semibold">{formatUsd(run.system.availability)}</span>, below
-                Calderwood's US$500,000 alert.
+                the Calderwood alert threshold of US$500,000.
               </p>
               <Button
                 variant="secondary"
@@ -263,7 +263,7 @@ export function ExceptionsPage() {
                 className="mt-2"
                 onClick={() => navigate("/validation")}
               >
-                See the bridge
+                View bridge
               </Button>
             </motion.div>
           )}
@@ -286,7 +286,7 @@ export function ExceptionsPage() {
         open={drafting}
         onOpenChange={setDrafting}
         title="Draft query"
-        description={`To: ${DRAFTS[selected.id]?.to ?? selected.owner}. Nothing is sent from this demo.`}
+        description={`To: ${DRAFTS[selected.id]?.to ?? selected.owner}. Sandbox: queries are logged, not sent.`}
       >
         <form
           className="space-y-3"

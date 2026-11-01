@@ -47,11 +47,11 @@ dates:
 
 oxane_role:
   title: Verification agent for the lender
-  summary: Check the borrower's borrowing base and report to Calderwood.
+  summary: Verify the borrower's borrowing base and report to Calderwood Bank plc.
 
 analysts:
   preparer: Onboarding analyst, Gurgaon
-  approver: Second analyst, four-eyes approval
+  approver: Four-eyes approval required
 
 terms:
   governing_law: New York

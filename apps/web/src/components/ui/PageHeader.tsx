@@ -33,7 +33,7 @@ export function NeedsIntake() {
     <div className="grid h-72 place-items-center rounded-xl border border-dashed border-line text-center">
       <div>
         <p className="font-medium">No document pack yet</p>
-        <p className="mt-1 text-sm text-muted">Upload the pack on the Intake step to begin.</p>
+        <p className="mt-1 text-sm text-muted">Load the document pack on the Intake step.</p>
       </div>
     </div>
   );

@@ -217,7 +217,7 @@ export function TermsPage() {
     <div>
       <PageHeader
         title="Facility terms"
-        summary={`${approved} of ${terms.length} approved. Tier 1 values need a person, whatever the confidence.`}
+        summary={`${approved} of ${terms.length} approved. Tier 1 terms require analyst approval at any confidence level.`}
         actions={
           <Button
             variant="secondary"
@@ -225,13 +225,13 @@ export function TermsPage() {
             onClick={() => dispatch({ type: "bulk-approve", names: bulk.map((t) => t.name) })}
           >
             <Check aria-hidden className="size-4" />
-            Approve {bulk.length} high-confidence Tier 2 and 3
+            Approve high-confidence Tier 2 and 3 ({bulk.length})
           </Button>
         }
       />
       {data.seed && (
         <SeedNotice>
-          Seed data: these values come from the answer key. Highlights are found in the real PDFs.
+          Reference data: values are from the reference set. Highlights are located in the source PDFs.
         </SeedNotice>
       )}
 
@@ -261,14 +261,14 @@ export function TermsPage() {
               <Kbd>E</Kbd>
               edit
               <Kbd>Q</Kbd>
-              queue
+              hold
             </span>
           </div>
           <div className="max-h-[calc(100vh-19rem)] overflow-y-auto">
             <table className="w-full text-left">
               <thead className="sticky top-0 z-10 bg-surface">
                 <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
-                  <th className="py-2 pr-3 pl-4">Field</th>
+                  <th className="py-2 pr-3 pl-4">Term</th>
                   <th className="py-2 pr-3">Value</th>
                   <th className="py-2 pr-3">Tier</th>
                   <th className="py-2 pr-3">Confidence</th>
@@ -321,13 +321,13 @@ export function TermsPage() {
             emptyText={
               selected.status === "missing"
                 ? "Schedule 4 was not in the pack, so there is no source page."
-                : "This value comes from a workbook, not a PDF."
+                : "Source is a workbook. No page preview available."
             }
           />
 
           {selected.also_cited.length > 0 && (
             <div className="space-y-1">
-              <SectionLabel>Also cited</SectionLabel>
+              <SectionLabel>Sources</SectionLabel>
               {[selected.source, ...selected.also_cited].filter(Boolean).map((item) => (
                 <button
                   key={`${item!.document}-${item!.page}`}
@@ -364,7 +364,7 @@ export function TermsPage() {
               onClick={() => dispatch({ type: "queue-term", name: selected.name })}
             >
               <Send aria-hidden className="size-4" />
-              Send to queue
+              Hold for review
             </Button>
           </div>
         </Card>

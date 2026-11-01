@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { usePresenterMode } from "../../lib/presenter";
-import { sceneForPath, scenes } from "../../lib/scenes";
+import { scenes } from "../../lib/scenes";
 import { useSession } from "../../lib/session";
 import { useWorkbench } from "../../lib/workbench";
 import { Button } from "../ui/Button";
@@ -24,7 +24,7 @@ export function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const presenter = usePresenterMode();
   const workbench = useWorkbench();
-  const { refusal, clearRefusal } = useSession();
+  const { dispatch, refusal, clearRefusal } = useSession();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -33,11 +33,23 @@ export function AppShell() {
         setPaletteOpen((open) => !open);
         return;
       }
+      if (event.altKey && event.key.toLowerCase() === "r") {
+        event.preventDefault();
+        dispatch({ type: "reset" });
+        navigate("/");
+        return;
+      }
+      if (event.altKey && event.key.toLowerCase() === "p") {
+        event.preventDefault();
+        presenter.toggle();
+        return;
+      }
       if (isTyping(event.target) || event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }
       if (event.key === "[" || event.key === "]") {
-        const current = sceneForPath(pathname)?.number ?? 0;
+        // Read the address itself, so quick presses never act on the step before last.
+        const current = scenes.findIndex((scene) => scene.path === window.location.pathname);
         const next = scenes[current + (event.key === "]" ? 1 : -1)];
         if (next) {
           navigate(next.path);
@@ -46,7 +58,7 @@ export function AppShell() {
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navigate, pathname]);
+  }, [dispatch, navigate, presenter]);
 
   return (
     <div className="flex min-h-screen flex-col">

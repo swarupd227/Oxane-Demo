@@ -15,6 +15,13 @@ services:
       timeout: 3s
       retries: 20
 
+  # Builds the deal pack on a fresh checkout, so `docker compose up` is all anyone needs.
+  pack:
+    build: ./deal-kit
+    command: sh -c "test -f output/pack/Bramble_Credit_Agreement_Executed.pdf || python -m dealkit.build"
+    volumes:
+      - ./deal-kit:/deal-kit
+
   api:
     build: ./services/api
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
@@ -37,6 +44,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      pack:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/api/health')"]
       interval: 5s
@@ -63,6 +72,18 @@ services:
     build: ./deal-kit
     volumes:
       - ./deal-kit:/deal-kit
+
+  e2e:
+    profiles: [tools]
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    working_dir: /e2e
+    environment:
+      BASE_URL: http://web:5173
+    volumes:
+      - ./tests/e2e:/e2e
+      - /e2e/node_modules
+    depends_on:
+      - web
 
   engine:
     profiles: [tools]

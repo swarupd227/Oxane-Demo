@@ -181,6 +181,7 @@ def run_pipeline(gateway: Gateway, pack_dir: Path, out_dir: Path) -> dict[str, A
 
     formula = steps.resolve_leverage(gateway, agreement)
     formula_view = {"term": formula.term, "formula": formula.formula,
+                    "conditions": formula.conditions,
                     "parts": formula_sources(formula, evidence)}
     variants = checks.dealer_variants(sorted({row["dealer_name"] for row in renamed}))
     blanks = checks.blank_money_lines(documents["servicer_report"])
@@ -193,6 +194,7 @@ def run_pipeline(gateway: Gateway, pack_dir: Path, out_dir: Path) -> dict[str, A
         "input_tokens": sum(item.input_tokens for item in gateway.usage),
         "output_tokens": sum(item.output_tokens for item in gateway.usage),
         "cost_usd": gateway.total_cost_usd(),
+        "model_seconds": round(sum(item.seconds for item in gateway.usage)),
     }
     result = {
         "seed": False,

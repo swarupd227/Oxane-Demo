@@ -46,7 +46,8 @@ def classify(gateway: Gateway, previews: dict[str, str]) -> Classification:
             "Classify each file in this onboarding pack. `dated` is the document's date, or the "
             "period end for a report. `effective` is the date its terms take effect. Each is "
             "only an ISO date such as 2026-01-31, or null if the file does not state one, with "
-            "no other words. `version` is a short label. `amends_file` names the file it "
+            "no other words. `version` is a short label. `title` always reads Document type: "
+            "subject, with any date written like 30 Apr 2026. `amends_file` names the file it "
             "amends, if any.\n\n"
             + listing)}],
         Classification, max_tokens=8000,
@@ -165,18 +166,21 @@ class FormulaPart(BaseModel):
 class ResolvedFormula(BaseModel):
     term: str
     formula: str
+    conditions: list[str] = []
     parts: list[FormulaPart]
 
 
 def resolve_leverage(gateway: Gateway, agreement: PdfDocument) -> ResolvedFormula:
-    wanted = ("Leverage Ratio", "Tangible Net Worth", "Total Liabilities", "6.12")
-    passages = [page.raw for page in agreement.pages if any(w in page.raw for w in wanted[:1])]
+    wanted = ("Leverage Ratio", "Tangible Net Worth", "Total Liabilities", "Subordinated Debt")
+    passages = [page.raw for page in agreement.pages if any(w in page.raw for w in wanted)]
     return gateway.parse(
         "resolve_leverage", GROUND_RULES,
         [{"type": "text", "text": (
             "Build the complete formula for the Leverage Ratio as this agreement defines it, "
-            "following every cross-reference and carve-out. Cite each clause used with an exact "
-            "quote.\n\n" + "\n\n".join(passages))}],
+            "following every cross-reference and carve-out. `formula` is one line of symbols "
+            "and defined terms. `conditions` lists any limits or scope on it, one short sentence "
+            "each. In `parts`, `clause` is only the reference, such as 6.12(c), and `quote` is "
+            "copied exactly.\n\n" + "\n\n".join(passages))}],
         ResolvedFormula, max_tokens=8000,
     )
 
@@ -225,7 +229,10 @@ def draft_rules(gateway: Gateway, agreement: PdfDocument, amendment: PdfDocument
             "`field`, in `high` and `low`. Use only the tape fields below. Set `statuses` for "
             "not_status, choosing only from these values on the tape: "
             + ", ".join(tape_statuses) + ". For long_term and low_fico, `threshold` is the "
-            "months or score in the row. Copy `clause_text` exactly.\n\nTape fields:\n"
+            "months or score in the row. `clause_text` is the row's wording, copied exactly, "
+            "without its number or limit. `clause_ref` reads like Schedule 2, row 3, and for a row "
+            "an amendment adds, Schedule 2, row 5 (added by Amendment No. 1, Section 2(b)).\n\n"
+            "Tape fields:\n"
             + tape_fields
             + "\n\nSchedules:\n" + "\n\n".join(pages) + "\n\nAmendment:\n" + amendment.body
         )}],
@@ -254,7 +261,9 @@ def map_tape(gateway: Gateway, rows: list[dict[str, str]]) -> TapeMapping:
         "map_tape", GROUND_RULES,
         [{"type": "text", "text": (
             "Match each tape column to one platform field, using names and sample values. Add a "
-            "short note only when something needs a person's attention.\n\nPlatform fields:\n"
+            "note only when something needs a person's attention: one short, plain sentence, "
+            "written for a credit analyst, in UK spelling, without mentioning samples or code."
+            "\n\nPlatform fields:\n"
             + fields + "\n\nSample rows:\n" + sample)}],
         TapeMapping, max_tokens=8000,
     )
@@ -278,8 +287,9 @@ def read_requirements(gateway: Gateway, sheet_text: str, columns: list[str]) -> 
         [{"type": "text", "text": (
             "For each field the lender requires, say whether a tape column provides it (met), it "
             "comes from the borrowing base calculation or is a plain total of a column "
-            "(calculated), it needs a formula across tape columns (derived, with the formula in "
-            "`detail`), or it cannot be provided (unmet). "
+            "(calculated), it needs a formula across tape columns (derived, with only the formula "
+            "in `detail`), or it cannot be provided (unmet). Keep `detail` to a short phrase such "
+            "as Tape column VIN, with no full stop. "
             "Count the alerts.\n\nTape columns: " + ", ".join(columns)
             + "\n\nRequirements:\n" + sheet_text)}],
         RequirementReading, max_tokens=8000,

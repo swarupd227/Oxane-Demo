@@ -75,15 +75,15 @@ function DealCard({ deal }: { deal: Deal }) {
       <div className="flex flex-col gap-6">
         <Card tone="inverse" className="flex-1 p-8">
           <p className="text-[0.6875rem] font-semibold tracking-[0.08em] text-stone uppercase">
-            Oxane's role
+            Mandate
           </p>
           <p className="mt-4 text-2xl leading-snug font-semibold">{role.title}</p>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-sand">{role.summary}</p>
         </Card>
 
         <Card className="space-y-5 p-6">
-          <Fact label="Prepared by" value={analysts.preparer} />
-          <Fact label="Approved by" value={analysts.approver} />
+          <Fact label="Preparer" value={analysts.preparer} />
+          <Fact label="Second analyst" value={analysts.approver} />
           <Fact label="Target go-live" value={goLive ? formatDate(goLive) : "To be confirmed"} />
         </Card>
 
@@ -103,8 +103,8 @@ export function DealCardPage() {
     <div className="space-y-5">
       <p className="flex items-center gap-2 text-sm text-muted">
         <Info aria-hidden className="size-4 shrink-0" />
-        All names, documents and data in this demo are invented. It is not connected to Panorama and
-        uses no Oxane or client data.
+        Sandbox environment. All names, documents and data are synthetic. Not connected to Panorama.
+        Contains no Oxane or client data.
       </p>
       {data && <DealCard deal={data.deal} />}
       {isPending && (
@@ -119,7 +119,7 @@ export function DealCardPage() {
         <Card role="alert" className="p-8">
           <p className="font-medium">The deal could not be loaded.</p>
           <p className="mt-1 text-sm text-muted">
-            Check that the API container is running, then try again.
+            The case service is not responding. Try again in a moment.
           </p>
           <Button variant="secondary" className="mt-4" onClick={() => void refetch()}>
             <RotateCw aria-hidden className="size-4" />

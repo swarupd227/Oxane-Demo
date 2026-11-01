@@ -76,11 +76,11 @@ export function LoanDrill({ line }: { line: BridgeLine }) {
       <div className="flex items-baseline justify-between gap-4 border-b border-line px-5 py-3">
         <div>
           <SectionLabel>
-            {line.rule_id}: {line.label}
+            {line.rule_id}: {line.rule_id === "E1" ? "Over 30 days past due" : "Duplicate VINs"}
           </SectionLabel>
           <p className="mt-1 text-sm font-medium">
             {line.rule_id === "E12"
-              ? "Each VIN appears on two loans. This may be double pledging, within this pool only."
+              ? "Each VIN appears on two loans. Possible double pledging. Check covers this pool only."
               : `${line.loans} loans the certificate counted as eligible`}
           </p>
         </div>

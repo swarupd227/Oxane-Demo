@@ -1,8 +1,9 @@
 """Turn checked model answers into terms, rules and exceptions for the workbench."""
 
 import re
+from contextlib import suppress
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime
 from typing import Any
 
 from engine.rules import RuleSet
@@ -143,7 +144,25 @@ def build_terms(first: Extraction, second: Extraction, evidence: Evidence,
             problems.append(_problem(name, item, f"A second read gave {shown}."))
 
     _apply_amendment(terms, amendment, evidence)
+    for term in terms:
+        _tidy_value(term)
     return terms, problems
+
+
+COUNT_UNITS = {"Eligibility criteria": "criteria", "Event of default list": "events",
+               "Lender alert thresholds": "alerts"}
+DATE_FIELDS = {"Revolving period end", "Final maturity", "Signing date"}
+
+
+def _tidy_value(term: dict[str, Any]) -> None:
+    """Show counts with their unit, and every date in one style."""
+    value = term["value"]
+    unit = COUNT_UNITS.get(term["name"])
+    if unit and re.fullmatch(r"\d+", value):
+        term["value"] = f"{value} {unit}"
+    elif term["name"] in DATE_FIELDS:
+        with suppress(ValueError):
+            term["value"] = long_date(datetime.strptime(value, "%B %d, %Y").date().isoformat())
 
 
 def _problem(name: str, item: ExtractedField, why: str) -> dict[str, Any]:
@@ -156,7 +175,8 @@ def _apply_amendment(terms: list[dict[str, Any]], amendment: AmendmentReading,
     rate = next(term for term in terms if term["name"] == "Advance rate")
     limits = next(term for term in terms if term["name"] == "Concentration limits")
     dates = next(term for term in terms if term["name"] == "Amendment dates")
-    effective = {change.effective_from for change in amendment.changes}
+    # Wording around the dates varies between reads, so compare the dates themselves.
+    effective = {iso_date(change.effective_from) for change in amendment.changes} - {None}
     signed = iso_date(amendment.signed)
     if len(effective) == 1 and signed:
         # The amendment reading states these directly, so they replace the term's wording.

@@ -103,7 +103,7 @@ function Concentrations({ run }: { run: RunResult }) {
               <span className="text-muted">{item.largest}</span>
             </span>
             <span className="shrink-0 font-medium">
-              {item.share_pct.toFixed(2)}% of {item.limit_pct}%
+              {item.share_pct.toFixed(2)}% against {item.limit_pct}% limit
             </span>
           </div>
           <div className="mt-2">
@@ -133,11 +133,11 @@ function Covenants({ run }: { run: RunResult }) {
             <StatusPill status={test.passed ? "approved" : "missing"} label={test.passed ? "Pass" : "Breach"} />
           </div>
           <p className="numeric mt-0.5 text-[0.8125rem] text-muted">
-            {unit(test.name, test.value)} against {unit(test.name, test.limit)}, clause {test.clause}
+            {unit(test.name, test.value)} against {unit(test.name, test.limit)}, Section {test.clause}
           </p>
           {test.name.includes("leverage") && (
             <p className="numeric mt-0.5 text-xs text-muted">
-              Reads {raw.toFixed(2)} without the 6.12(c) carve-out, which would be a false breach.
+              Without the 6.12(c) carve-out: {raw.toFixed(2)} to 1.
             </p>
           )}
         </li>
@@ -149,7 +149,7 @@ function Covenants({ run }: { run: RunResult }) {
         </div>
         <p className="numeric mt-0.5 text-[0.8125rem] text-muted">
           {delinquency.average_pct.toFixed(2)}% three-month average against{" "}
-          {delinquency.trigger_pct.toFixed(1)}%, clause 7.1
+          {delinquency.trigger_pct.toFixed(1)}%, Section 7.1
         </p>
       </li>
     </ul>
@@ -187,11 +187,11 @@ export function ValidationPage() {
     <div className="space-y-4">
       <PageHeader
         title="First validation run"
-        summary="An independent recalculation beside the borrower's certificate, as a verification agent would run it."
+        summary="System recalculation against the borrower's certificate, April 2026."
         actions={
           state.ran && (
             <Button size="lg" onClick={() => navigate("/exceptions")}>
-              Open exception queue
+              View exception queue
               <ArrowRight aria-hidden className="size-4" />
             </Button>
           )
@@ -229,7 +229,7 @@ export function ValidationPage() {
           {run.provisional && (
             <p className="flex items-center gap-2 rounded-lg bg-warn-tint px-3 py-2 text-sm text-warn">
               <CircleAlert aria-hidden className="size-4 shrink-0" />
-              Provisional: E7 not run. Schedule 4 is missing, so one eligibility test is outstanding.
+              Provisional: E7 not run. Schedule 4 is not in the pack, so one eligibility test is outstanding.
             </p>
           )}
           <AnimatePresence>
@@ -240,7 +240,7 @@ export function ValidationPage() {
                 className="flex items-center gap-2 overflow-hidden rounded-lg bg-danger-tint px-3 py-2 text-sm font-medium text-danger"
               >
                 <BellRing aria-hidden className="size-4 shrink-0" />
-                Availability is below Calderwood's US$500,000 alert.
+                Availability is below the Calderwood alert threshold of US$500,000.
               </motion.p>
             )}
           </AnimatePresence>
@@ -252,7 +252,7 @@ export function ValidationPage() {
               </Card>
               <Card className="overflow-hidden">
                 <h2 className="border-b border-line px-5 py-3 font-semibold">
-                  Where the difference comes from
+                  Eligible pool bridge
                 </h2>
                 <Bridge run={run} selected={selected} onSelect={setSelected} />
               </Card>

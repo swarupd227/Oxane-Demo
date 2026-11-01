@@ -176,11 +176,11 @@ def test_scorecard_reports_the_recorded_run():
     prepare_case()
     results = measures()
     assert results["Exceptions found"]["value"] == "10 of 10"
-    assert results["False items"]["value"] == "0"
+    assert results["False positives"]["value"] == "0"
     assert results["Field-level accuracy, Tier 1, before review"]["value"] == "11 of 11"
     assert results["Field-level accuracy, Tier 2 and 3"]["value"] == "15 of 15"
     assert results["Rule results"]["value"] == "11 of 11"
-    assert results["Onboarding time"]["value"] == "Not finished yet"
+    assert results["Onboarding time"]["value"] == "In progress"
     assert results["Processing cost"]["value"].startswith("US$0.")
 
 
@@ -198,7 +198,7 @@ def test_scorecard_catches_a_wrong_value(tmp_path, monkeypatch):
     assert results["Field-level accuracy, Tier 1, before review"]["value"] == "10 of 11"
     assert "Minimum liquidity" in results["Material errors and omissions"]["details"][0]
     assert results["Exceptions found"]["value"] == "9 of 10"
-    assert results["False items"]["details"] == ["Q1"]
+    assert results["False positives"]["details"] == ["Q1"]
 
 
 def test_scorecard_claims_nothing_from_seed_data(monkeypatch, tmp_path):

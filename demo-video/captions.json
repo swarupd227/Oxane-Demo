@@ -1,0 +1,20 @@
+{
+  "deal": "Calderwood Bank is lending US$250 million against auto loans. Before the first draw, its onboarding analyst must verify everything the borrower reports.",
+  "intake": "The first step is the document pack. Artizent's AI identifies each file, and a code check finds that Schedule 4, named in the agreement, never arrived.",
+  "terms": "Next, the facility terms. Artizent's AI drafts all 26, and every value opens on the exact page and quote it came from.",
+  "facility": "Code checks each quote against the PDF. This facility limit was read from a poor scan, so it is marked low confidence for the analyst.",
+  "amended": "The advance rate is already the amended 82.5%, citing Amendment No. 1. Key terms are read twice, and the analyst approves each one.",
+  "bulk": "Routine terms with high confidence can be approved together. Nothing is approved without a person.",
+  "rules": "The AI also drafts the eligibility rules. The rules engine must accept every rule before it can run.",
+  "ruleEdit": "A rule change shows its impact first. It stays pending until a second analyst decides.",
+  "mapping": "The AI maps all 38 loan tape columns to the platform's fields, and the analyst accepts them.",
+  "validation": "Now the proof. No AI touches the numbers: the rules engine recalculates the borrowing base from every loan, to the cent.",
+  "bridge": "The borrower's pool is US$1.24 million too high, and every dollar is explained: loans past due, and duplicate VINs.",
+  "drill": "Six loans share three vehicle numbers, a sign of possible double pledging.",
+  "queue": "Everything doubtful lands in one exception queue, with its evidence and a suggested action. The analyst decides each item.",
+  "sunrise": "Treating two spellings of Sunrise Motors as one dealer breaches a concentration limit. Availability falls to US$193,347, below the lender's alert threshold.",
+  "approve": "Everything then comes together for approval. The analyst who prepared the case cannot approve it.",
+  "reviewer": "A second analyst reviews every change, declines the rule change, and approves with the open items carried forward.",
+  "approved": "The validated, platform-ready load file is released, with the full audit trail.",
+  "results": "The results are measured, not forecast: all 10 exceptions found, no false positives, and every key term correct."
+}

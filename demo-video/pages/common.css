@@ -1,0 +1,21 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { zoom: 1; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #141414; color: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+.gold { color: #FFDD00; }
+.muted { color: #BDAFA3; }
+.kicker { font-size: 22px; letter-spacing: 6px; text-transform: uppercase; color: #FFDD00; }
+.fade-in { opacity: 0; animation: fadeIn 1.2s ease forwards; }
+.fade-in.d1 { animation-delay: 0.5s; }
+.fade-in.d2 { animation-delay: 1.1s; }
+.fade-in.d3 { animation-delay: 1.7s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* Preview pages (real outputs shown outside the app) */
+.preview { padding: 70px 90px 180px; height: 1080px; display: flex; flex-direction: column; gap: 28px; }
+.preview h1 { font-size: 40px; font-weight: 700; }
+.preview .sub { font-size: 20px; color: #BDAFA3; margin-top: -16px; }
+/* Light ground for preview pages, matching the app's light theme; brand cards stay dark. */
+body.light { background: #F6F5F3; color: #141414; }
+body.light .muted, body.light .preview .sub { color: #6B645C; }
+body.light .tag { box-shadow: 0 0 0 1px #E0C700; }
+.tag { display: inline-block; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: #141414; background: #FFDD00; padding: 6px 12px; border-radius: 3px; font-weight: 700; }

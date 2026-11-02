@@ -1,0 +1,96 @@
+// Walks the onboarding once at the video's resolution and saves a screenshot after each step, to plan captions.
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+
+process.chdir(import.meta.dirname);
+const require = createRequire('C:/Users/swarupd/demo/Kinective/atlas-agent-platform/package.json');
+const { chromium } = require('playwright');
+
+const BASE = process.env.APP || 'http://127.0.0.1:5180';
+fs.rmSync('probe', { recursive: true, force: true });
+fs.mkdirSync('probe');
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport: { width: 2340, height: 1084 }, colorScheme: 'light', locale: 'en-GB' });
+const page = await context.newPage();
+page.on('response', async (r) => { if (r.url().includes('/api') && !r.ok()) console.log('API', r.status(), r.request().method(), r.url(), (await r.text().catch(() => '')).slice(0, 300)); });
+page.on('requestfailed', (r) => console.log('FAILED', r.method(), r.url(), r.failure()?.errorText));
+let n = 0;
+const shot = async (name) => { await page.waitForTimeout(900); await page.screenshot({ path: `probe/${String(n++).padStart(2, '0')}-${name}.png` }); console.log('shot', name); };
+const step = (name) => page.getByRole('navigation', { name: 'Onboarding steps' }).getByRole('link', { name }).click();
+
+try {
+  await context.request.post(BASE + '/api/session/reset');
+  await page.goto(BASE + '/');
+  await page.getByRole('heading', { level: 1 }).waitFor({ timeout: 60000 });
+  await shot('deal');
+  await page.getByRole('button', { name: 'Start onboarding' }).click();
+  await page.getByRole('button', { name: 'Load sandbox pack' }).click();
+  await page.getByText('Expected but not received').waitFor({ timeout: 20000 });
+  await shot('intake');
+  await page.getByRole('button', { name: 'Review facility terms' }).click();
+  await page.locator('[data-highlight]').first().waitFor({ timeout: 20000 });
+  await shot('terms');
+  await page.locator('tbody').getByRole('button', { name: 'Facility limit', exact: true }).click();
+  await page.locator('[data-highlight]').first().waitFor({ timeout: 20000 });
+  await shot('terms-facility');
+  await page.getByRole('button', { name: 'Approve', exact: true }).click();
+  await page.locator('tbody').getByRole('button', { name: 'Advance rate', exact: true }).click();
+  await page.getByRole('button', { name: 'Approve', exact: true }).click();
+  await page.getByRole('button', { name: /Approve high-confidence Tier 2 and 3/ }).click();
+  await shot('terms-bulk');
+  await step('Rules');
+  await shot('rules');
+  await page.getByRole('button', { name: 'Edit E5' }).click();
+  await page.getByRole('spinbutton').fill('70000');
+  await page.getByText('Loans becoming ineligible').waitFor();
+  await shot('rules-edit');
+  await page.getByRole('dialog').getByRole('textbox').fill('Stress test for the April tape');
+  await page.getByRole('button', { name: 'Save as pending' }).click();
+  await step('Mapping');
+  await page.getByText('38 tape columns mapped').waitFor();
+  await shot('mapping');
+  await page.getByRole('button', { name: /Accept remaining/ }).click();
+  await page.getByRole('button', { name: 'View validation' }).click();
+  await shot('validation-before');
+  await page.getByRole('button', { name: 'Run the April tape' }).click();
+  await page.getByText('Eligible pool bridge').waitFor({ timeout: 20000 });
+  await shot('validation');
+  await page.getByRole('button', { name: /Duplicate VINs/ }).click();
+  await page.getByText('Possible double pledging.').waitFor();
+  await shot('validation-drill');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'View exception queue' }).click();
+  await shot('exceptions');
+  await page.getByRole('button', { name: /41 loans over 30 days/ }).click();
+  await page.getByRole('button', { name: 'Draft query' }).click();
+  await shot('exceptions-query');
+  await page.getByRole('button', { name: 'Log query' }).click();
+  await page.getByRole('button', { name: /6 loans share 3 VINs/ }).click();
+  await page.getByRole('button', { name: 'Escalate to credit' }).click();
+  await page.getByRole('button', { name: /Sunrise Motors/ }).click();
+  await shot('exceptions-sunrise');
+  await page.getByRole('button', { name: 'Accept', exact: true }).click();
+  await page.getByText('Borrowing base recalculated').waitFor({ timeout: 20000 });
+  await shot('exceptions-done');
+  await page.getByRole('button', { name: 'View approval' }).click();
+  await shot('approve-preparer');
+  await page.getByRole('button', { name: 'Second analyst' }).click();
+  await page.getByRole('heading', { name: 'Change summary' }).waitFor();
+  await shot('approve-reviewer');
+  await page.getByLabel('Decision reason').fill("The agreement's threshold stands");
+  await page.getByRole('button', { name: 'Decline' }).click();
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /Approve with \d open items/ }).click();
+  await page.getByText('Approved with open items').first().waitFor();
+  await shot('approved');
+  await page.getByRole('button', { name: 'View scorecard' }).click();
+  await page.getByText('Exceptions found', { exact: true }).waitFor();
+  await shot('scorecard');
+} catch (e) {
+  console.error(e);
+  await page.screenshot({ path: 'probe/fail.png' });
+  process.exitCode = 1;
+} finally {
+  await context.request.post(BASE + '/api/session/reset');
+  await browser.close();
+}

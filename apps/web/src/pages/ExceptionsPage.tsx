@@ -82,7 +82,9 @@ export function ExceptionsPage() {
   const [selectedId, setSelectedId] = useState("X4");
   const [drafting, setDrafting] = useState(false);
   const [draft, setDraft] = useState("");
-  const run = useValidationRun(state.dealerMatched, state.ran).data;
+  const runQuery = useValidationRun(state.dealerMatched, state.ran);
+  // While the matched run loads, the query still holds the unmatched one. It must not be shown as the result.
+  const run = runQuery.isPlaceholderData ? undefined : runQuery.data;
   const earlier = useValidationRun(false, state.ran).data;
 
   const items = [...(data?.exceptions ?? []), ...state.heldItems];

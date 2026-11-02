@@ -85,11 +85,11 @@ export function ExceptionsPage() {
   const run = useValidationRun(state.dealerMatched, state.ran).data;
   const earlier = useValidationRun(false, state.ran).data;
 
-  const items = data?.exceptions ?? [];
+  const items = [...(data?.exceptions ?? []), ...state.heldItems];
   const selected = items.find((item) => item.id === selectedId) ?? items[0];
 
   function work(outcome: ExceptionOutcome, note: string) {
-    dispatch({ type: "work-exception", id: selected.id, outcome, note });
+    dispatch({ type: "work-exception", id: selected.id, outcome, note, term: selected.term });
   }
 
   function act(action: ExceptionItem["actions"][number]) {

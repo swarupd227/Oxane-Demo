@@ -33,8 +33,12 @@ def signed_in(seed_view, monkeypatch):
 
 def prepare(user=ALICE):
     act(user, "intake-done")
+    terms = client.get("/api/workbench", headers=as_user(user)).json()["terms"]
+    act(user, "bulk-approve",
+        names=[t["name"] for t in terms if t["tier"] > 1 and t["confidence"] == "high"])
     act(user, "approve-term", name="Facility limit")
     act(user, "approve-term", name="Advance rate")
+    act(user, "accept-mapping")
     act(user, "run")
     act(user, "work-exception", id="X4", outcome="queried", note="Sent")
     act(user, "work-exception", id="X5", outcome="escalated", note="Sent")
@@ -82,7 +86,8 @@ def test_a_named_second_analyst_approves_and_is_recorded():
     assert state["preparedBy"] == ALICE
     assert any(entry["actor"] == BEN for entry in state["audit"])
     loaded = client.get("/api/load-file", headers=as_user(BEN)).json()
-    assert (loaded["prepared_by"], loaded["approved_by"]) == (ALICE, BEN)
+    approval = loaded["approval"]
+    assert (approval["prepared_by"], approval["approved_by"]) == (ALICE, BEN)
 
 
 def test_one_person_on_both_lists_still_cannot_approve_their_own_case(monkeypatch):

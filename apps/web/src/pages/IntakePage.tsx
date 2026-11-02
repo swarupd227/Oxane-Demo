@@ -12,6 +12,23 @@ import { useWorkbench, type DocumentInfo } from "../lib/workbench";
 
 const STEP_MS = 420;
 
+interface PackCheck {
+  recognised: number;
+  refused: string[];
+  absent: string[];
+}
+
+async function verifyFile(file: File): Promise<{ name: string; recognised: boolean; file: string | null }> {
+  const response = await fetch(`/api/intake/verify?name=${encodeURIComponent(file.name)}`, {
+    method: "POST",
+    body: file,
+  });
+  if (!response.ok) {
+    throw new Error(`Verify failed with ${response.status}`);
+  }
+  return response.json();
+}
+
 const shownDate = (value: string | null) => (value ? formatDate(value) : "Not stated");
 
 function FileRow({ doc, done, links }: { doc: DocumentInfo; done: boolean; links?: string }) {
@@ -60,6 +77,9 @@ export function IntakePage() {
   const [revealed, setRevealed] = useState(state.intakeDone ? 99 : 0);
   const [running, setRunning] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [result, setResult] = useState<PackCheck | null>(null);
 
   const total = data?.documents.length ?? 0;
   const classified = state.intakeDone || (running && revealed > total);
@@ -70,13 +90,35 @@ export function IntakePage() {
     }
     if (revealed > total) {
       if (!state.intakeDone) {
-        dispatch({ type: "intake-done", workbench: data });
+        dispatch({ type: "intake-done", workbench: data, verified });
       }
       return;
     }
     const timer = setTimeout(() => setRevealed((count) => count + 1), STEP_MS);
     return () => clearTimeout(timer);
-  }, [running, revealed, total, data, dispatch, state.intakeDone]);
+  }, [running, revealed, total, data, dispatch, state.intakeDone, verified]);
+
+  async function check(files: File[]) {
+    if (!data || files.length === 0) {
+      return;
+    }
+    setChecking(true);
+    setResult(null);
+    try {
+      const checks = await Promise.all(files.map(verifyFile));
+      const matched = new Set(checks.flatMap((item) => (item.file ? [item.file] : [])));
+      const refused = checks.filter((item) => !item.recognised).map((item) => item.name);
+      const absent = data.documents.filter((doc) => !matched.has(doc.file)).map((doc) => doc.title);
+      if (absent.length === 0 && refused.length === 0) {
+        setVerified(true);
+        setRunning(true);
+      } else {
+        setResult({ recognised: matched.size, refused, absent });
+      }
+    } finally {
+      setChecking(false);
+    }
+  }
 
   if (!data) {
     return <Skeleton className="h-96 w-full" />;
@@ -106,9 +148,7 @@ export function IntakePage() {
       )}
 
       {!started && (
-        <button
-          type="button"
-          onClick={() => setRunning(true)}
+        <div
           onDragOver={(event) => {
             event.preventDefault();
             setDragging(true);
@@ -117,20 +157,51 @@ export function IntakePage() {
           onDrop={(event) => {
             event.preventDefault();
             setDragging(false);
-            setRunning(true);
+            void check([...event.dataTransfer.files]);
           }}
           className={clsx(
-            "flex h-80 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
-            dragging ? "border-ink bg-sand" : "border-stone bg-surface hover:bg-canvas",
+            "flex h-80 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
+            dragging ? "border-ink bg-sand" : "border-stone bg-surface",
           )}
         >
           <UploadCloud aria-hidden className="size-8 text-muted" />
-          <span className="mt-3 text-lg font-medium">Sandbox document pack</span>
-          <span className="mt-1 text-sm text-muted">8 files for onboarding case 0412</span>
-          <span className="mt-4 inline-flex h-10 items-center rounded-lg bg-ink px-4 text-sm font-medium text-white">
-            Load document pack
-          </span>
-        </button>
+          <p className="mt-3 text-lg font-medium">Drop the document pack here</p>
+          <p className="mt-1 text-sm text-muted">
+            8 files for onboarding case 0412. Each file is matched by its content.
+          </p>
+          <div className="mt-5 flex items-center gap-3">
+            <Button size="lg" onClick={() => setRunning(true)} disabled={checking}>
+              Load sandbox pack
+            </Button>
+            <label className="flex h-12 cursor-pointer items-center rounded-lg border border-line bg-surface px-5 text-[0.9375rem] font-medium hover:border-stone hover:bg-canvas">
+              Choose files
+              <input
+                type="file"
+                multiple
+                className="sr-only"
+                onChange={(event) => void check([...(event.target.files ?? [])])}
+              />
+            </label>
+          </div>
+          {checking && (
+            <p role="status" className="mt-4 flex items-center gap-2 text-sm text-muted">
+              <Loader2 aria-hidden className="size-4 animate-spin" />
+              Matching files
+            </p>
+          )}
+        </div>
+      )}
+
+      {!started && result && (
+        <div role="alert" className="mt-4 rounded-xl border border-warn/40 bg-warn-tint p-4 text-sm">
+          <p className="font-semibold text-warn">
+            {result.recognised} of {total} files matched. The pack was not loaded.
+          </p>
+          {result.refused.length > 0 && (
+            <p className="mt-1">Not part of this case: {result.refused.join(", ")}.</p>
+          )}
+          {result.absent.length > 0 && <p className="mt-1">Still needed: {result.absent.join(", ")}.</p>}
+        </div>
       )}
 
       {started && (

@@ -40,13 +40,13 @@ All documents and data are synthetic, written to resemble real US auto ABF pract
 | Step | Time | Do | Say |
 |---|---|---|---|
 | 1 Deal | 1 min | Show the deal summary | The fictional deal, and Oxane's role as verification agent |
-| 2 Intake | 2 min | Load the pack | Every file is classified, and Schedule 4 is flagged before anyone reads a page. Code finds it, not the model |
-| 3 Terms | 4 min | Click Advance rate, drag the date across 1 March, click Facility limit | Every value opens its source. Code checks each quote exists in the document, and Tier 1 needs a person whatever the confidence |
+| 2 Intake | 2 min | Drop the 8 files from `deal-kit/output/pack`, or use Load sandbox pack | Each file is matched by content, and anything else is refused by name. Every file is classified, and Schedule 4 is flagged before anyone reads a page. Code finds it, not the model |
+| 3 Terms | 4 min | Click Advance rate, drag the date across 1 March, click Facility limit | Every value opens its source. Code checks each quote exists in the document, and Tier 1 needs a person whatever the confidence. Send to queue turns any doubtful term into an exception that must be worked |
 | 4 Rules | 3 min | Edit E5 to 70,000, show the preview, save with a reason | The analyst stays in control. The change is pending, and the run still uses the approved rules |
-| 5 Mapping | 2 min | Show the mapping and the derived field, accept | Weighted average APR isn't on the tape, so it's derived and labelled |
+| 5 Mapping | 2 min | Accept one column, show the derived field, then accept the rest | Each column can be accepted on its own. Weighted average APR isn't on the tape, so it's derived and labelled |
 | 6 Validation | 3 min | Run the tape, click each bridge row | **Slow down here.** The gap is explained to the cent. The certificate tested 60 days past due, not 30. Then the shared VINs: possible double pledging, within this pool only |
 | 7 Exceptions | 3 min | Draft the X4 query, escalate X5, accept X6 | Accepting the dealer match recalculates live, and availability falls below Calderwood's alert |
-| 8 Approve | 1 min | Show the block, switch to the second analyst, decline the rule change, approve | Four-eyes is enforced by the server, and the log can't be changed |
+| 8 Approve | 1 min | Show the block, switch to the second analyst, read the change summary, enter a reason and decline the rule change, approve, download | Four-eyes is enforced by the server, and the log can't be changed. The load file carries every loan, with its eligibility, the rules and the open items |
 | 9 Scorecard | 1 min | Open a row | The formula sits behind each number. Then give the honest caveat below |
 
 ## Keep the claims honest

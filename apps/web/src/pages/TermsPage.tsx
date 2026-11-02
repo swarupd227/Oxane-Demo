@@ -261,7 +261,7 @@ export function TermsPage() {
               <Kbd>E</Kbd>
               edit
               <Kbd>Q</Kbd>
-              hold
+              queue
             </span>
           </div>
           <div className="max-h-[calc(100vh-19rem)] overflow-y-auto">
@@ -364,7 +364,7 @@ export function TermsPage() {
               onClick={() => dispatch({ type: "queue-term", name: selected.name })}
             >
               <Send aria-hidden className="size-4" />
-              Hold for review
+              Send to queue
             </Button>
           </div>
         </Card>

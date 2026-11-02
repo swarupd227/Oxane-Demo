@@ -36,10 +36,17 @@ pytestmark = pytest.mark.skipif(not (RECORDED_RUN / "workbench.json").exists(),
                                 reason="No run has been recorded")
 
 
+def bulk(**kwargs):
+    terms = client.get("/api/workbench", **kwargs).json()["terms"]
+    return [t["name"] for t in terms if t["tier"] > 1 and t["confidence"] == "high"]
+
+
 def prepare_case():
     act("intake-done")
+    act("bulk-approve", names=bulk())
     act("approve-term", name="Facility limit")
     act("approve-term", name="Advance rate")
+    act("accept-mapping")
     act("run")
     act("work-exception", id="X4", outcome="queried", note="Sent")
     act("work-exception", id="X5", outcome="escalated", note="Sent")
@@ -96,6 +103,20 @@ def test_open_items_must_be_carried_forward_explicitly():
     assert "carried forward" in response.json()["detail"]
 
 
+def test_every_sourced_term_must_be_approved_not_only_tier_1():
+    act("intake-done")
+    act("approve-term", name="Facility limit")
+    act("approve-term", name="Advance rate")
+    act("accept-mapping")
+    act("run")
+    act("work-exception", id="X4", outcome="queried", note="Sent")
+    act("work-exception", id="X5", outcome="escalated", note="Sent")
+    act("work-exception", id="X6", outcome="accepted", note="Same dealer")
+    response = act("approve-load", actor=APPROVER, carry_forward=True)
+    assert response.status_code == 409
+    assert "Every term" in response.json()["detail"]
+
+
 def test_tier_1_cannot_be_bulk_approved():
     act("intake-done")
     assert act("bulk-approve", names=["Reserve amount"]).status_code == 409
@@ -130,11 +151,11 @@ def test_load_file_needs_approval_and_carries_its_evidence():
     assert response.status_code == 200
     assert "attachment" in response.headers["content-disposition"]
     body = response.json()
-    assert body["approved_by"] == "Second analyst"
-    assert body["provisional"] is True
-    assert body["audit_chain_head"] == state()["chainHead"]
-    assert len(body["terms"]) == 26
-    assert next(t for t in body["terms"] if t["name"] == "Margin")["edited"] is True
+    assert body["approval"]["approved_by"] == "Second analyst"
+    assert body["approval"]["provisional"] is True
+    assert body["approval"]["audit_chain_head"] == state()["chainHead"]
+    assert len(body["facility_terms"]) == 26
+    assert next(t for t in body["facility_terms"] if t["name"] == "Margin")["edited"] is True
     assert any("Schedule 4" in item for item in body["open_items"])
 
 

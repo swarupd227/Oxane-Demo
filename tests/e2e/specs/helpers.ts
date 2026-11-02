@@ -19,6 +19,11 @@ export async function prepare(
   await resetCase(request);
   await act(request, "intake-done");
   if (stage === "loaded") return;
+  const { terms } = await (await request.get("/api/workbench")).json();
+  const names = terms
+    .filter((term: { tier: number; confidence: string }) => term.tier > 1 && term.confidence === "high")
+    .map((term: { name: string }) => term.name);
+  await act(request, "bulk-approve", { names });
   await act(request, "approve-term", { name: "Facility limit" });
   await act(request, "approve-term", { name: "Advance rate" });
   if (stage === "terms") return;

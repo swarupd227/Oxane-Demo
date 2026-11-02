@@ -12,7 +12,7 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   });
 
   await test.step("Intake", async () => {
-    await page.getByRole("button", { name: /Sandbox document pack/ }).click();
+    await page.getByRole("button", { name: "Load sandbox pack" }).click();
     await expect(page.getByText("Expected but not received")).toBeVisible({ timeout: 10_000 });
     await expect(page.locator("tbody tr")).toHaveCount(8);
     await expect(page.getByText("Schedule 4")).toBeVisible();
@@ -51,7 +51,9 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   await test.step("Mapping", async () => {
     await step(page, "Mapping");
     await expect(page.getByText("38 tape columns mapped")).toBeVisible();
-    await page.getByRole("button", { name: "Accept mapping" }).click();
+    await page.getByRole("button", { name: "Accept LoanNumber" }).click();
+    await expect(page.getByText("1 accepted.")).toBeVisible();
+    await page.getByRole("button", { name: /Accept remaining/ }).click();
     await page.getByRole("button", { name: "View validation" }).click();
   });
 
@@ -83,14 +85,22 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
     await expect(page.getByText("You prepared this case")).toBeVisible();
     await expect(page.getByRole("button", { name: /Approve with \d open items/ })).toBeDisabled();
     await page.getByRole("button", { name: "Second analyst" }).click();
-    await page.getByRole("button", { name: /Decline/ }).click();
+    await expect(page.getByRole("heading", { name: "Change summary" })).toBeVisible();
+    await expect(page.getByText("38 of 38 columns accepted")).toBeVisible();
+    await page.getByLabel("Decision reason").fill("The agreement's threshold stands");
+    await page.getByRole("button", { name: "Decline" }).click();
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: /Approve with \d open items/ }).click();
     await expect(page.getByText("Approved with open items").first()).toBeVisible();
 
     const download = page.waitForEvent("download");
     await page.getByRole("link", { name: "Download load file" }).click();
-    expect((await download).suggestedFilename()).toBe("case-0412-load-file.json");
+    const saved = await download;
+    expect(saved.suggestedFilename()).toBe("case-0412-load-file.json");
+    const content = await saved.createReadStream();
+    let body = "";
+    for await (const chunk of content) body += chunk;
+    expect(JSON.parse(body).loans).toHaveLength(2400);
     await page.getByRole("button", { name: "View scorecard" }).click();
   });
 

@@ -7,6 +7,7 @@ before it, which makes any later change to the history detectable.
 
 import hashlib
 import json
+import re
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -31,17 +32,23 @@ EARLIER_EXCEPTIONS = {"X2": "queried", "X7": "queried", "X8": "accepted", "X9": 
 
 # What only the person who prepared the case may do, and what only a reviewer may do.
 PREPARER_EVENTS = {"intake-done", "approve-term", "bulk-approve", "queue-term", "edit-term",
-                   "accept-mapping", "run", "work-exception", "propose-rule"}
-REVIEWER_EVENTS = {"decline-rule", "approve-load"}
+                   "accept-mapping", "accept-column", "run", "work-exception", "propose-rule"}
+REVIEWER_EVENTS = {"decline-rule", "approve-rule", "approve-load"}
 
 
 class Refused(Exception):
     """A person tried something the controls do not allow."""
 
 
+def held_id(name: str) -> str:
+    """A held term's queue id, stable however the term list is ordered."""
+    return "T-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
 def _initial() -> dict[str, Any]:
     return {
         "startedAt": None, "intakeDone": False, "termApprovals": {}, "termEdits": {},
+        "termEditReasons": {}, "heldTerms": [], "acceptedColumns": [], "intakeVerified": False,
         "mappingAccepted": False, "ran": False, "dealerMatched": False, "exceptions": {},
         "ruleEdit": None, "approvedAt": None, "approvedBy": None, "approvedByName": None,
         "preparedBy": ACTOR_NAMES[ANALYST], "audit": [],
@@ -52,12 +59,15 @@ def _describe(event: CaseEvent) -> tuple[str, str | None]:
     """The audit line for an event, and its reason."""
     p = event.payload
     return {
-        "intake-done": ("Loaded 8-file document pack", None),
+        "intake-done": ("Loaded 8-file document pack, each file matched by content"
+                        if p.get("verified") else "Loaded 8-file document pack", None),
         "approve-term": (f"Approved {p.get('name')}", None),
         "bulk-approve": (f"Bulk approved {len(p.get('names', []))} Tier 2 and 3 values", None),
-        "queue-term": (f"Held {p.get('name')} for review", None),
+        "queue-term": (f"Sent {p.get('name')} to the exception queue", None),
         "edit-term": (f"Edited {p.get('name')} to {p.get('value')}", p.get("reason")),
         "accept-mapping": ("Accepted tape mapping", None),
+        "accept-column": (f"Accepted mapping for {p.get('column')}", None),
+        "approve-rule": (f"Approved rule change to {p.get('rule_id')}", p.get("reason")),
         "run": ("Ran the April tape: 16 rules run, E7 not evaluated", None),
         "work-exception": (f"{p.get('id')}: {OUTCOME_LABELS.get(p.get('outcome'))}", p.get("note")),
         "propose-rule": (f"Proposed {p.get('rule_id')}: {p.get('from')} to {p.get('to')}",
@@ -76,23 +86,34 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
         if kind == "intake-done":
             state["intakeDone"] = True
             state["startedAt"] = at
+            state["intakeVerified"] = bool(p.get("verified"))
             state["preparedBy"] = p.get("user") or ACTOR_NAMES[ANALYST]
         elif kind == "approve-term":
             state["termApprovals"][p["name"]] = "approved"
             if p["name"] in TERM_EXCEPTIONS:
                 state["exceptions"][TERM_EXCEPTIONS[p["name"]]] = "accepted"
+            if p["name"] in state["heldTerms"]:
+                state["exceptions"][held_id(p["name"])] = "accepted"
         elif kind == "bulk-approve":
             state["termApprovals"].update(dict.fromkeys(p["names"], "approved"))
         elif kind == "queue-term":
             state["termApprovals"][p["name"]] = "queued"
+            if p["name"] not in state["heldTerms"]:
+                state["heldTerms"].append(p["name"])
+            state["exceptions"].pop(held_id(p["name"]), None)
         elif kind == "edit-term":
             state["termEdits"][p["name"]] = p["value"]
+            state["termEditReasons"][p["name"]] = p["reason"]
         elif kind == "accept-mapping":
             state["mappingAccepted"] = True
+        elif kind == "accept-column":
+            state["acceptedColumns"].append(p["column"])
         elif kind == "run":
             state["ran"] = True
         elif kind == "work-exception":
             state["exceptions"][p["id"]] = p["outcome"]
+            if p.get("term") and p["outcome"] == "accepted":
+                state["termApprovals"][p["term"]] = "approved"
             if p["id"] == "X6" and p["outcome"] == "accepted":
                 state["dealerMatched"] = True
         elif kind == "propose-rule":
@@ -100,6 +121,8 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
             state["ruleEdit"]["status"] = "pending"
         elif kind == "decline-rule":
             state["ruleEdit"].update(status="declined", decline_reason=p["reason"])
+        elif kind == "approve-rule":
+            state["ruleEdit"].update(status="approved", decision_reason=p["reason"])
         elif kind == "approve-load":
             state["approvedAt"] = at
             state["approvedBy"] = event.actor
@@ -170,23 +193,53 @@ def open_items(state: dict[str, Any], workbench: dict[str, Any]) -> list[str]:
     return items
 
 
+def held_items(state: dict[str, Any], workbench: dict[str, Any]) -> list[dict[str, Any]]:
+    """Terms an analyst sent to the queue, as items that have to be worked like any other."""
+    terms = {term["name"]: term for term in workbench["terms"]}
+    items = []
+    for name in state["heldTerms"]:
+        term = terms[name]
+        items.append({
+            "id": held_id(name), "term": name, "type": "ambiguous", "label": "Sent by analyst",
+            "title": f"{name} sent to the queue for review", "owner": "Onboarding analyst",
+            "where": term["clause"],
+            "evidence": [f"Value: {state['termEdits'].get(name, term['value'])}.",
+                         f"Confidence: {term['confidence']}."],
+            "suggestion": "Confirm the value against its source.", "actions": ["accept"],
+            "tier1": term["tier"] == 1, "source": term["source"],
+        })
+    return items
+
+
+def mapping_accepted(state: dict[str, Any], workbench: dict[str, Any]) -> bool:
+    columns = {row["column"] for row in workbench["mapping"]["rows"]}
+    return state["mappingAccepted"] or columns <= set(state["acceptedColumns"])
+
+
 def readiness(state: dict[str, Any], workbench: dict[str, Any]) -> dict[str, bool]:
     tier1 = [term for term in workbench["terms"]
              if term["tier"] == 1 and term["status"] != "missing"]
     edit = state["ruleEdit"]
     return {
         "tier1_approved": all(state["termApprovals"].get(t["name"]) == "approved" for t in tier1),
-        "exceptions_worked": all(i["id"] in state["exceptions"] for i in workbench["exceptions"]),
+        "exceptions_worked": all(item["id"] in state["exceptions"] for item in
+                                 [*workbench["exceptions"], *held_items(state, workbench)]),
+        "mapping_accepted": mapping_accepted(state, workbench),
         "run_complete": state["ran"],
         "no_rule_pending": not (edit and edit["status"] == "pending"),
+        "all_terms_approved": all(state["termApprovals"].get(term["name"]) == "approved"
+                                  for term in workbench["terms"]
+                                  if term["status"] != "missing"),
     }
 
 
 READINESS_TEXT = {
     "tier1_approved": "Every Tier 1 value needs an approval first",
     "exceptions_worked": "Every exception must be worked first",
+    "mapping_accepted": "The tape mapping must be accepted first",
     "run_complete": "The validation run is not complete",
     "no_rule_pending": "A rule change is still waiting for a decision",
+    "all_terms_approved": "Every term with a source must be approved or worked in the queue",
 }
 
 
@@ -206,7 +259,7 @@ def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, 
     ):
         raise Refused("You prepared this case, so a second analyst has to review it")
     if kind != "intake-done" and not state["intakeDone"]:
-        raise Refused("Upload the document pack first")
+        raise Refused("Load the document pack first")
 
     terms = {term["name"]: term for term in workbench["terms"]}
     if kind == "bulk-approve":
@@ -218,10 +271,13 @@ def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, 
                           + ", ".join(wrong))
     if kind == "approve-term" and terms.get(payload["name"], {}).get("status") == "missing":
         raise Refused("A value that was not found cannot be approved")
-    if kind in ("edit-term", "propose-rule", "decline-rule") and not payload.get("reason"):
+    if kind in ("edit-term", "propose-rule", "decline-rule", "approve-rule") and not payload.get(
+        "reason"
+    ):
         raise Refused("A reason is required")
-    if kind == "decline-rule" and not (state["ruleEdit"]
-                                       and state["ruleEdit"]["status"] == "pending"):
+    if kind in ("decline-rule", "approve-rule") and not (
+        state["ruleEdit"] and state["ruleEdit"]["status"] == "pending"
+    ):
         raise Refused("No rule change is pending")
     if kind == "approve-load":
         unmet = [READINESS_TEXT[name] for name, done in readiness(state, workbench).items()
@@ -246,7 +302,7 @@ def record(db: Session, workbench: dict[str, Any], actor: str, kind: str,
     _check(state, events, workbench, actor, kind, payload)
     if kind == "approve-load":
         payload = {**payload, "open_items": len(open_items(state, workbench))}
-    if kind == "decline-rule":
+    if kind in ("decline-rule", "approve-rule"):
         payload = {**payload, "rule_id": state["ruleEdit"]["rule_id"]}
     _append(db, session_id, events, actor, kind, payload)
     if kind == "intake-done":
@@ -278,11 +334,32 @@ def reset(db: Session) -> None:
     db.commit()
 
 
+def changes(state: dict[str, Any], workbench: dict[str, Any]) -> dict[str, Any]:
+    """What the second analyst needs to review: everything that differs from the extraction."""
+    terms = {term["name"]: term for term in workbench["terms"]}
+    titles = {item["id"]: item["title"] for item in
+              [*workbench["exceptions"], *held_items(state, workbench)]}
+    return {
+        "terms": [{"name": name, "from": terms[name]["value"], "to": value,
+                   "reason": state["termEditReasons"].get(name)}
+                  for name, value in state["termEdits"].items()],
+        "held": state["heldTerms"],
+        "exceptions": [{"id": ident, "title": titles[ident], "outcome": outcome}
+                       for ident, outcome in state["exceptions"].items() if ident in titles],
+        "columns_accepted": (len(workbench["mapping"]["rows"])
+                             if mapping_accepted(state, workbench)
+                             else len(set(state["acceptedColumns"]))),
+    }
+
+
 def view(db: Session, workbench: dict[str, Any]) -> dict[str, Any]:
     events = load_events(db, current_session(db))
     state = fold(events)
     return {
         **state,
+        "mappingAccepted": mapping_accepted(state, workbench),
+        "heldItems": held_items(state, workbench),
+        "changes": changes(state, workbench),
         "readiness": readiness(state, workbench),
         "openItems": open_items(state, workbench),
         "chainIntact": chain_intact(events),

@@ -1,6 +1,7 @@
 """Load the deal pack into the engine and shape its results for the workbench."""
 
 import csv
+import hashlib
 import json
 import re
 from dataclasses import asdict
@@ -33,6 +34,7 @@ from app.config import settings
 from app.deal import load_deal
 
 PERIOD_END = date(2026, 4, 30)
+Override = tuple[str, Decimal]
 SUNRISE = {"Sunrise Motors": "Sunrise Motors LLC"}
 OUTSTANDING_CENTS = 4_800_000_000
 
@@ -65,6 +67,13 @@ def reset() -> None:
 
 def active_files() -> list[str]:
     return list(_active("pack").values())
+
+
+@lru_cache
+def pack_digests() -> dict[str, str]:
+    """The fingerprint of each pack file, to recognise an uploaded file by its content."""
+    return {hashlib.sha256(pack_path(name).read_bytes()).hexdigest(): name
+            for name in active_files()}
 
 
 @lru_cache
@@ -196,13 +205,43 @@ def _covenants() -> dict[str, Any]:
     }
 
 
-def validation_run(dealer_match: bool) -> dict[str, Any]:
-    tape, ruleset, stated = list(loans()), rules(), certificate()
+def _ruleset_for(override: Override | None) -> RuleSet:
+    return rules().with_threshold(*override) if override else rules()
+
+
+def loan_records(dealer_match: bool, override: Override | None = None) -> list[dict[str, Any]]:
+    """Every mapped loan, with its eligibility and a resolved origination date."""
+    aliases = SUNRISE if dealer_match else {}
+    result = run(list(loans()), _ruleset_for(override), PERIOD_END, OUTSTANDING_CENTS,
+                 dealer_aliases=aliases)
+    columns = _active("mapping")["columns"]
+    facts = _pipeline_file("facts.json")
+    dates = json.loads(facts.read_text(encoding="utf-8")) if facts else {}
+    resolved = dates.get("origination_dates", {})
+    uncertain = set(dates.get("uncertain_origination_dates", []))
+    eligible = set(result.eligible_loan_ids)
+
+    records = []
+    for row in tape_rows():
+        record = {field: row[column] for column, field in columns.items()}
+        loan_id = record["loan_id"]
+        record["origination_date"] = resolved.get(loan_id, record["origination_date"])
+        record["origination_date_uncertain"] = loan_id in uncertain
+        record["dealer_group"] = aliases.get(record["dealer_name"], record["dealer_name"])
+        record["eligible"] = loan_id in eligible
+        record["failed_rules"] = list(result.failed_rules_by_loan.get(loan_id, ()))
+        records.append(record)
+    return records
+
+
+def validation_run(dealer_match: bool, override: Override | None = None) -> dict[str, Any]:
+    tape, ruleset, stated = list(loans()), _ruleset_for(override), certificate()
     aliases = SUNRISE if dealer_match else {}
     result = run(tape, ruleset, PERIOD_END, OUTSTANDING_CENTS, dealer_aliases=aliases)
-    bridge = bridge_eligible_pool(tape, ruleset, result, stated, PERIOD_END)
+    # The borrower's replay uses the rules as signed, so a changed rule shows as a difference.
+    bridge = bridge_eligible_pool(tape, rules(), result, stated, PERIOD_END)
     base = bridge_borrowing_base(bridge, result, stated)
-    replay = run(tape, borrower_rules(ruleset, stated), PERIOD_END, OUTSTANDING_CENTS)
+    replay = run(tape, borrower_rules(rules(), stated), PERIOD_END, OUTSTANDING_CENTS)
     by_id = {loan["loan_id"]: loan for loan in tape}
 
     def rows(ids: tuple[str, ...]) -> list[dict[str, Any]]:
@@ -266,8 +305,8 @@ def rule_preview(rule_id: str, value: Decimal) -> dict[str, Any]:
     }
 
 
-def rule_views() -> list[dict[str, Any]]:
-    ruleset = rules()
+def rule_views(override: Override | None = None) -> list[dict[str, Any]]:
+    ruleset = _ruleset_for(override)
     views = [
         {"id": rule.id, "group": "eligibility", "plain_english": rule.plain_english,
          "clause_ref": rule.clause_ref, "clause_text": rule.clause_text,

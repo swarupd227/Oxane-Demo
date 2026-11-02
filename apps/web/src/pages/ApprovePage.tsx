@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { ArrowRight, Check, Download, ShieldAlert, ShieldCheck, UserRound } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { StatusPill } from "../components/ui/badges";
 import { Button } from "../components/ui/Button";
@@ -9,6 +9,17 @@ import { NeedsIntake, PageHeader } from "../components/ui/PageHeader";
 import { formatUsd } from "../lib/format";
 import { ANALYST, APPROVER, useSession } from "../lib/session";
 import { useValidationRun, useWorkbench } from "../lib/workbench";
+
+const OUTCOMES = { accepted: "Accepted", queried: "Query drafted", escalated: "Escalated" };
+
+function SummaryRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[10rem_minmax(0,1fr)] gap-4 py-2">
+      <dt className="font-medium">{label}</dt>
+      <dd className="space-y-0.5">{children}</dd>
+    </div>
+  );
+}
 
 function Check_({ passed, label }: { passed: boolean; label: string }) {
   return (
@@ -25,6 +36,7 @@ export function ApprovePage() {
   const navigate = useNavigate();
   const run = useValidationRun(state.dealerMatched, state.ran).data;
   const [carried, setCarried] = useState(false);
+  const [decision, setDecision] = useState("");
 
   if (!state.intakeDone) {
     return <NeedsIntake />;
@@ -66,7 +78,12 @@ export function ApprovePage() {
                 passed={readiness.tier1_approved}
                 label={`All sourced Tier 1 terms approved (${tier1Count})`}
               />
+              <Check_
+                passed={readiness.all_terms_approved}
+                label="All Tier 2 and 3 terms approved"
+              />
               <Check_ passed={readiness.exceptions_worked} label="All exceptions worked" />
+              <Check_ passed={readiness.mapping_accepted} label="Tape mapping accepted" />
               <Check_ passed={readiness.run_complete} label="Validation run complete" />
               <Check_ passed={readiness.no_rule_pending} label="No rule change pending" />
             </ul>
@@ -88,6 +105,40 @@ export function ApprovePage() {
             )}
           </Card>
 
+          <Card className="p-5">
+            <h2 className="font-semibold">Change summary</h2>
+            <dl className="mt-2 divide-y divide-sand text-sm">
+              <SummaryRow label="Terms edited">
+                {state.changes.terms.length === 0 && "None"}
+                {state.changes.terms.map((item) => (
+                  <p key={item.name}>
+                    {item.name}: {item.from} to {item.to}
+                    {item.reason && <span className="text-muted">. {item.reason}</span>}
+                  </p>
+                ))}
+              </SummaryRow>
+              <SummaryRow label="Sent to the queue">
+                {state.changes.held.length ? state.changes.held.join(", ") : "None"}
+              </SummaryRow>
+              <SummaryRow label="Exceptions">
+                {state.changes.exceptions.map((item) => (
+                  <p key={item.id}>
+                    <span className="numeric font-medium">{item.id}</span>{" "}
+                    {OUTCOMES[item.outcome]}: <span className="text-muted">{item.title}</span>
+                  </p>
+                ))}
+              </SummaryRow>
+              <SummaryRow label="Tape mapping">
+                {state.changes.columns_accepted} of {data.mapping.rows.length} columns accepted
+              </SummaryRow>
+              <SummaryRow label="Rule changes">
+                {state.ruleEdit
+                  ? `${state.ruleEdit.rule_id}: ${state.ruleEdit.from} to ${state.ruleEdit.to} (${state.ruleEdit.status})`
+                  : "None"}
+              </SummaryRow>
+            </dl>
+          </Card>
+
           {ruleOpen && state.ruleEdit && (
             <Card className="border-warn/40 p-5">
               <h2 className="font-semibold">Rule change awaiting a decision</h2>
@@ -95,19 +146,31 @@ export function ApprovePage() {
                 {state.ruleEdit.rule_id}: {state.ruleEdit.from} to {state.ruleEdit.to}. Reason given:{" "}
                 {state.ruleEdit.reason}
               </p>
-              <Button
-                variant="secondary"
-                className="mt-3"
-                disabled={!approver}
-                onClick={() =>
-                  dispatch({
-                    type: "decline-rule",
-                    reason: "The agreement's threshold stands. An analyst cannot vary a term.",
-                  })
-                }
-              >
-                Decline: the agreement's threshold stands
-              </Button>
+              <label className="mt-3 block text-sm font-medium">
+                Decision reason
+                <input
+                  value={decision}
+                  disabled={!approver}
+                  onChange={(event) => setDecision(event.target.value)}
+                  className="mt-1 h-10 w-full rounded-lg border border-line px-3 font-normal"
+                />
+              </label>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  variant="secondary"
+                  disabled={!approver || !decision.trim()}
+                  onClick={() => dispatch({ type: "decline-rule", reason: decision })}
+                >
+                  Decline
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={!approver || !decision.trim()}
+                  onClick={() => dispatch({ type: "approve-rule", reason: decision })}
+                >
+                  Approve change
+                </Button>
+              </div>
             </Card>
           )}
 

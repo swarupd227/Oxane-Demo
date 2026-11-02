@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useSession } from "./session";
 
 export interface Rect {
   x0: number;
@@ -74,6 +75,7 @@ export interface Requirement {
 
 export interface ExceptionItem {
   id: string;
+  term?: string;
   type: "missing" | "conflicting" | "ambiguous";
   label: string;
   title: string;
@@ -224,8 +226,11 @@ export function useWorkbench() {
 }
 
 export function useValidationRun(dealerMatch: boolean, enabled: boolean) {
+  // An approved rule change alters every run, so it has to be part of the cache key.
+  const { state } = useSession();
+  const rule = state.ruleEdit?.status === "approved" ? state.ruleEdit.to : null;
   return useQuery({
-    queryKey: ["run", dealerMatch],
+    queryKey: ["run", dealerMatch, rule],
     queryFn: () => post<RunResult>("/api/run", { dealer_match: dealerMatch }),
     enabled,
     staleTime: Infinity,

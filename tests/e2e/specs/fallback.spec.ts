@@ -25,7 +25,7 @@ test("1-deal", async ({ page, request }) => {
 test("2-intake", async ({ page, request }) => {
   await resetCase(request);
   await page.goto("/intake");
-  await page.getByRole("button", { name: /Sandbox document pack/ }).click();
+  await page.getByRole("button", { name: "Load sandbox pack" }).click();
   await expect(page.getByText("Expected but not received")).toBeVisible({ timeout: 10_000 });
   await pause(page, 4);
 });
@@ -62,7 +62,7 @@ test("5-mapping", async ({ page, request }) => {
   await prepare(request, "terms");
   await page.goto("/mapping");
   await pause(page, 4);
-  await page.getByRole("button", { name: "Accept mapping" }).click();
+  await page.getByRole("button", { name: /Accept remaining/ }).click();
   await pause(page, 2);
 });
 

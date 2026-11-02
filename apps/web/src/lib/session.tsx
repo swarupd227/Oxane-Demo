@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Term, Workbench } from "./workbench";
+import type { ExceptionItem, Term, Workbench } from "./workbench";
 
 export type Actor = "analyst" | "approver";
 export type ExceptionOutcome = "accepted" | "queried" | "escalated";
@@ -26,8 +26,9 @@ export interface RuleEdit {
   from: number;
   to: number;
   reason: string;
-  status: "pending" | "declined";
+  status: "pending" | "declined" | "approved";
   decline_reason?: string;
+  decision_reason?: string;
 }
 
 export interface SessionState {
@@ -44,11 +45,21 @@ export interface SessionState {
   approvedAt: string | null;
   approvedBy: string | null;
   audit: AuditEntry[];
+  acceptedColumns: string[];
+  heldItems: ExceptionItem[];
+  changes: {
+    terms: { name: string; from: string; to: string; reason: string | null }[];
+    held: string[];
+    exceptions: { id: string; title: string; outcome: ExceptionOutcome }[];
+    columns_accepted: number;
+  };
   readiness: {
     tier1_approved: boolean;
     exceptions_worked: boolean;
+    mapping_accepted: boolean;
     run_complete: boolean;
     no_rule_pending: boolean;
+    all_terms_approved: boolean;
   };
   openItems: string[];
   chainIntact: boolean;
@@ -72,11 +83,16 @@ const initial: SessionState = {
   approvedAt: null,
   approvedBy: null,
   audit: [],
+  acceptedColumns: [],
+  heldItems: [],
+  changes: { terms: [], held: [], exceptions: [], columns_accepted: 0 },
   readiness: {
     tier1_approved: false,
     exceptions_worked: false,
+    mapping_accepted: false,
     run_complete: false,
     no_rule_pending: true,
+    all_terms_approved: false,
   },
   openItems: [],
   chainIntact: true,
@@ -84,16 +100,18 @@ const initial: SessionState = {
 };
 
 type Action =
-  | { type: "intake-done"; workbench: Workbench }
+  | { type: "intake-done"; workbench: Workbench; verified: boolean }
   | { type: "approve-term"; name: string }
   | { type: "bulk-approve"; names: string[] }
   | { type: "queue-term"; name: string }
   | { type: "edit-term"; name: string; value: string; reason: string }
   | { type: "accept-mapping" }
+  | { type: "accept-column"; column: string }
   | { type: "run" }
-  | { type: "work-exception"; id: string; outcome: ExceptionOutcome; note: string }
+  | { type: "work-exception"; id: string; outcome: ExceptionOutcome; note: string; term?: string }
   | { type: "propose-rule"; edit: Omit<RuleEdit, "status"> }
   | { type: "decline-rule"; reason: string }
+  | { type: "approve-rule"; reason: string }
   | { type: "set-actor"; actor: Actor }
   | { type: "approve-load" }
   | { type: "reset" };
@@ -101,7 +119,7 @@ type Action =
 function payloadOf(action: Action): Record<string, unknown> {
   switch (action.type) {
     case "intake-done":
-      return {};
+      return { verified: action.verified };
     case "propose-rule":
       return action.edit;
     case "approve-load":

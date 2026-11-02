@@ -76,6 +76,67 @@ test.describe("when something goes wrong on stage", () => {
   });
 });
 
+test.describe("spec behaviour", () => {
+  test("a term sent to the queue appears there and blocks approval until worked", async ({ page, request }) => {
+    await prepare(request, "worked");
+    await page.goto("/terms");
+    await term(page, "Margin");
+    await page.getByRole("button", { name: "Send to queue" }).click();
+    await page.goto("/exceptions");
+    await page.getByRole("button", { name: /Margin sent to the queue/ }).click();
+    await expect(page.getByText("1 open of 11")).toBeVisible();
+    await page.getByRole("button", { name: "Accept", exact: true }).click();
+    await expect(page.getByText("0 open of 11")).toBeVisible();
+  });
+
+  test("the real pack is accepted when dropped, matched by content", async ({ page, request }) => {
+    await resetCase(request);
+    const { documents } = await (await request.get("/api/workbench")).json();
+    const files = await Promise.all(
+      documents.map(async (doc: { file: string }) => ({
+        name: `copy-of-${doc.file}`,
+        mimeType: "application/octet-stream",
+        buffer: await (await request.get(`/api/pack/${doc.file}`)).body(),
+      })),
+    );
+    await page.goto("/intake");
+    await page.locator('input[type="file"]').setInputFiles(files);
+    await expect(page.getByText("Expected but not received")).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("a stray or missing file is named and the pack is not loaded", async ({ page, request }) => {
+    await resetCase(request);
+    await page.goto("/intake");
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "holiday-photos.zip",
+      mimeType: "application/zip",
+      buffer: Buffer.from("not a pack file"),
+    });
+    await expect(page.getByRole("alert")).toContainText("0 of 8 files matched");
+    await expect(page.getByRole("alert")).toContainText("holiday-photos.zip");
+    await expect(page.getByRole("button", { name: "Load sandbox pack" })).toBeVisible();
+  });
+
+  test("a second analyst can approve a rule change, and the bridge shows its effect", async ({ page, request }) => {
+    await prepare(request, "worked");
+    await request.post("/api/session/events", {
+      data: {
+        type: "propose-rule",
+        actor: "analyst",
+        payload: { rule_id: "E5", from: 75000, to: 70000, reason: "Tighter cap" },
+      },
+    });
+    await page.goto("/approve");
+    await page.getByRole("button", { name: "Second analyst" }).click();
+    await page.getByLabel("Decision reason").fill("Agreed with credit");
+    await page.getByRole("button", { name: "Approve change" }).click();
+    await expect(page.getByText("E5: 75000 to 70000 (approved)")).toBeVisible();
+    await page.goto("/validation");
+    await expect(page.getByText(/loans failing E5/)).toBeVisible();
+    await expect(page.getByText("Unexplained: US$0")).toBeVisible();
+  });
+});
+
 test.describe("keyboard control", () => {
   test("Alt+R resets the case from any screen", async ({ page, request }) => {
     await prepare(request, "terms");

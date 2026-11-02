@@ -14,10 +14,15 @@ export interface Step {
   drill: boolean;
 }
 
+const STEP_LABELS: Record<string, string> = {
+  E1: "Over 30 days past due",
+  E12: "Duplicate VINs",
+};
+
 export function bridgeSteps(run: RunResult): Step[] {
   const steps: Step[] = run.pool_bridge.lines.map((line) => ({
     id: line.rule_id,
-    label: line.rule_id === "E1" ? "Over 30 days past due" : "Duplicate VINs",
+    label: STEP_LABELS[line.rule_id] ?? line.label,
     detail: `${line.loans} loans failing ${line.rule_id}, counted as eligible by the borrower`,
     amount: line.amount,
     drill: true,

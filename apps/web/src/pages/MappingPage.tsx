@@ -35,12 +35,15 @@ export function MappingPage() {
 
   const { rows, requirements, dates } = data.mapping;
   const review = rows.filter((row) => row.confidence !== "high").length;
+  const isAccepted = (column: string) =>
+    state.mappingAccepted || state.acceptedColumns.includes(column);
+  const remaining = rows.filter((row) => !isAccepted(row.column)).length;
 
   return (
     <div>
       <PageHeader
         title="Data mapping"
-        summary={`${rows.length} tape columns mapped to platform fields. ${review} are below high confidence.`}
+        summary={`${rows.length} tape columns mapped to platform fields. ${review} are below high confidence. ${rows.length - remaining} accepted.`}
         actions={
           state.mappingAccepted ? (
             <Button size="lg" onClick={() => navigate("/validation")}>
@@ -50,7 +53,7 @@ export function MappingPage() {
           ) : (
             <Button size="lg" onClick={() => dispatch({ type: "accept-mapping" })}>
               <Check aria-hidden className="size-4" />
-              Accept mapping
+              Accept remaining ({remaining})
             </Button>
           )
         }
@@ -73,7 +76,10 @@ export function MappingPage() {
                   <th className="py-2 pr-4 pl-5">Tape column</th>
                   <th className="py-2 pr-4">Platform field</th>
                   <th className="py-2 pr-4">Sample</th>
-                  <th className="py-2 pr-5">Confidence</th>
+                  <th className="py-2 pr-4">Confidence</th>
+                  <th className="py-2 pr-5">
+                    <span className="sr-only">Decision</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -89,8 +95,22 @@ export function MappingPage() {
                     <td className="numeric max-w-44 truncate py-2 pr-4 text-[0.8125rem] text-muted">
                       {row.sample || "Empty"}
                     </td>
-                    <td className="py-2 pr-5">
+                    <td className="py-2 pr-4">
                       <Confidence level={row.confidence} />
+                    </td>
+                    <td className="py-1.5 pr-5 text-right">
+                      {isAccepted(row.column) ? (
+                        <StatusPill status="approved" label="Accepted" />
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          aria-label={`Accept ${row.column}`}
+                          onClick={() => dispatch({ type: "accept-column", column: row.column })}
+                        >
+                          Accept
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -70,13 +70,18 @@ function VinClusters({ rows }: { rows: LoanRow[] }) {
   );
 }
 
+const DRILL_LABELS: Record<string, string> = {
+  E1: "Over 30 days past due",
+  E12: "Duplicate VINs",
+};
+
 export function LoanDrill({ line }: { line: BridgeLine }) {
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4 border-b border-line px-5 py-3">
         <div>
           <SectionLabel>
-            {line.rule_id}: {line.rule_id === "E1" ? "Over 30 days past due" : "Duplicate VINs"}
+            {line.rule_id}: {DRILL_LABELS[line.rule_id] ?? line.label}
           </SectionLabel>
           <p className="mt-1 text-sm font-medium">
             {line.rule_id === "E12"

@@ -12,7 +12,8 @@ function useCounts(): Record<string, string> {
     return {};
   }
   const approved = data.terms.filter((term) => termStatus(term, state) === "approved").length;
-  const open = data.exceptions.filter((item) => !state.exceptions[item.id]).length;
+  const items = [...data.exceptions, ...state.heldItems];
+  const open = items.filter((item) => !state.exceptions[item.id]).length;
   return {
     "/terms": `${approved}/${data.terms.length}`,
     "/exceptions": open ? `${open} open` : "Done",

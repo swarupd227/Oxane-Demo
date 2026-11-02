@@ -1,3 +1,4 @@
+import hashlib
 import json
 import threading
 from collections.abc import AsyncIterator
@@ -16,7 +17,14 @@ from app import session as case_session
 from app.config import settings
 from app.db import get_session
 from app.deal import Deal, load_deal
-from app.engine_service import active_files, pack_path, rule_preview, validation_run
+from app.engine_service import (
+    active_files,
+    pack_digests,
+    pack_path,
+    rule_preview,
+    validation_run,
+)
+from app.load_file import build_load_file
 from app.models import OnboardingCase
 from app.scoring import scorecard
 from app.seed import workbench
@@ -150,27 +158,8 @@ def get_load_file(session: SessionDep) -> JSONResponse:
     if not state["approvedAt"]:
         raise HTTPException(status_code=409,
                             detail="The load file is available after second-analyst approval")
-    result = validation_run(state["dealerMatched"])
-    edits = state["termEdits"]
     return JSONResponse(
-        {
-            "note": "Sandbox output, not a Panorama import format. All data is synthetic.",
-            "case": load_deal().case.number,
-            "approved_at": state["approvedAt"],
-            "prepared_by": state["preparedBy"],
-            "approved_by": state["approvedByName"],
-            "run_digest": result["digest"],
-            "provisional": result["provisional"],
-            "audit_chain_head": state["chainHead"],
-            "open_items": state["openItems"],
-            "terms": [
-                {"name": term["name"], "tier": term["tier"], "clause": term["clause"],
-                 "value": edits.get(term["name"], term["value"]),
-                 "edited": term["name"] in edits}
-                for term in run["terms"]
-            ],
-            "borrowing_base": result["system"],
-        },
+        build_load_file(run, state),
         headers={"Content-Disposition": 'attachment; filename="case-0412-load-file.json"'},
     )
 
@@ -194,8 +183,20 @@ class RunRequest(BaseModel):
 
 
 @app.post("/api/run")
-def post_run(request: RunRequest) -> dict[str, Any]:
-    return validation_run(request.dealer_match)
+def post_run(request: RunRequest, session: SessionDep) -> dict[str, Any]:
+    # An approved rule change applies to every run from then on.
+    edit = case_session.view(session, current_workbench())["ruleEdit"]
+    approved = edit and edit["status"] == "approved"
+    override = (edit["rule_id"], Decimal(str(edit["to"]))) if approved else None
+    return validation_run(request.dealer_match, override)
+
+
+@app.post("/api/intake/verify")
+async def post_verify(request: Request, name: str) -> dict[str, Any]:
+    """Check one uploaded file against the pack by content. A renamed file still matches."""
+    body = await request.body()
+    match = pack_digests().get(hashlib.sha256(body).hexdigest())
+    return {"name": name, "recognised": match is not None, "file": match}
 
 
 class PreviewRequest(BaseModel):

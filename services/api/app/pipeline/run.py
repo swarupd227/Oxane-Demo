@@ -167,6 +167,8 @@ def run_pipeline(gateway: Gateway, pack_dir: Path, out_dir: Path) -> dict[str, A
     _save(out_dir, "facts.json", {
         "financials": read_financials(documents["financial_statements"]),
         "delinquency_history": read_delinquency_history(documents["servicer_report"]),
+        "origination_dates": dates.resolved,
+        "uncertain_origination_dates": list(dates.uncertain_rows),
         "covenants": {
             "min_tangible_net_worth": amount(values["Minimum tangible net worth covenant"]),
             "max_leverage_ratio": re.findall(r"\d+\.\d+", values["Maximum leverage covenant"])[0],

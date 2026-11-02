@@ -209,10 +209,11 @@ export function RulesPage() {
           <History aria-hidden className="mt-0.5 size-4 shrink-0 text-warn" />
           <p>
             <span className="font-medium">
-              {edit.status === "pending" ? "Pending rule set v2:" : "Declined:"}
+              {{ pending: "Pending rule set v2:", declined: "Declined:", approved: "Approved, rule set v2:" }[edit.status]}
             </span>{" "}
             {edit.rule_id} from {edit.from} to {edit.to}, by {ANALYST}. Reason: {edit.reason}
             {edit.status === "pending" && " Runs still use the approved rule set v1."}
+            {edit.status === "approved" && " All runs now use rule set v2."}
           </p>
         </div>
       )}

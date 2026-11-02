@@ -24,3 +24,4 @@ demo-video/*.mp4
 demo-video/*.jpg
 demo-video/*.png
 demo-video/segments.json
+demo-video/*.log

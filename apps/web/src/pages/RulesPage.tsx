@@ -110,7 +110,21 @@ function RuleRow({ rule, onEdit, pending }: { rule: Rule; onEdit: () => void; pe
         <p className="text-[0.8125rem] leading-snug text-muted">{rule.clause_text}</p>
         <p className="mt-1 text-xs font-medium text-muted">{rule.clause_ref}</p>
       </td>
-      <td className="py-3 pr-5 text-sm font-medium">{rule.plain_english}</td>
+      <td className="py-3 pr-5 text-sm font-medium">
+        {rule.plain_english}
+        {rule.concepts && rule.concepts.length > 0 && (
+          <p className="mt-1.5 flex flex-wrap gap-1" aria-label="Facility Ontology concepts">
+            {rule.concepts.map((label) => (
+              <span
+                key={label}
+                className="rounded border border-line bg-canvas px-1.5 py-px text-xs font-normal text-muted"
+              >
+                {label}
+              </span>
+            ))}
+          </p>
+        )}
+      </td>
       <td className="py-3 pr-5">
         <code className="font-mono text-[0.8125rem] leading-snug">{rule.logic}</code>
         {rule.effective_from && (

@@ -12,7 +12,7 @@ import pytest
 
 from app import engine_service
 from app.config import settings
-from app.pipeline import checks, steps
+from app.pipeline import checks, ontology, steps
 from app.pipeline.assemble import (
     Evidence,
     build_ruleset,
@@ -83,7 +83,7 @@ def scripted_extract(payload):
     fields = []
     for item in key("fields"):
         name = item["name"]
-        if f"- {name}:" not in wanted:
+        if f"- {name} (" not in wanted:
             continue
         missing = name == "Restricted jurisdictions"
         value = item["value"]
@@ -98,7 +98,8 @@ def scripted_extract(payload):
             quote, document = item["quote"] or "", item["document"]
             value = _quoted_value(name, str(value), quote)
         fields.append({"name": name, "found": not missing, "value": "" if missing else value,
-                       "source_document": document, "clause": item["clause"], "quote": quote})
+                       "source_document": document, "clause": item["clause"], "quote": quote,
+                       "concepts": [ontology.for_field(name)]})
     return {"fields": fields}
 
 
@@ -122,13 +123,16 @@ def scripted_rules(_):
         drafts.append({"paragraph": number, "plain_english": rule["plain_english"],
                        "clause_text": rule["clause_text"], "test": test, "field": field,
                        "low": low, "high": high,
-                       "statuses": ["CHARGED_OFF", "REPO"] if number == 2 else []})
+                       "statuses": ["CHARGED_OFF", "REPO"] if number == 2 else [],
+                       "concepts": ["eligibility_criterion"]
+                       + ([ontology.for_tape_field(field)] if field else [])})
     buckets = [("state", None), ("dealer", None), ("long_term", 72), ("used", None),
                ("low_fico", 600)]
     concentration = [
         {"plain_english": rule["plain_english"], "clause_text": rule["clause_text"],
          "clause_ref": rule["clause_ref"], "bucket": bucket, "limit_pct": float(rule["limit_pct"]),
-         "threshold": threshold, "effective_from": rule.get("effective_from")}
+         "threshold": threshold, "effective_from": rule.get("effective_from"),
+         "concepts": ["concentration_limit"]}
         for rule, (bucket, threshold) in zip(rules["concentration"], buckets, strict=True)
     ]
     return {"eligibility": drafts, "concentration": concentration}
@@ -145,7 +149,8 @@ ANSWERS = {
         "quote": 'In Section 2.3, "85%" is deleted and replaced with "82.5%"'}]},
     "rules": scripted_rules,
     "map": lambda _: {"columns": [
-        {"column": c, "field": f, "confidence": "high", "note": None}
+        {"column": c, "field": f, "concept": ontology.for_tape_field(f), "confidence": "high",
+         "note": None}
         for c, f in key("mapping")["columns"].items()]},
     "reqs": lambda _: {"alerts": 6, "requirements": [
         {"requirement": "Weighted average APR", "level": "Pool", "status": "derived",
@@ -334,6 +339,33 @@ def test_a_rule_status_that_is_not_on_the_tape_stops_the_run():
              {"name": "Reserve amount", "value": "1%"}]
     with pytest.raises(ValueError, match="not on the tape"):
         build_ruleset(draft, terms, "2026-01-15", None, ["ACTIVE", "CHARGED_OFF", "REPO"])
+
+
+def test_a_rule_relying_on_a_concept_it_was_not_given_stops_the_run():
+    draft = steps.DraftRules.model_validate(scripted_rules(None))
+    draft.eligibility[0].concepts = ["recovery_rate"]
+    terms = [{"name": "Advance rate", "value": "85%"},
+             {"name": "Facility limit", "value": "US$250,000,000"},
+             {"name": "Reserve amount", "value": "1%"}]
+    with pytest.raises(ValueError, match="not given"):
+        build_ruleset(draft, terms, "2026-01-15", None, ["ACTIVE", "CHARGED_OFF", "REPO"])
+
+
+def test_a_value_in_the_wrong_form_for_its_concept_is_marked_low(tmp_path, monkeypatch):
+    def wrong_form(payload):
+        answer = scripted_extract(payload)
+        for item in answer["fields"]:
+            if item["name"] == "Margin":
+                item["value"] = item["quote"] = "three and a quarter"
+        return answer
+
+    client = Scripted({**ANSWERS, "extract": wrong_form})
+    gateway = Gateway(mode="record", fixtures=tmp_path / "llm", client_factory=lambda: client)
+    monkeypatch.setattr(settings, "pipeline_dir", tmp_path / "run")
+    output = run_pipeline(gateway, PACK, tmp_path / "run")
+    engine_service.reset()
+    term = next(t for t in output["terms"] if t["name"] == "Margin")
+    assert term["confidence"] == "low"
 
 
 def test_prose_around_a_date_is_ignored():

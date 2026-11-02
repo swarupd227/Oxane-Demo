@@ -88,6 +88,11 @@ export function MappingPage() {
                     <td className="py-2 pr-4 pl-5 font-mono text-[0.8125rem]">{row.column}</td>
                     <td className="py-2 pr-4">
                       <span className="font-mono text-[0.8125rem]">{row.field}</span>
+                      {row.concept && (
+                        <p className="mt-0.5 text-xs text-muted" title="Facility Ontology concept">
+                          {row.concept}
+                        </p>
+                      )}
                       {row.note && (
                         <p className="mt-0.5 text-xs text-muted">{row.note}</p>
                       )}

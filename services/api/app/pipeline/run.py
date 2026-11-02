@@ -17,7 +17,7 @@ from openpyxl import load_workbook
 
 from app import engine_service
 from app.config import settings
-from app.pipeline import checks, steps
+from app.pipeline import checks, ontology, steps
 from app.pipeline.assemble import (
     Evidence,
     Scan,
@@ -28,6 +28,7 @@ from app.pipeline.assemble import (
     formula_sources,
     iso_date,
     percent,
+    rule_grounding,
 )
 from app.pipeline.documents import read_pdf
 from app.pipeline.gateway import AnthropicClient, Gateway
@@ -153,8 +154,9 @@ def run_pipeline(gateway: Gateway, pack_dir: Path, out_dir: Path) -> dict[str, A
     effective = next((iso_date(item.effective) for item in classified
                       if item.kind == "Amendment"), None)
     statuses = sorted({row["status"] for row in renamed})
-    ruleset = build_ruleset(steps.draft_rules(gateway, agreement, amendment, statuses), terms,
-                            signing, effective, statuses)
+    draft = steps.draft_rules(gateway, agreement, amendment, statuses)
+    ruleset = build_ruleset(draft, terms, signing, effective, statuses)
+    grounding = rule_grounding(draft)
     requirements = steps.read_requirements(
         gateway, workbooks["lender_requirements"], list(rows[0])).requirements
 
@@ -207,7 +209,9 @@ def run_pipeline(gateway: Gateway, pack_dir: Path, out_dir: Path) -> dict[str, A
         "missing_documents": [{"name": item["name"], "reason": item["reason"]}
                               for item in missing],
         "terms": terms,
-        "rules": engine_service.rule_views(),
+        "ontology_version": ontology.version(),
+        "rules": [{**rule, "concepts": grounding.get(rule["id"], [])}
+                  for rule in engine_service.rule_views()],
         "mapping": {
             "rows": [{**item, "sample": rows[0].get(item["column"], "")} for item in columns],
             "requirements": [{"name": item.requirement, "status": item.status,

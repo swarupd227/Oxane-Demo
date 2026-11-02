@@ -45,6 +45,13 @@ export interface Term {
   original_value?: string;
   amended_value?: string;
   effective_from?: string;
+  grounding?: Grounding;
+}
+
+/** The ontology concept a value belongs to, and the concepts the model said it relied on. */
+export interface Grounding {
+  concept: { id: string; label: string; meaning: string; relations: { type: string; target: string }[] };
+  cited: string[];
 }
 
 export interface Rule {
@@ -57,6 +64,7 @@ export interface Rule {
   threshold: number | null;
   status: "ready" | "not_evaluated";
   effective_from?: string | null;
+  concepts?: string[];
 }
 
 export interface MappingRow {
@@ -65,6 +73,7 @@ export interface MappingRow {
   confidence: "high" | "medium" | "low";
   sample: string;
   note: string | null;
+  concept?: string | null;
 }
 
 export interface Requirement {

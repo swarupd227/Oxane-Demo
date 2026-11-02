@@ -46,18 +46,21 @@ def build_load_file(run: dict[str, Any], state: dict[str, Any]) -> dict[str, Any
             "rules_not_evaluated": result["not_evaluated"],
         },
         "open_items": state["openItems"],
+        "ontology_version": run.get("ontology_version"),
         "facility_terms": [
             {"name": term["name"], "tier": term["tier"], "clause": term["clause"],
              "value": edits.get(term["name"], term["value"]),
              "edited": term["name"] in edits,
-             "effective_from": term.get("effective_from")}
+             "effective_from": term.get("effective_from"),
+             "concept": term["grounding"]["concept"]["id"] if "grounding" in term else None}
             for term in run["terms"]
         ],
         "rules": {
             "version": 2 if override else 1,
             "items": engine_service.rule_views(override),
         },
-        "tape_mapping": [{"column": row["column"], "field": row["field"]}
+        "tape_mapping": [{"column": row["column"], "field": row["field"],
+                          "concept": row.get("concept")}
                          for row in run["mapping"]["rows"]],
         "lender_fields": _lender_fields(run, result),
         "exceptions": [

@@ -26,6 +26,7 @@ from app.engine_service import (
 )
 from app.load_file import build_load_file
 from app.models import OnboardingCase
+from app.pipeline import ontology
 from app.scoring import scorecard
 from app.seed import workbench
 
@@ -108,6 +109,12 @@ def current_workbench() -> dict[str, Any]:
 @app.get("/api/workbench")
 def get_workbench() -> dict[str, Any]:
     return current_workbench()
+
+
+@app.get("/api/ontology")
+def get_ontology() -> dict[str, Any]:
+    return {"version": ontology.version(),
+            "concepts": [ontology.view(cid) for cid in ontology.concepts()]}
 
 
 @app.get("/api/me")

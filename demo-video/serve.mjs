@@ -1,11 +1,11 @@
 // Serves a production build of the web app and proxies /api to the running API, for recording.
-// Usage: node serve.mjs <dist folder>   (port 5184, API on 8010)
+// Usage: node serve.mjs <dist folder>   (port 5187, API on 8010)
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 
 const DIST = path.resolve(process.argv[2] || '../apps/web/dist');
-const PORT = Number(process.env.PORT || 5184);
+const PORT = Number(process.env.PORT || 5187);
 const API = { host: '127.0.0.1', port: Number(process.env.API_PORT || 8010) };
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json',

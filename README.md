@@ -85,6 +85,16 @@ docker compose exec api python -m app.pipeline.run --mode record
 docker compose exec api python -m app.pipeline.run --mode replay
 ```
 
+## Facility Ontology
+
+`services/api/app/pipeline/facility_ontology.yaml` defines the asset-based finance concepts the analyst works with: what each means, the form its value takes, how concepts relate, and which facility terms and tape fields belong to each. Term extraction, tape mapping and rule drafting are grounded in it. The model must cite the concept IDs it relied on, and code checks every answer against it:
+
+- A term citing a concept it was not given, or a value not in its concept's form (an advance rate that is not a percentage, say), drops to low confidence with the reason.
+- A tape column whose concept disagrees with the ontology's is held for review.
+- A rule draft citing a concept it was not given stops the run.
+
+The workbench shows each value's concept on the Terms, Mapping and Rules screens, and `GET /api/ontology` returns the whole ontology.
+
 ## Controls
 
 The session is an append-only log in PostgreSQL. A database trigger refuses updates and deletes, and each event carries the hash of the one before it. The API enforces four-eyes approval, so a preparer cannot approve their own case. The load file exists only after approval, and "Reset the demo" starts a new session without deleting the old one.

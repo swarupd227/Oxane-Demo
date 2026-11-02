@@ -6,7 +6,7 @@ process.chdir(import.meta.dirname);
 const require = createRequire('C:/Users/swarupd/demo/Kinective/atlas-agent-platform/package.json');
 const { chromium } = require('playwright');
 
-const BASE = process.env.APP || 'http://127.0.0.1:5180';
+const BASE = process.env.APP || 'http://127.0.0.1:5187';
 fs.rmSync('probe', { recursive: true, force: true });
 fs.mkdirSync('probe');
 const browser = await chromium.launch({ headless: true });

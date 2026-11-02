@@ -10,9 +10,9 @@ process.chdir(import.meta.dirname);
 const require = createRequire('C:/Users/swarupd/demo/Kinective/atlas-agent-platform/package.json');
 const { chromium } = require('playwright');
 
-const BASE = process.env.APP || 'http://127.0.0.1:5184';
+const BASE = process.env.APP || 'http://127.0.0.1:5187';
 const C = JSON.parse(fs.readFileSync('captions.json', 'utf8'));
-const READ_MS = 5200;
+const READ_MS = 4600; // Captions are one short sentence, so they need less time than before.
 // Recorded 1:1 at 1920x1080: the app is a centred column, so a wider page would only shrink its text.
 const WIDTH = 1920;
 const HEIGHT = 1080;
@@ -47,7 +47,7 @@ const LAYOUT = `
   html, body, #root { height: ${APP}px !important; max-height: ${APP}px !important; overflow: hidden; }
   .min-h-screen { min-height: ${APP}px !important; }
   [role="dialog"] { max-height: ${APP}px !important; }
-  ${[36, 19, 17].map((rem) => `[class*="100vh-${rem}rem"] { max-height: calc(${APP}px - ${rem}rem) !important; }`).join('\n  ')}`;
+  ${[39, 19, 17].map((rem) => `[class*="100vh-${rem}rem"] { max-height: calc(${APP}px - ${rem}rem) !important; }`).join('\n  ')}`;
 const page = await context.newPage();
 const t0 = Date.now();
 const secs = () => (Date.now() - t0) / 1000;
@@ -111,6 +111,11 @@ async function localGo(name) {
   await page.goto(pathToFileURL(path.resolve('pages', `${name}.html`)).href);
   await hold(300);
 }
+// A yellow ring that points the viewer at what the caption describes.
+const spotlight = (locator, on) => locator.evaluate((el, show) => {
+  el.style.transition = 'box-shadow .4s ease';
+  el.style.boxShadow = show ? '0 0 0 3px #FFDD00, 0 0 0 7px rgba(255, 221, 0, .25)' : '';
+}, on);
 const tab = (name) => page.getByRole('navigation', { name: 'Onboarding steps' }).getByRole('link', { name });
 const term = (name) => page.locator('tbody').getByRole('button', { name, exact: true });
 
@@ -155,6 +160,10 @@ await caption(C.facility); await hold(READ_MS);
 await page.keyboard.press('a'); // The approve shortcut: clicking the button would scroll the page.
 await term('Advance rate').click();
 await page.locator('[data-highlight]').first().waitFor({ timeout: 30000 });
+const grounding = page.getByRole('group', { name: 'Ontology grounding' });
+await spotlight(grounding, true);
+await caption(C.ontology); await hold(READ_MS + 600);
+await spotlight(grounding, false);
 await caption(C.amended); await hold(READ_MS);
 await page.keyboard.press('a'); // The approve shortcut: clicking the button would scroll the page.
 await hold(600);
@@ -165,7 +174,11 @@ await hold(2800); await end();
 
 // Rules drafted by the AI, accepted by the engine, and a change held for a second analyst.
 await go('/rules');
-await start('rules'); await caption(C.rules); await hold(READ_MS - 800);
+const ruleConcepts = page.getByLabel('Facility Ontology concepts');
+await start('rules'); await caption(C.rules); await hold(600);
+for (const index of [0, 1]) await spotlight(ruleConcepts.nth(index), true);
+await hold(READ_MS);
+for (const index of [0, 1]) await spotlight(ruleConcepts.nth(index), false);
 await page.getByRole('button', { name: 'Edit E5' }).click();
 await page.getByRole('spinbutton').fill('70000');
 await page.getByText('Loans becoming ineligible').waitFor();
@@ -179,7 +192,11 @@ await hold(2000); await end();
 // Mapping.
 await go('/mapping');
 await page.getByText('38 tape columns mapped').waitFor();
-await start('mapping'); await caption(C.mapping); await hold(2600);
+const columnConcepts = page.locator('[title="Facility Ontology concept"]');
+await start('mapping'); await caption(C.mapping); await hold(600);
+for (const index of [0, 1, 2]) await spotlight(columnConcepts.nth(index), true);
+await hold(READ_MS - 400);
+for (const index of [0, 1, 2]) await spotlight(columnConcepts.nth(index), false);
 await page.getByRole('button', { name: /Accept remaining/ }).click();
 await hold(2600); await end();
 

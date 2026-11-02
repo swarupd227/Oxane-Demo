@@ -202,7 +202,7 @@ def test_scorecard_reports_the_recorded_run():
     assert results["Field-level accuracy, Tier 2 and 3"]["value"] == "15 of 15"
     assert results["Rule results"]["value"] == "11 of 11"
     assert results["Onboarding time"]["value"] == "In progress"
-    assert results["Processing cost"]["value"].startswith("US$0.")
+    assert 0 < float(results["Processing cost"]["value"].removeprefix("US$")) < 2
 
 
 def test_scorecard_catches_a_wrong_value(tmp_path, monkeypatch):

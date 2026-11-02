@@ -60,7 +60,7 @@ export function EvidencePanel({ citation, documents, emptyText }: EvidencePanelP
         tabIndex={0}
         role="region"
         aria-label="Source page"
-        className="max-h-[calc(100vh-36rem)] min-h-64 overflow-auto"
+        className="max-h-[calc(100vh-39rem)] min-h-64 overflow-auto"
       >
         <div style={{ width: `${ZOOMS[zoomIndex] * 100}%` }}>
           <PdfPage

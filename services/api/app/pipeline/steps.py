@@ -7,6 +7,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
+from app.pipeline import ontology
 from app.pipeline.catalogue import FIELDS, PLATFORM_FIELDS
 from app.pipeline.documents import PdfDocument, render_page_png
 from app.pipeline.gateway import Gateway
@@ -93,6 +94,7 @@ class ExtractedField(BaseModel):
     clause: str
     quote: str
     note: str | None = None
+    concepts: list[str] = []
 
 
 class Extraction(BaseModel):
@@ -114,7 +116,9 @@ def extract_terms(gateway: Gateway, documents: dict[str, str], tier1_only: bool)
                 "you answer, and do not assume the obvious clause is the governing one.")
     else:
         role = "Read as the first analyst on this facility."
-    catalogue = "\n".join(f"- {name}: {hint}" for name, _, hint in wanted)
+    catalogue = "\n".join(f"- {name} ({ontology.for_field(name)}): {hint}"
+                          for name, _, hint in wanted)
+    grounded = {ontology.for_field(name) for name, _, _ in wanted}
     return gateway.parse(
         "extract_tier1" if tier1_only else "extract_all", GROUND_RULES,
         [*_document_blocks(documents), {"type": "text", "text": (
@@ -125,7 +129,9 @@ def extract_terms(gateway: Gateway, documents: dict[str, str], tier1_only: bool)
             "`quote`, except for fields that ask how many. Put any caveat in `note`. "
             "`source_document` is the document id. `clause` is the section or schedule. `quote` "
             "is the shortest exact passage that proves the value, and must not run across "
-            "table cells. If a field is not in the pack, set found to false.\n\n" + catalogue
+            "table cells. If a field is not in the pack, set found to false. Each field names "
+            "its concept in brackets.\n\n" + ontology.INSTRUCTION + "\n\n" + catalogue
+            + "\n\n" + ontology.block(grounded)
         )}],
         Extraction,
     )
@@ -198,6 +204,7 @@ class DraftEligibility(BaseModel):
     low: float | None
     high: float | None
     statuses: list[str]
+    concepts: list[str]
 
 
 class DraftConcentration(BaseModel):
@@ -208,6 +215,7 @@ class DraftConcentration(BaseModel):
     limit_pct: float
     threshold: float | None
     effective_from: str | None
+    concepts: list[str]
 
 
 class DraftRules(BaseModel):
@@ -215,12 +223,19 @@ class DraftRules(BaseModel):
     concentration: list[DraftConcentration]
 
 
+def rule_concepts() -> set[str]:
+    """What rule drafting is grounded in: the receivable's concepts and the schedules' own."""
+    return {ontology.for_tape_field(name) for name in PLATFORM_FIELDS} | {
+        "eligibility_criterion", "concentration_limit", "restricted_jurisdiction"}
+
+
 def draft_rules(gateway: Gateway, agreement: PdfDocument, amendment: PdfDocument,
                 tape_statuses: list[str]) -> DraftRules:
     pages = [page.raw for page in agreement.pages
              if re.match(r"\s*Credit Agreement.*\n?\s*SCHEDULE [12]", page.raw)
              or "SCHEDULE 1" in page.raw or "SCHEDULE 2" in page.raw]
-    tape_fields = "\n".join(f"- {name}: {text}" for name, text in PLATFORM_FIELDS.items())
+    tape_fields = "\n".join(f"- {name} ({ontology.for_tape_field(name)}): {text}"
+                            for name, text in PLATFORM_FIELDS.items())
     return gateway.parse(
         "draft_rules", GROUND_RULES,
         [{"type": "text", "text": (
@@ -231,9 +246,11 @@ def draft_rules(gateway: Gateway, agreement: PdfDocument, amendment: PdfDocument
             + ", ".join(tape_statuses) + ". For long_term and low_fico, `threshold` is the "
             "months or score in the row. `clause_text` is the row's wording, copied exactly, "
             "without its number or limit. `clause_ref` reads like Schedule 2, row 3, and for a row "
-            "an amendment adds, Schedule 2, row 5 (added by Amendment No. 1, Section 2(b)).\n\n"
+            "an amendment adds, Schedule 2, row 5 (added by Amendment No. 1, Section 2(b)). "
+            + ontology.INSTRUCTION + "\n\n"
             "Tape fields:\n"
             + tape_fields
+            + "\n\n" + ontology.block(rule_concepts())
             + "\n\nSchedules:\n" + "\n\n".join(pages) + "\n\nAmendment:\n" + amendment.body
         )}],
         DraftRules,
@@ -246,6 +263,7 @@ def draft_rules(gateway: Gateway, agreement: PdfDocument, amendment: PdfDocument
 class ColumnMatch(BaseModel):
     column: str
     field: str | None
+    concept: str | None
     confidence: Literal["high", "medium", "low"]
     note: str | None
 
@@ -256,15 +274,18 @@ class TapeMapping(BaseModel):
 
 def map_tape(gateway: Gateway, rows: list[dict[str, str]]) -> TapeMapping:
     sample = json.dumps(rows[:4], indent=0)
-    fields = "\n".join(f"- {name}: {text}" for name, text in PLATFORM_FIELDS.items())
+    fields = "\n".join(f"- {name} ({ontology.for_tape_field(name)}): {text}"
+                       for name, text in PLATFORM_FIELDS.items())
+    grounded = {ontology.for_tape_field(name) for name in PLATFORM_FIELDS}
     return gateway.parse(
         "map_tape", GROUND_RULES,
         [{"type": "text", "text": (
             "Match each tape column to one platform field, using names and sample values. Add a "
             "note only when something needs a person's attention: one short, plain sentence, "
-            "written for a credit analyst, in UK spelling, without mentioning samples or code."
-            "\n\nPlatform fields:\n"
-            + fields + "\n\nSample rows:\n" + sample)}],
+            "written for a credit analyst, in UK spelling, without mentioning samples or code. "
+            "`concept` is the ID of the ontology concept the column's values express. "
+            + ontology.INSTRUCTION + "\n\nPlatform fields, each with its concept:\n"
+            + fields + "\n\n" + ontology.block(grounded) + "\n\nSample rows:\n" + sample)}],
         TapeMapping, max_tokens=8000,
     )
 

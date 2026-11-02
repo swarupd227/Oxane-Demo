@@ -434,6 +434,7 @@
   "rows": [
    {
     "column": "LoanNumber",
+    "concept": "Receivable",
     "confidence": "high",
     "field": "loan_id",
     "note": null,
@@ -441,6 +442,7 @@
    },
    {
     "column": "VIN",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "vin",
     "note": null,
@@ -448,13 +450,15 @@
    },
    {
     "column": "OrigDate",
+    "concept": "Loan date",
     "confidence": "high",
     "field": "origination_date",
-    "note": "This date is in month/day/year format, unlike the other dates on the tape, so it needs converting consistently.",
+    "note": "Dates in this column are written month first (MM/DD/YYYY), unlike the other date columns, so they need converting before use.",
     "sample": "04/17/2025"
    },
    {
     "column": "FirstPmtDate",
+    "concept": "Loan date",
     "confidence": "high",
     "field": "first_payment_date",
     "note": null,
@@ -462,6 +466,7 @@
    },
    {
     "column": "MaturityDate",
+    "concept": "Loan date",
     "confidence": "high",
     "field": "maturity_date",
     "note": null,
@@ -469,6 +474,7 @@
    },
    {
     "column": "OrigBal",
+    "concept": "Loan amount",
     "confidence": "high",
     "field": "original_balance",
     "note": null,
@@ -476,6 +482,7 @@
    },
    {
     "column": "CurrBal",
+    "concept": "Outstanding balance",
     "confidence": "high",
     "field": "current_balance",
     "note": null,
@@ -483,13 +490,15 @@
    },
    {
     "column": "NoteRate",
-    "confidence": "medium",
+    "concept": "Interest rate",
+    "confidence": "high",
     "field": "apr",
-    "note": "The tape gives a note rate rather than an APR, so confirm with the originator that the two are the same.",
+    "note": null,
     "sample": "21.73"
    },
    {
     "column": "OrigTerm",
+    "concept": "Loan term",
     "confidence": "high",
     "field": "original_term",
     "note": null,
@@ -497,6 +506,7 @@
    },
    {
     "column": "RemTerm",
+    "concept": "Loan term",
     "confidence": "high",
     "field": "remaining_term",
     "note": null,
@@ -504,13 +514,15 @@
    },
    {
     "column": "PmtsMade",
-    "confidence": "medium",
+    "concept": "Loan term",
+    "confidence": "high",
     "field": "payments_made",
-    "note": "This appears to count instalments due to date, including for a loan currently in arrears, so confirm whether it reflects payments actually received.",
+    "note": null,
     "sample": "12"
    },
    {
     "column": "MonthlyPmt",
+    "concept": "Loan amount",
     "confidence": "high",
     "field": "monthly_payment",
     "note": null,
@@ -518,13 +530,15 @@
    },
    {
     "column": "CreditScore",
-    "confidence": "medium",
+    "concept": "Credit score",
+    "confidence": "high",
     "field": "fico",
-    "note": "The tape does not say this is a FICO score taken at origination, so confirm the score type and timing.",
+    "note": null,
     "sample": "614"
    },
    {
     "column": "BorrState",
+    "concept": "Obligor",
     "confidence": "high",
     "field": "obligor_state",
     "note": null,
@@ -532,6 +546,7 @@
    },
    {
     "column": "BorrZip3",
+    "concept": "Obligor",
     "confidence": "high",
     "field": "obligor_zip3",
     "note": null,
@@ -539,6 +554,7 @@
    },
    {
     "column": "EmployType",
+    "concept": "Obligor",
     "confidence": "high",
     "field": "employment_type",
     "note": null,
@@ -546,6 +562,7 @@
    },
    {
     "column": "StatedIncome",
+    "concept": "Obligor",
     "confidence": "high",
     "field": "stated_monthly_income",
     "note": null,
@@ -553,6 +570,7 @@
    },
    {
     "column": "PTI",
+    "concept": "Obligor",
     "confidence": "high",
     "field": "payment_to_income",
     "note": null,
@@ -560,6 +578,7 @@
    },
    {
     "column": "DealerName",
+    "concept": "Dealer",
     "confidence": "high",
     "field": "dealer_name",
     "note": null,
@@ -567,6 +586,7 @@
    },
    {
     "column": "DealerState",
+    "concept": "Dealer",
     "confidence": "high",
     "field": "dealer_state",
     "note": null,
@@ -574,6 +594,7 @@
    },
    {
     "column": "Make",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "vehicle_make",
     "note": null,
@@ -581,6 +602,7 @@
    },
    {
     "column": "Model",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "vehicle_model",
     "note": null,
@@ -588,6 +610,7 @@
    },
    {
     "column": "ModelYr",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "model_year",
     "note": null,
@@ -595,6 +618,7 @@
    },
    {
     "column": "NewUsed",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "vehicle_condition",
     "note": null,
@@ -602,13 +626,15 @@
    },
    {
     "column": "Mileage",
+    "concept": "Financed vehicle",
     "confidence": "medium",
     "field": "odometer_at_origination",
-    "note": "The column name does not say whether this is mileage at origination or current mileage, so confirm with the originator.",
+    "note": "The column name does not say the mileage was taken at origination, so the timing should be confirmed with the servicer.",
     "sample": "30"
    },
    {
     "column": "AmtFinanced",
+    "concept": "Loan amount",
     "confidence": "high",
     "field": "amount_financed",
     "note": null,
@@ -616,6 +642,7 @@
    },
    {
     "column": "BookValue",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "vehicle_book_value",
     "note": null,
@@ -623,6 +650,7 @@
    },
    {
     "column": "LTV",
+    "concept": "Financed vehicle",
     "confidence": "high",
     "field": "loan_to_value",
     "note": null,
@@ -630,6 +658,7 @@
    },
    {
     "column": "DPD",
+    "concept": "Days past due",
     "confidence": "high",
     "field": "days_past_due",
     "note": null,
@@ -637,6 +666,7 @@
    },
    {
     "column": "LastPmtDate",
+    "concept": "Loan date",
     "confidence": "high",
     "field": "last_payment_date",
     "note": null,
@@ -644,13 +674,15 @@
    },
    {
     "column": "NextDueDate",
-    "confidence": "medium",
+    "concept": "Loan date",
+    "confidence": "high",
     "field": "next_due_date",
-    "note": "For some loans the next due date falls on a different day of the month from the first payment date, so arrears figures should be checked.",
+    "note": null,
     "sample": "2026-05-18"
    },
    {
     "column": "ModCount",
+    "concept": "Loan modification",
     "confidence": "high",
     "field": "modification_count",
     "note": null,
@@ -658,6 +690,7 @@
    },
    {
     "column": "LoanStatus",
+    "concept": "Receivable",
     "confidence": "high",
     "field": "status",
     "note": null,
@@ -665,6 +698,7 @@
    },
    {
     "column": "ChgOffDate",
+    "concept": "Charge-off",
     "confidence": "high",
     "field": "charge_off_date",
     "note": null,
@@ -672,6 +706,7 @@
    },
    {
     "column": "ChgOffAmt",
+    "concept": "Charge-off",
     "confidence": "high",
     "field": "charge_off_amount",
     "note": null,
@@ -679,6 +714,7 @@
    },
    {
     "column": "RepoDate",
+    "concept": "Charge-off",
     "confidence": "high",
     "field": "repossession_date",
     "note": null,
@@ -686,6 +722,7 @@
    },
    {
     "column": "ServicerCode",
+    "concept": "Receivable",
     "confidence": "high",
     "field": "servicer_code",
     "note": null,
@@ -693,6 +730,7 @@
    },
    {
     "column": "CutoffDate",
+    "concept": "Receivable",
     "confidence": "high",
     "field": "cutoff_date",
     "note": null,
@@ -706,82 +744,120 @@
    "reason": "Referred to in the credit agreement but not in the pack"
   }
  ],
+ "ontology_version": "1.0",
  "pack_digest": "21e1e2b8d7341c41d52f62d3a0d82d513cbaeeeff2fd9700b02cbb1cbc4775b7",
  "period_end": "2026-04-30",
  "rules": [
   {
    "clause_ref": "Schedule 1, paragraph 1",
    "clause_text": "No scheduled payment on the Receivable is more than 30 days past due.",
+   "concepts": [
+    "Eligibility criterion",
+    "Days past due",
+    "Receivable"
+   ],
    "group": "eligibility",
    "id": "E1",
    "logic": "days_past_due <= 30",
-   "plain_english": "Days past due at the cut-off must be 30 or fewer.",
+   "plain_english": "Ineligible if any scheduled payment is more than 30 days past due at the cut-off date. Days past due must be 30 or less.",
    "status": "ready",
    "threshold": 30.0
   },
   {
    "clause_ref": "Schedule 1, paragraph 2",
    "clause_text": "The Receivable has not been charged off and the related Financed Vehicle has not been repossessed.",
+   "concepts": [
+    "Eligibility criterion",
+    "Charge-off",
+    "Receivable",
+    "Financed vehicle"
+   ],
    "group": "eligibility",
    "id": "E2",
    "logic": "status not in excluded_statuses",
-   "plain_english": "The loan must not be charged off and the vehicle must not be repossessed.",
+   "plain_english": "Ineligible if the loan has been charged off or its vehicle repossessed. The test excludes tape statuses CHARGED_OFF and REPO.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 1, paragraph 3",
    "clause_text": "The original term of the Receivable is 84 months or less.",
+   "concepts": [
+    "Eligibility criterion",
+    "Loan term"
+   ],
    "group": "eligibility",
    "id": "E3",
    "logic": "original_term <= 84",
-   "plain_english": "Original term must be 84 months or less.",
+   "plain_english": "The original term must be 84 months or less.",
    "status": "ready",
    "threshold": 84.0
   },
   {
    "clause_ref": "Schedule 1, paragraph 4",
    "clause_text": "The Obligor's FICO score at origination is 540 or higher.",
+   "concepts": [
+    "Eligibility criterion",
+    "Credit score",
+    "Obligor"
+   ],
    "group": "eligibility",
    "id": "E4",
    "logic": "fico >= 540",
-   "plain_english": "FICO score at origination must be 540 or higher.",
+   "plain_english": "The FICO score at origination must be 540 or higher.",
    "status": "ready",
    "threshold": 540.0
   },
   {
    "clause_ref": "Schedule 1, paragraph 5",
    "clause_text": "The Outstanding Balance of the Receivable does not exceed US$75,000.",
+   "concepts": [
+    "Eligibility criterion",
+    "Outstanding balance"
+   ],
    "group": "eligibility",
    "id": "E5",
    "logic": "current_balance <= 75,000",
-   "plain_english": "Outstanding Balance (tape current_balance) must not exceed US$75,000.",
+   "plain_english": "The outstanding balance must not exceed US$75,000.",
    "status": "ready",
    "threshold": 75000.0
   },
   {
    "clause_ref": "Schedule 1, paragraph 6",
    "clause_text": "The Obligor's billing address is in one of the fifty states of the United States or the District of Columbia.",
+   "concepts": [
+    "Eligibility criterion",
+    "Obligor"
+   ],
    "group": "eligibility",
    "id": "E6",
    "logic": "obligor_state in us_states",
-   "plain_english": "The obligor's billing address must be in one of the fifty US states or DC. The tape has obligor_state but not a separate billing-address field.",
+   "plain_english": "The obligor's billing address must be in one of the 50 US states or the District of Columbia. The tape field obligor_state is the proxy for billing address.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 1, paragraph 7",
    "clause_text": "The Obligor's billing address is not in a Restricted Jurisdiction.",
+   "concepts": [
+    "Eligibility criterion",
+    "Restricted jurisdiction",
+    "Obligor"
+   ],
    "group": "eligibility",
    "id": "E7",
    "logic": "obligor_state not in schedule_4",
-   "plain_english": "The obligor's billing address must not be in a Restricted Jurisdiction. The definition of Restricted Jurisdiction is not in the provided excerpts.",
+   "plain_english": "The obligor's billing address must not be in a Restricted Jurisdiction. The list of Restricted Jurisdictions is not in the material provided, so this test cannot be fully specified without it.",
    "status": "not_evaluated",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 1, paragraph 8",
    "clause_text": "The terms of the Receivable have been modified no more than once since origination.",
+   "concepts": [
+    "Eligibility criterion",
+    "Loan modification"
+   ],
    "group": "eligibility",
    "id": "E8",
    "logic": "modification_count <= 1",
@@ -792,26 +868,39 @@
   {
    "clause_ref": "Schedule 1, paragraph 9",
    "clause_text": "The annual percentage rate of the Receivable is not less than 6.00% and not more than 29.99%.",
+   "concepts": [
+    "Eligibility criterion",
+    "Interest rate"
+   ],
    "group": "eligibility",
    "id": "E9",
    "logic": "6.00 <= apr <= 29.99",
-   "plain_english": "APR must be between 6.00% and 29.99% inclusive. Confirm whether the tape stores apr as a percentage or a decimal.",
+   "plain_english": "The APR must be between 6.00% and 29.99%, inclusive. The units of the tape's apr field (percent or decimal) should be confirmed.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 1, paragraph 10",
    "clause_text": "The model year of the Financed Vehicle is no more than ten years before the year of origination of the Receivable.",
+   "concepts": [
+    "Eligibility criterion",
+    "Financed vehicle",
+    "Loan date"
+   ],
    "group": "eligibility",
    "id": "E10",
    "logic": "year(origination_date) - model_year <= 10",
-   "plain_english": "The vehicle model year must be no more than ten years before the year of origination, comparing model_year with the year of origination_date.",
+   "plain_english": "The vehicle's model year must be no more than 10 years before the year of the loan's origination date.",
    "status": "ready",
    "threshold": 10.0
   },
   {
    "clause_ref": "Schedule 1, paragraph 11",
    "clause_text": "The Obligor has made at least one scheduled payment on the Receivable.",
+   "concepts": [
+    "Eligibility criterion",
+    "Loan term"
+   ],
    "group": "eligibility",
    "id": "E11",
    "logic": "payments_made >= 1",
@@ -822,65 +911,105 @@
   {
    "clause_ref": "Schedule 1, paragraph 12",
    "clause_text": "The Financed Vehicle is identified by a Vehicle Identification Number that appears on no other Receivable in the Pool.",
+   "concepts": [
+    "Eligibility criterion",
+    "Financed vehicle",
+    "Receivable"
+   ],
    "group": "eligibility",
    "id": "E12",
    "logic": "vin appears once in the tape",
-   "plain_english": "The VIN must not appear on any other loan in the pool.",
+   "plain_english": "The VIN must appear on no other loan in the pool. A duplicate VIN suggests the vehicle was pledged twice.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 2, row 1",
    "clause_text": "Obligors with a billing address in any one state",
+   "concepts": [
+    "Concentration limit",
+    "Excess concentration",
+    "Eligible pool",
+    "Outstanding balance",
+    "Obligor"
+   ],
    "effective_from": null,
    "group": "concentration",
    "id": "C1",
    "logic": "largest group <= 20% of eligible pool",
-   "plain_english": "Balance of obligors with a billing address in any single state is limited to 20% of the Eligible Pool Balance.",
+   "plain_english": "Eligible loans to obligors with a billing address in any one state may be at most 20% of the eligible pool balance. Any excess is an excess concentration.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 2, row 2",
    "clause_text": "Receivables originated by any one Dealer, treating Dealers under common ownership or trading under variations of one name as one Dealer",
+   "concepts": [
+    "Concentration limit",
+    "Excess concentration",
+    "Eligible pool",
+    "Outstanding balance",
+    "Dealer"
+   ],
    "effective_from": null,
    "group": "concentration",
    "id": "C2",
    "logic": "largest group <= 5% of eligible pool",
-   "plain_english": "Balance originated by any one dealer is limited to 5% of the Eligible Pool Balance. Dealers under common ownership or trading under variations of one name count as one dealer, which dealer_name alone may not show.",
+   "plain_english": "Eligible loans originated by any one dealer may be at most 5% of the eligible pool balance. Dealers under common ownership or trading under variations of one name count as one dealer. Common ownership is not on the tape.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 2, row 3",
    "clause_text": "Receivables with an original term of more than 72 months",
+   "concepts": [
+    "Concentration limit",
+    "Excess concentration",
+    "Eligible pool",
+    "Outstanding balance",
+    "Loan term"
+   ],
    "effective_from": null,
    "group": "concentration",
    "id": "C3",
    "logic": "share(original_term > 72) <= 25% of eligible pool",
-   "plain_english": "Balance of loans with an original term of more than 72 months (strictly greater) is limited to 25% of the Eligible Pool Balance.",
+   "plain_english": "Eligible loans with an original term of more than 72 months may be at most 25% of the eligible pool balance.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 2, row 4",
    "clause_text": "Receivables secured by used Financed Vehicles",
+   "concepts": [
+    "Concentration limit",
+    "Excess concentration",
+    "Eligible pool",
+    "Outstanding balance",
+    "Financed vehicle"
+   ],
    "effective_from": null,
    "group": "concentration",
    "id": "C5",
    "logic": "share(vehicle_condition in used_conditions) <= 70% of eligible pool",
-   "plain_english": "Balance of loans secured by used vehicles is limited to 70% of the Eligible Pool Balance.",
+   "plain_english": "Eligible loans secured by used vehicles may be at most 70% of the eligible pool balance.",
    "status": "ready",
    "threshold": null
   },
   {
    "clause_ref": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))",
    "clause_text": "Receivables with an Obligor FICO score at origination below 600",
+   "concepts": [
+    "Concentration limit",
+    "Excess concentration",
+    "Eligible pool",
+    "Outstanding balance",
+    "Credit score"
+   ],
    "effective_from": "2026-03-01",
    "group": "concentration",
    "id": "C4",
    "logic": "share(fico < 600) <= 35% of eligible pool",
-   "plain_english": "From 1 March 2026, the balance of loans with an origination FICO below 600 (strictly less) is limited to 35% of the Eligible Pool Balance. Amendment No. 1 also has conditions to effectiveness in its Section 3.",
+   "plain_english": "Added by Amendment No. 1 with effect from 1 March 2026. Eligible loans whose obligor's FICO at origination is below 600 may be at most 35% of the eligible pool balance. Per Section 2(c), it applies to Borrowing Base Certificates for Collection Periods ending on or after 1 March 2026.",
    "status": "ready",
    "threshold": null
   }
@@ -892,6 +1021,22 @@
    "clause": "Annex A (Commitment Schedule)",
    "confidence": "low",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Facility limit"
+    ],
+    "concept": {
+     "id": "facility_limit",
+     "label": "Facility limit",
+     "meaning": "The most the lender has committed to lend under the facility.",
+     "relations": [
+      {
+       "target": "Availability",
+       "type": "caps"
+      }
+     ]
+    }
+   },
    "name": "Facility limit",
    "provenance": "ai",
    "source": {
@@ -933,6 +1078,27 @@
    "confidence": "high",
    "document": "amendment_1",
    "effective_from": "2026-03-01",
+   "grounding": {
+    "cited": [
+     "Advance rate",
+     "Amendment"
+    ],
+    "concept": {
+     "id": "advance_rate",
+     "label": "Advance rate",
+     "meaning": "The share of the eligible pool, after excess concentration, that the lender will advance.",
+     "relations": [
+      {
+       "target": "Eligible pool",
+       "type": "applies to"
+      },
+      {
+       "target": "Amendment",
+       "type": "can be changed by"
+      }
+     ]
+    }
+   },
    "name": "Advance rate",
    "original_value": "85%",
    "provenance": "ai",
@@ -958,6 +1124,28 @@
    "clause": "Schedule 1",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Eligibility criterion",
+     "Eligible pool",
+     "Restricted jurisdiction"
+    ],
+    "concept": {
+     "id": "eligibility_criterion",
+     "label": "Eligibility criterion",
+     "meaning": "A test every receivable must pass. A receivable that fails any test is excluded in full.",
+     "relations": [
+      {
+       "target": "Receivable",
+       "type": "tests"
+      },
+      {
+       "target": "Eligible pool",
+       "type": "decides"
+      }
+     ]
+    }
+   },
    "name": "Eligibility criteria",
    "provenance": "ai",
    "source": {
@@ -965,10 +1153,16 @@
     "page": 58,
     "rects": [
      {
-      "bottom": 0.5188989735612966,
-      "top": 0.5069803950762508,
-      "x0": 0.170531852572572,
-      "x1": 0.32155467014686734
+      "bottom": 0.13709413162385575,
+      "top": 0.12516229802911927,
+      "x0": 0.1277083353279463,
+      "x1": 0.8720341102749694
+     },
+     {
+      "bottom": 0.15051138521444918,
+      "top": 0.14132389877781726,
+      "x0": 0.12772548899931066,
+      "x1": 0.17296813516055837
      }
     ]
    },
@@ -1003,6 +1197,27 @@
    "clause": "Schedule 2",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Concentration limit",
+     "Amendment"
+    ],
+    "concept": {
+     "id": "concentration_limit",
+     "label": "Concentration limit",
+     "meaning": "The most of the eligible pool that one group of receivables may make up, such as one dealer or one state.",
+     "relations": [
+      {
+       "target": "Eligible pool",
+       "type": "measured against"
+      },
+      {
+       "target": "Excess concentration",
+       "type": "produces"
+      }
+     ]
+    }
+   },
    "name": "Concentration limits",
    "provenance": "ai",
    "source": {
@@ -1024,9 +1239,33 @@
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1, definition of Borrowing Base",
+   "clause": "Section 1.1 (definition of Borrowing Base)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Excess concentration",
+     "Eligible pool",
+     "Advance rate",
+     "Borrowing base",
+     "Concentration limit"
+    ],
+    "concept": {
+     "id": "excess_concentration",
+     "label": "Excess concentration",
+     "meaning": "The amount by which a group of receivables exceeds its concentration limit.",
+     "relations": [
+      {
+       "target": "Eligible pool",
+       "type": "deducted from"
+      },
+      {
+       "target": "Advance rate",
+       "type": "deducted before"
+      }
+     ]
+    }
+   },
    "name": "Excess concentration treatment",
    "provenance": "ai",
    "source": {
@@ -1036,7 +1275,7 @@
      {
       "bottom": 0.8603264009109651,
       "top": 0.8483945769493026,
-      "x0": 0.6720858804540697,
+      "x0": 0.6955827700546364,
       "x1": 0.8722059461805556
      },
      {
@@ -1049,14 +1288,32 @@
    },
    "status": "review",
    "tier": 1,
-   "value": "Deducted from Eligible Pool Balance before applying Advance Rate",
+   "value": "Deducted from Eligible Pool Balance before Advance Rate",
    "verified": true
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1, definition of Reserve Amount",
+   "clause": "Section 1.1 (definition of Reserve Amount)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Reserve",
+     "Eligible pool",
+     "Borrowing base"
+    ],
+    "concept": {
+     "id": "reserve",
+     "label": "Reserve",
+     "meaning": "An amount held back from the borrowing base, set as a share of the eligible pool.",
+     "relations": [
+      {
+       "target": "Borrowing base",
+       "type": "deducted from"
+      }
+     ]
+    }
+   },
    "name": "Reserve amount",
    "provenance": "ai",
    "source": {
@@ -1065,9 +1322,9 @@
     "rects": [
      {
       "bottom": 0.6434072244046914,
-      "top": 0.6314753908099551,
-      "x0": 0.41395341960433263,
-      "x1": 0.7689461302913092
+      "top": 0.6313693499324298,
+      "x0": 0.12887499690834991,
+      "x1": 0.7723947163500817
      }
     ]
    },
@@ -1081,6 +1338,23 @@
    "clause": "Section 7.1",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Delinquency trigger",
+     "Days past due"
+    ],
+    "concept": {
+     "id": "delinquency_trigger",
+     "label": "Delinquency trigger",
+     "meaning": "A pool test on the share of receivables past due. A breach stops new advances.",
+     "relations": [
+      {
+       "target": "Days past due",
+       "type": "measured by"
+      }
+     ]
+    }
+   },
    "name": "Delinquency trigger",
    "provenance": "ai",
    "source": {
@@ -1111,6 +1385,17 @@
    "clause": "Section 6.12(a)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Tangible net worth covenant"
+    ],
+    "concept": {
+     "id": "tangible_net_worth_covenant",
+     "label": "Tangible net worth covenant",
+     "meaning": "The least tangible net worth the borrower's parent must keep.",
+     "relations": []
+    }
+   },
    "name": "Minimum tangible net worth covenant",
    "provenance": "ai",
    "source": {
@@ -1127,7 +1412,7 @@
       "bottom": 0.3449115945835306,
       "top": 0.3334173337377683,
       "x0": 0.1689019546010136,
-      "x1": 0.3817328160105188
+      "x1": 0.38524996688942503
      }
     ]
    },
@@ -1141,6 +1426,23 @@
    "clause": "Section 6.12(b)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Leverage covenant",
+     "Leverage ratio"
+    ],
+    "concept": {
+     "id": "leverage_covenant",
+     "label": "Leverage covenant",
+     "meaning": "The highest leverage ratio the borrower's parent may reach.",
+     "relations": [
+      {
+       "target": "Leverage ratio",
+       "type": "tests"
+      }
+     ]
+    }
+   },
    "name": "Maximum leverage covenant",
    "provenance": "ai",
    "source": {
@@ -1148,16 +1450,16 @@
     "page": 43,
     "rects": [
      {
-      "bottom": 0.3669122638124408,
+      "bottom": 0.3696698275479403,
       "top": 0.35773799395320394,
-      "x0": 0.8415638044768688,
+      "x0": 0.38436924554164115,
       "x1": 0.8718456193512562
      },
      {
       "bottom": 0.383126923532197,
       "top": 0.3738996332341974,
       "x0": 0.1689019546010136,
-      "x1": 0.3283235138537837
+      "x1": 0.33184066473268997
      }
     ]
    },
@@ -1171,6 +1473,17 @@
    "clause": "Section 6.12(d)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Liquidity covenant"
+    ],
+    "concept": {
+     "id": "liquidity_covenant",
+     "label": "Liquidity covenant",
+     "meaning": "The least unrestricted cash the borrower's parent must hold.",
+     "relations": []
+    }
+   },
    "name": "Minimum liquidity covenant",
    "provenance": "ai",
    "source": {
@@ -1181,7 +1494,13 @@
       "bottom": 0.4817910242562342,
       "top": 0.46927585023822205,
       "x0": 0.338349884631587,
-      "x1": 0.6985650156058517
+      "x1": 0.8723258224188113
+     },
+     {
+      "bottom": 0.4952083549114189,
+      "top": 0.4860208299424913,
+      "x0": 0.16905636257595485,
+      "x1": 0.27798526738983353
      }
     ]
    },
@@ -1192,9 +1511,27 @@
   },
   {
    "also_cited": [],
-   "clause": "Schedule 4",
+   "clause": "Section 1.1 (definition of Restricted Jurisdiction); Schedule 4",
    "confidence": "none",
    "document": "",
+   "grounding": {
+    "cited": [],
+    "concept": {
+     "id": "restricted_jurisdiction",
+     "label": "Restricted jurisdiction",
+     "meaning": "A place where an obligor's billing address makes the receivable ineligible.",
+     "relations": [
+      {
+       "target": "Eligibility criterion",
+       "type": "tested by"
+      },
+      {
+       "target": "Obligor",
+       "type": "applies to"
+      }
+     ]
+    }
+   },
    "name": "Restricted jurisdictions",
    "provenance": "ai",
    "source": null,
@@ -1208,6 +1545,17 @@
    "clause": "Section 2.6(a)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Margin"
+    ],
+    "concept": {
+     "id": "margin",
+     "label": "Margin",
+     "meaning": "The interest the borrower pays over the benchmark rate, Term SOFR.",
+     "relations": []
+    }
+   },
    "name": "Margin",
    "provenance": "ai",
    "source": {
@@ -1215,9 +1563,15 @@
     "page": 18,
     "rects": [
      {
+      "bottom": 0.392922372529001,
+      "top": 0.38402653703785905,
+      "x0": 0.8356788984311172,
+      "x1": 0.8724974588631025
+     },
+     {
       "bottom": 0.41184157554549405,
       "top": 0.39990974195075757,
-      "x0": 0.44509319230621935,
+      "x0": 0.16934803732080397,
       "x1": 0.6268701491013072
      }
     ]
@@ -1232,6 +1586,23 @@
    "clause": "Section 2",
    "confidence": "high",
    "document": "fee_letter",
+   "grounding": {
+    "cited": [
+     "Unused fee",
+     "Facility limit"
+    ],
+    "concept": {
+     "id": "unused_fee",
+     "label": "Unused fee",
+     "meaning": "A yearly fee on the part of the facility limit that is not drawn.",
+     "relations": [
+      {
+       "target": "Facility limit",
+       "type": "charged on"
+      }
+     ]
+    }
+   },
    "name": "Unused fee",
    "provenance": "ai",
    "source": {
@@ -1242,7 +1613,13 @@
       "bottom": 0.45148799395320394,
       "top": 0.43955616035846745,
       "x0": 0.25376518099915746,
-      "x1": 0.4778505213120404
+      "x1": 0.8722058464499081
+     },
+     {
+      "bottom": 0.4676496332341974,
+      "top": 0.455717799639461,
+      "x0": 0.12791421678331164,
+      "x1": 0.5486225801355699
      }
     ]
    },
@@ -1256,6 +1633,17 @@
    "clause": "Section 2.7",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Interest period"
+    ],
+    "concept": {
+     "id": "interest_period",
+     "label": "Interest period",
+     "meaning": "How long each interest period runs, and the day interest is paid.",
+     "relations": []
+    }
+   },
    "name": "Interest period and payment date",
    "provenance": "ai",
    "source": {
@@ -1263,16 +1651,28 @@
     "page": 18,
     "rects": [
      {
+      "bottom": 0.5242152743869357,
+      "top": 0.5122834407921993,
+      "x0": 0.19323474908965865,
+      "x1": 0.8734067031760621
+     },
+     {
+      "bottom": 0.5403769136679293,
+      "top": 0.5284450800731928,
+      "x0": 0.1688504811205895,
+      "x1": 0.8449852637995302
+     },
+     {
       "bottom": 0.5641142719923848,
       "top": 0.5521824383976484,
-      "x0": 0.19430037105784698,
+      "x0": 0.16945097181532118,
       "x1": 0.8012949625651041
      }
     ]
    },
    "status": "review",
    "tier": 2,
-   "value": "One month; 15th of each month",
+   "value": "One month; 15th day of each calendar month",
    "verified": true
   },
   {
@@ -1280,6 +1680,23 @@
    "clause": "Schedule 3, item 1",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Reporting obligation",
+     "Borrowing base certificate"
+    ],
+    "concept": {
+     "id": "reporting_obligation",
+     "label": "Reporting obligation",
+     "meaning": "What the borrower must deliver to the lender, and by when.",
+     "relations": [
+      {
+       "target": "Borrowing base certificate",
+       "type": "includes"
+      }
+     ]
+    }
+   },
    "name": "Borrowing base reporting date",
    "provenance": "ai",
    "source": {
@@ -1308,7 +1725,7 @@
    },
    "status": "review",
    "tier": 2,
-   "value": "15th Business Day after month end",
+   "value": "15th Business Day after each month end",
    "verified": true
   },
   {
@@ -1316,6 +1733,22 @@
    "clause": "Schedule 3, items 3 and 4",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Reporting obligation"
+    ],
+    "concept": {
+     "id": "reporting_obligation",
+     "label": "Reporting obligation",
+     "meaning": "What the borrower must deliver to the lender, and by when.",
+     "relations": [
+      {
+       "target": "Borrowing base certificate",
+       "type": "includes"
+      }
+     ]
+    }
+   },
    "name": "Financial statement reporting",
    "provenance": "ai",
    "source": {
@@ -1338,14 +1771,25 @@
    },
    "status": "review",
    "tier": 2,
-   "value": "Quarterly: 45 days after quarter end; annual: 120 days after year end",
+   "value": "45 days after quarter end; 120 days after year end",
    "verified": true
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1, definition of Revolving Period End Date",
+   "clause": "Section 1.1 (definition of Revolving Period End Date)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Revolving period"
+    ],
+    "concept": {
+     "id": "revolving_period",
+     "label": "Revolving period",
+     "meaning": "The period in which the borrower may draw and repay. New advances stop at its end.",
+     "relations": []
+    }
+   },
    "name": "Revolving period end",
    "provenance": "ai",
    "source": {
@@ -1367,9 +1811,20 @@
   },
   {
    "also_cited": [],
-   "clause": "Section 1.1, definition of Final Maturity Date",
+   "clause": "Section 1.1 (definition of Final Maturity Date)",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Final maturity"
+    ],
+    "concept": {
+     "id": "final_maturity",
+     "label": "Final maturity",
+     "meaning": "The date by which every advance must be repaid.",
+     "relations": []
+    }
+   },
    "name": "Final maturity",
    "provenance": "ai",
    "source": {
@@ -1394,17 +1849,28 @@
    "clause": "Section 8.1",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Event of default"
+    ],
+    "concept": {
+     "id": "event_of_default",
+     "label": "Event of default",
+     "meaning": "An event that lets the lender stop lending and demand repayment.",
+     "relations": []
+    }
+   },
    "name": "Event of default list",
    "provenance": "ai",
    "source": {
     "document": "credit_agreement",
-    "page": 47,
+    "page": 46,
     "rects": [
      {
-      "bottom": 0.31259918212890625,
-      "top": 0.30076013430200443,
-      "x0": 0.16945097181532118,
-      "x1": 0.3545248742197074
+      "bottom": 0.6143668203642874,
+      "top": 0.602434986769551,
+      "x0": 0.1276568618475222,
+      "x1": 0.4487476224213644
      }
     ]
    },
@@ -1418,6 +1884,23 @@
    "clause": "Alerts sheet",
    "confidence": "high",
    "document": "lender_requirements",
+   "grounding": {
+    "cited": [
+     "Alert threshold",
+     "Availability"
+    ],
+    "concept": {
+     "id": "alert_threshold",
+     "label": "Alert threshold",
+     "meaning": "A level the lender asks to be told about, such as availability falling below a set amount.",
+     "relations": [
+      {
+       "target": "Availability",
+       "type": "watches"
+      }
+     ]
+    }
+   },
    "name": "Lender alert thresholds",
    "provenance": "ai",
    "source": null,
@@ -1431,6 +1914,17 @@
    "clause": "Preamble",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Party"
+    ],
+    "concept": {
+     "id": "party",
+     "label": "Party",
+     "meaning": "A person or company named in the agreement, with its role and notice address.",
+     "relations": []
+    }
+   },
    "name": "Borrower, parent and servicer names",
    "provenance": "ai",
    "source": {
@@ -1467,6 +1961,17 @@
    "clause": "Preamble",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Party"
+    ],
+    "concept": {
+     "id": "party",
+     "label": "Party",
+     "meaning": "A person or company named in the agreement, with its role and notice address.",
+     "relations": []
+    }
+   },
    "name": "Lender and agent names",
    "provenance": "ai",
    "source": {
@@ -1497,6 +2002,17 @@
    "clause": "Section 10.9",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Governing law"
+    ],
+    "concept": {
+     "id": "governing_law",
+     "label": "Governing law",
+     "meaning": "The law under which the agreement is read and enforced.",
+     "relations": []
+    }
+   },
    "name": "Governing law",
    "provenance": "ai",
    "source": {
@@ -1506,7 +2022,7 @@
      {
       "bottom": 0.5166395168111781,
       "top": 0.5047076832164418,
-      "x0": 0.5861572564816943,
+      "x0": 0.12774264267067503,
       "x1": 0.8720684176176982
      },
      {
@@ -1519,7 +2035,7 @@
    },
    "status": "review",
    "tier": 3,
-   "value": "New York",
+   "value": "New York law",
    "verified": true
   },
   {
@@ -1527,6 +2043,17 @@
    "clause": "Preamble",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Agreement date"
+    ],
+    "concept": {
+     "id": "agreement_date",
+     "label": "Agreement date",
+     "meaning": "The date the agreement was signed.",
+     "relations": []
+    }
+   },
    "name": "Signing date",
    "provenance": "ai",
    "source": {
@@ -1536,7 +2063,7 @@
      {
       "bottom": 0.1370940545592645,
       "top": 0.12516222096452811,
-      "x0": 0.5018522973154106,
+      "x0": 0.4839484520207823,
       "x1": 0.7536507400811887
      }
     ]
@@ -1551,6 +2078,23 @@
    "clause": "Preamble; Sections 2 and 3",
    "confidence": "high",
    "document": "amendment_1",
+   "grounding": {
+    "cited": [
+     "Amendment",
+     "Agreement date"
+    ],
+    "concept": {
+     "id": "amendment",
+     "label": "Amendment",
+     "meaning": "A signed change to the agreement. It applies from its effective date, not its signing date.",
+     "relations": [
+      {
+       "target": "Advance rate",
+       "type": "changes"
+      }
+     ]
+    }
+   },
    "name": "Amendment dates",
    "provenance": "ai",
    "source": {
@@ -1575,6 +2119,17 @@
    "clause": "Section 10.2",
    "confidence": "high",
    "document": "credit_agreement",
+   "grounding": {
+    "cited": [
+     "Party"
+    ],
+    "concept": {
+     "id": "party",
+     "label": "Party",
+     "meaning": "A person or company named in the agreement, with its role and notice address.",
+     "relations": []
+    }
+   },
    "name": "Notice addresses",
    "provenance": "ai",
    "source": {
@@ -1597,22 +2152,28 @@
       "bottom": 0.6378516380232995,
       "top": 0.625919804428563,
       "x0": 0.12774264267067503,
-      "x1": 0.7965144238440819
+      "x1": 0.8710736044092116
+     },
+     {
+      "bottom": 0.6540132773042929,
+      "top": 0.6420814437095566,
+      "x0": 0.12753676121530969,
+      "x1": 0.3087475346583946
      }
     ]
    },
    "status": "review",
    "tier": 3,
-   "value": "Borrower: 2100 Larkspur Parkway, Suite 900, Plano, Texas 75024; Lender: 40 Lothbury Square, London EC2R 7HH",
+   "value": "Borrower: 2100 Larkspur Parkway, Suite 900, Plano, Texas 75024 (Attn: Treasurer); Lender: 40 Lothbury Square, London EC2R 7HH (Attn: Warehouse Lending Desk)",
    "verified": true
   }
  ],
  "usage": {
   "calls": 9,
-  "cost_usd": 0.9668,
-  "input_tokens": 24840,
+  "cost_usd": 1.0532,
+  "input_tokens": 33156,
   "model": "claude-opus-5-5",
-  "model_seconds": 198,
-  "output_tokens": 23723
+  "model_seconds": 218,
+  "output_tokens": 25776
  }
 }

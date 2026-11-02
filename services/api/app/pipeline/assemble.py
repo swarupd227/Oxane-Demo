@@ -8,6 +8,7 @@ from typing import Any
 
 from engine.rules import RuleSet
 
+from app.pipeline import ontology
 from app.pipeline.catalogue import FIELDS, PLATFORM_FIELDS, US_STATES
 from app.pipeline.checks import contains_value, values_agree
 from app.pipeline.documents import PdfDocument, find_citation, normalise
@@ -20,6 +21,7 @@ from app.pipeline.steps import (
     Extraction,
     ResolvedFormula,
     ScanRead,
+    rule_concepts,
 )
 
 # Sent to the workbench and to the queue when a value cannot be checked.
@@ -111,15 +113,18 @@ def build_terms(first: Extraction, second: Extraction, evidence: Evidence,
     """Return the 26 terms, and any problem a person needs to look at."""
     by_name = {item.name: item for item in first.fields}
     reviewer = {item.name: item for item in second.fields}
+    given = ontology.grounding({ontology.for_field(name) for name, _, _ in FIELDS})
     terms, problems = [], []
 
     for name, tier, _ in FIELDS:
         item = by_name.get(name)
+        concept = ontology.for_field(name)
         if item is None or not item.found:
             terms.append({
                 "name": name, "tier": tier, "value": "Not found", "confidence": "none",
                 "status": "missing", "clause": item.clause if item else "", "document": "",
                 "source": None, "also_cited": [], "provenance": "ai", "verified": False,
+                "grounding": {"concept": ontology.view(concept), "cited": []},
             })
             continue
         source, found_by = evidence.verify(item.source_document, item.quote)
@@ -129,13 +134,28 @@ def build_terms(first: Extraction, second: Extraction, evidence: Evidence,
         agreed = (values_agree(item.value, second_read.value) and second_read.found
                   if tier == 1 and second_read else None)
         confidence = _confidence(found_by, supported, tier, agreed)
+        # Grounding holds only if the model cited concepts it was given, and the value takes
+        # the form its concept defines.
+        stray = ontology.unknown(item.concepts, given)
+        misshapen = ontology.form_problem(concept, item.value)
+        if stray or misshapen:
+            confidence = "low"
         terms.append({
             "name": name, "tier": tier, "value": item.value, "confidence": confidence,
             "status": "review", "clause": item.clause, "document": item.source_document,
             "source": source, "also_cited": [], "provenance": "ai",
             "verified": found_by != UNVERIFIED and supported,
+            "grounding": {
+                "concept": ontology.view(concept),
+                "cited": [ontology.view(cid)["label"] for cid in item.concepts if cid not in stray],
+            },
         })
-        if found_by == UNVERIFIED or not supported:
+        if stray:
+            problems.append(_problem(name, item, "It relied on concepts it was not given: "
+                                     + ", ".join(stray) + "."))
+        elif misshapen:
+            problems.append(_problem(name, item, misshapen))
+        elif found_by == UNVERIFIED or not supported:
             problems.append(_problem(name, item, "Its quote could not be found in the document."
                                      if found_by == UNVERIFIED
                                      else "The quote does not contain the value."))
@@ -275,6 +295,9 @@ def build_ruleset(draft: DraftRules, terms: list[dict[str, Any]], signing_date: 
     unknown = {s for item in draft.eligibility for s in item.statuses} - set(tape_statuses)
     if unknown:
         raise ValueError(f"Rule draft names statuses that are not on the tape: {sorted(unknown)}")
+    cited = [cid for item in [*draft.eligibility, *draft.concentration] for cid in item.concepts]
+    if stray := ontology.unknown(cited, ontology.grounding(rule_concepts())):
+        raise ValueError(f"Rule draft relies on concepts it was not given: {stray}")
     values = {term["name"]: term for term in terms}
     rate = values["Advance rate"]
     original = rate.get("original_value", rate["value"])
@@ -297,6 +320,14 @@ def build_ruleset(draft: DraftRules, terms: list[dict[str, Any]], signing_date: 
     })
 
 
+def rule_grounding(draft: DraftRules) -> dict[str, list[str]]:
+    """The concepts each drafted rule relied on, by rule ID, as labels for the workbench."""
+    labels = {cid: concept["label"] for cid, concept in ontology.concepts().items()}
+    grounding = {f"E{item.paragraph}": item.concepts for item in draft.eligibility}
+    grounding |= {BUCKET_IDS[item.bucket]: item.concepts for item in draft.concentration}
+    return {rule: [labels[cid] for cid in ids if cid in labels] for rule, ids in grounding.items()}
+
+
 NUMERIC_FIELDS = {"original_balance", "current_balance", "apr", "original_term", "fico",
                   "days_past_due", "payments_made", "remaining_term", "model_year",
                   "modification_count"}
@@ -304,13 +335,20 @@ NUMERIC_FIELDS = {"original_balance", "current_balance", "apr", "original_term",
 
 def check_mapping(columns: list[dict[str, Any]],
                   rows: list[dict[str, str]]) -> list[dict[str, Any]]:
-    """A match only holds if the column's values fit the field, and no field is used twice."""
+    """A match only holds if the column's values fit the field, its concept agrees with the
+    ontology's, and no field is used twice."""
     seen: dict[str, str] = {}
     for column in columns:
         target = column["field"]
+        claimed = column.pop("concept", None)
         if target not in PLATFORM_FIELDS:
-            column.update(confidence="low", note="Not a platform field")
+            column.update(confidence="low", note="Not a platform field", concept=None)
             continue
+        concept = ontology.for_tape_field(target)
+        column["concept"] = ontology.view(concept)["label"]
+        if claimed != concept:
+            column.update(confidence="low", note=f"In the ontology, {target} is a "
+                          f"{ontology.view(concept)['label'].lower()} field.")
         if target in seen:
             column.update(confidence="low", note=f"Also claimed by {seen[target]}")
         seen[target] = column["column"]

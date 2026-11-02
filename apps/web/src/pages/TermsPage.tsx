@@ -3,6 +3,7 @@ import { Check, Pencil, Send } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { EvidencePanel } from "../components/evidence/EvidencePanel";
+import { GroundingLine } from "../components/evidence/GroundingLine";
 import {
   Confidence,
   Kbd,
@@ -314,6 +315,8 @@ export function TermsPage() {
               {state.termEdits[selected.name] ?? selected.value}
             </p>
           )}
+
+          <GroundingLine grounding={selected.grounding} />
 
           <EvidencePanel
             citation={citation}

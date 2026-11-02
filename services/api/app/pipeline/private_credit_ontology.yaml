@@ -1,0 +1,441 @@
+# Artizent's Private Credit Ontology: the business concepts of private lending, what each one
+# means, what form its value takes, and how the concepts relate.
+# It is layered. The core holds what every private credit facility has: the parties, the
+# commitment, pricing, covenants, defaults and reporting. Each extension adds the concepts of one
+# kind of lending, and builds on the layer below it. This facility uses core, asset-based finance
+# and auto loans. Other strategies are reserved as extension points.
+# The model is grounded in it, and code checks every answer against it.
+# `fields` are the facility terms a concept governs, and `tape_fields` the platform fields.
+# Kinds: money, percent, ratio, count, date, text, list.
+name: Private Credit Ontology
+version: "2.0"
+layers:
+  - id: core
+    label: Private credit
+    meaning: What every private credit facility has, whatever it lends against.
+  - id: abf
+    label: Asset-based finance
+    extends: core
+    meaning: Lending against a pool of financial assets, sized by a borrowing base.
+  - id: auto
+    label: Auto loans
+    extends: abf
+    meaning: Pools of auto loans, each secured on a vehicle and originated through a dealer.
+planned:
+  - {id: direct_lending, label: Direct lending, extends: core}
+  - {id: real_estate, label: Real estate debt, extends: core}
+  - {id: nav, label: NAV lending, extends: core}
+concepts:
+  # Core: the parties
+  - id: party
+    layer: core
+    label: Party
+    kind: text
+    meaning: A company named in the facility documents, with its role and notice address.
+    fields: [Notice addresses]
+  - id: lender
+    layer: core
+    label: Lender
+    kind: text
+    meaning: The bank or credit fund that commits capital to the facility and takes its credit risk.
+    fields: [Lender and agent names]
+    relations:
+      - {type: is a, target: party}
+      - {type: commits, target: facility_limit}
+      - {type: appoints, target: agent}
+  - id: agent
+    layer: core
+    label: Agent
+    kind: text
+    meaning: >-
+      A party acting for the lender, such as the administrative agent, or the verification agent
+      that checks the borrower's reporting before the lender relies on it.
+    relations:
+      - {type: is a, target: party}
+      - {type: acts for, target: lender}
+  - id: borrower
+    layer: core
+    label: Borrower
+    kind: text
+    meaning: The company that borrows under the facility and owes every advance.
+    fields: ["Borrower, parent and servicer names"]
+    relations:
+      - {type: is a, target: party}
+      - {type: owned by, target: sponsor}
+  - id: sponsor
+    layer: core
+    label: Sponsor
+    kind: text
+    meaning: The borrower's parent or owner, whose financial strength the financial covenants test.
+    relations:
+      - {type: is a, target: party}
+      - {type: tested by, target: financial_covenant}
+
+  # Core: the facility, its pricing and its life
+  - id: credit_agreement
+    layer: core
+    label: Credit agreement
+    kind: text
+    meaning: The signed agreement that sets every term of the facility.
+    relations:
+      - {type: governed by, target: governing_law}
+      - {type: changed by, target: amendment}
+  - id: agreement_date
+    layer: core
+    label: Agreement date
+    kind: date
+    meaning: The date the credit agreement was signed.
+    fields: [Signing date]
+  - id: governing_law
+    layer: core
+    label: Governing law
+    kind: text
+    meaning: The law under which the agreement is read and enforced.
+    fields: [Governing law]
+  - id: amendment
+    layer: core
+    label: Amendment
+    kind: text
+    meaning: A signed change to the agreement. It applies from its effective date, not its signing date.
+    fields: [Amendment dates]
+    relations:
+      - {type: changes, target: credit_agreement}
+  - id: facility_limit
+    layer: core
+    label: Commitment
+    kind: money
+    meaning: The facility limit, the most the lender has committed to lend.
+    fields: [Facility limit]
+    relations:
+      - {type: caps, target: availability}
+  - id: advance
+    layer: core
+    label: Advance
+    kind: money
+    meaning: Money drawn by the borrower under the facility and not yet repaid.
+    relations:
+      - {type: limited by, target: availability}
+  - id: availability
+    layer: core
+    label: Availability
+    kind: money
+    meaning: How much more the borrower may draw today, after the advances already outstanding.
+    relations:
+      - {type: capped by, target: facility_limit}
+      - {type: watched by, target: alert_threshold}
+  - id: benchmark_rate
+    layer: core
+    label: Benchmark rate
+    kind: text
+    meaning: The floating base rate interest is set over, such as Term SOFR.
+  - id: margin
+    layer: core
+    label: Margin
+    kind: percent
+    meaning: The interest the borrower pays over the benchmark rate.
+    fields: [Margin]
+    relations:
+      - {type: paid over, target: benchmark_rate}
+  - id: unused_fee
+    layer: core
+    label: Unused fee
+    kind: percent
+    meaning: A yearly fee on the part of the commitment that is not drawn.
+    fields: [Unused fee]
+    relations:
+      - {type: charged on, target: facility_limit}
+  - id: interest_period
+    layer: core
+    label: Interest period
+    kind: text
+    meaning: How long each interest period runs, and the day interest is paid.
+    fields: [Interest period and payment date]
+  - id: revolving_period
+    layer: core
+    label: Revolving period
+    kind: date
+    meaning: The period in which the borrower may draw and repay. New advances stop at its end.
+    fields: [Revolving period end]
+  - id: final_maturity
+    layer: core
+    label: Final maturity
+    kind: date
+    meaning: The date by which every advance must be repaid.
+    fields: [Final maturity]
+
+  # Core: credit protection and monitoring
+  - id: collateral
+    layer: core
+    label: Collateral
+    kind: text
+    meaning: The assets pledged to the lender to secure the facility.
+  - id: covenant
+    layer: core
+    label: Covenant
+    kind: text
+    meaning: A promise the borrower makes for the life of the facility. Breaking one can be a default.
+    relations:
+      - {type: breach may be, target: event_of_default}
+  - id: financial_covenant
+    layer: core
+    label: Financial covenant
+    kind: text
+    meaning: A covenant that tests a number in the sponsor's or borrower's accounts, at each test date.
+    relations:
+      - {type: is a, target: covenant}
+  - id: tangible_net_worth_covenant
+    layer: core
+    label: Tangible net worth covenant
+    kind: money
+    meaning: The least tangible net worth the sponsor must keep.
+    fields: [Minimum tangible net worth covenant]
+    relations:
+      - {type: is a, target: financial_covenant}
+  - id: leverage_covenant
+    layer: core
+    label: Leverage covenant
+    kind: ratio
+    meaning: The highest leverage ratio the sponsor may reach.
+    fields: [Maximum leverage covenant]
+    relations:
+      - {type: is a, target: financial_covenant}
+      - {type: tests, target: leverage_ratio}
+  - id: leverage_ratio
+    layer: core
+    label: Leverage ratio
+    kind: ratio
+    meaning: Total liabilities, less permitted subordinated debt, divided by tangible net worth.
+  - id: liquidity_covenant
+    layer: core
+    label: Liquidity covenant
+    kind: money
+    meaning: The least unrestricted cash the sponsor must hold.
+    fields: [Minimum liquidity covenant]
+    relations:
+      - {type: is a, target: financial_covenant}
+  - id: reporting_obligation
+    layer: core
+    label: Reporting obligation
+    kind: text
+    meaning: A covenant to deliver something to the lender, such as financial statements, by a set date.
+    fields: [Borrowing base reporting date, Financial statement reporting]
+    relations:
+      - {type: is a, target: covenant}
+  - id: trigger
+    layer: core
+    label: Trigger
+    kind: text
+    meaning: A test whose breach changes the facility, such as stopping new advances, before any default.
+  - id: event_of_default
+    layer: core
+    label: Event of default
+    kind: count
+    meaning: An event that lets the lender stop lending and demand repayment.
+    fields: [Event of default list]
+  - id: alert_threshold
+    layer: core
+    label: Alert threshold
+    kind: count
+    meaning: A level the lender asks to be told about when it is crossed, such as availability falling below a set amount.
+    fields: [Lender alert thresholds]
+    relations:
+      - {type: watches, target: availability}
+
+  # Asset-based finance: the pool and the borrowing base
+  - id: receivable
+    layer: abf
+    label: Receivable
+    kind: text
+    meaning: One loan or other financial asset in the pool pledged to the facility.
+    relations:
+      - {type: is a, target: collateral}
+      - {type: owed by, target: obligor}
+  - id: obligor
+    layer: abf
+    label: Obligor
+    kind: text
+    meaning: The person or company who owes a receivable, with where they live and what they earn.
+    tape_fields: [obligor_state, obligor_zip3, employment_type, stated_monthly_income, payment_to_income]
+  - id: servicer
+    layer: abf
+    label: Servicer
+    kind: text
+    meaning: The company that collects the receivables and reports on the pool, often the borrower's parent.
+    relations:
+      - {type: is a, target: party}
+      - {type: reports on, target: receivable}
+  - id: outstanding_balance
+    layer: abf
+    label: Outstanding balance
+    kind: money
+    meaning: A receivable's unpaid principal at the cut-off date. Eligibility and concentration are measured on it.
+    tape_fields: [current_balance]
+    relations:
+      - {type: adds up to, target: eligible_pool}
+  - id: loan_amount
+    layer: abf
+    label: Loan amount
+    kind: money
+    meaning: What was lent on a receivable and what is repaid each month.
+    tape_fields: [original_balance, amount_financed, monthly_payment]
+  - id: loan_term
+    layer: abf
+    label: Loan term
+    kind: count
+    meaning: How many monthly payments a receivable has in total, has had and has left.
+    tape_fields: [original_term, remaining_term, payments_made]
+  - id: loan_date
+    layer: abf
+    label: Loan date
+    kind: date
+    meaning: A date in the life of a receivable, from origination to the next payment due.
+    tape_fields: [origination_date, first_payment_date, maturity_date, last_payment_date, next_due_date]
+  - id: interest_rate
+    layer: abf
+    label: Interest rate
+    kind: percent
+    meaning: The annual percentage rate the obligor pays on the receivable.
+    tape_fields: [apr]
+  - id: credit_score
+    layer: abf
+    label: Credit score
+    kind: count
+    meaning: The obligor's credit score at origination, such as FICO.
+    tape_fields: [fico]
+  - id: loan_modification
+    layer: abf
+    label: Loan modification
+    kind: count
+    meaning: A change to a receivable's terms after origination. Too many make it ineligible.
+    tape_fields: [modification_count]
+  - id: days_past_due
+    layer: abf
+    label: Days past due
+    kind: count
+    meaning: How many days a receivable's oldest unpaid payment is overdue at the cut-off date.
+    tape_fields: [days_past_due]
+    relations:
+      - {type: tested by, target: eligibility_criterion}
+  - id: charge_off
+    layer: abf
+    label: Charge-off
+    kind: text
+    meaning: A receivable written off as uncollectable, or whose collateral was repossessed. It is never eligible.
+    tape_fields: [charge_off_date, charge_off_amount, repossession_date]
+  - id: eligibility_criterion
+    layer: abf
+    label: Eligibility criterion
+    kind: count
+    meaning: A test every receivable must pass. A receivable that fails any test is excluded in full.
+    fields: [Eligibility criteria]
+    relations:
+      - {type: tests, target: receivable}
+      - {type: decides, target: eligible_pool}
+  - id: restricted_jurisdiction
+    layer: abf
+    label: Restricted jurisdiction
+    kind: list
+    meaning: A place where an obligor's billing address makes the receivable ineligible.
+    fields: [Restricted jurisdictions]
+    relations:
+      - {type: tested by, target: eligibility_criterion}
+      - {type: applies to, target: obligor}
+  - id: eligible_pool
+    layer: abf
+    label: Eligible pool
+    kind: money
+    meaning: The total outstanding balance of the receivables that pass every eligibility criterion.
+    relations:
+      - {type: made up of, target: receivable}
+      - {type: reduced by, target: excess_concentration}
+  - id: concentration_limit
+    layer: abf
+    label: Concentration limit
+    kind: count
+    meaning: The most of the eligible pool that one group of receivables may make up, such as one originator or one state.
+    fields: [Concentration limits]
+    relations:
+      - {type: measured against, target: eligible_pool}
+      - {type: produces, target: excess_concentration}
+  - id: excess_concentration
+    layer: abf
+    label: Excess concentration
+    kind: text
+    meaning: The amount by which a group of receivables exceeds its concentration limit.
+    fields: [Excess concentration treatment]
+    relations:
+      - {type: deducted from, target: eligible_pool}
+      - {type: deducted before, target: advance_rate}
+  - id: advance_rate
+    layer: abf
+    label: Advance rate
+    kind: percent
+    meaning: The share of the eligible pool, after excess concentration, that the lender will advance.
+    fields: [Advance rate]
+    relations:
+      - {type: applies to, target: eligible_pool}
+      - {type: can be changed by, target: amendment}
+  - id: reserve
+    layer: abf
+    label: Reserve
+    kind: percent
+    meaning: An amount held back from the borrowing base, set as a share of the eligible pool.
+    fields: [Reserve amount]
+    relations:
+      - {type: deducted from, target: borrowing_base}
+  - id: borrowing_base
+    layer: abf
+    label: Borrowing base
+    kind: money
+    meaning: The eligible pool less excess concentration, times the advance rate, less the reserve.
+    relations:
+      - {type: calculated from, target: eligible_pool}
+      - {type: calculated from, target: advance_rate}
+      - {type: limits, target: availability}
+  - id: borrowing_base_certificate
+    layer: abf
+    label: Borrowing base certificate
+    kind: text
+    meaning: The borrower's own monthly calculation of the borrowing base, which the verification agent checks.
+    relations:
+      - {type: reports, target: borrowing_base}
+      - {type: checked by, target: agent}
+  - id: delinquency_trigger
+    layer: abf
+    label: Delinquency trigger
+    kind: percent
+    meaning: A pool test on the share of receivables past due. A breach stops new advances.
+    fields: [Delinquency trigger]
+    relations:
+      - {type: is a, target: trigger}
+      - {type: measured by, target: days_past_due}
+
+  # Auto loans: the receivable, its vehicle and its dealer
+  - id: auto_loan
+    layer: auto
+    label: Auto loan
+    kind: text
+    meaning: One auto loan pledged to the facility, identified by its loan number.
+    tape_fields: [loan_id, status, servicer_code, cutoff_date]
+    relations:
+      - {type: is a, target: receivable}
+      - {type: secured by, target: financed_vehicle}
+      - {type: originated by, target: dealer}
+  - id: financed_vehicle
+    layer: auto
+    label: Financed vehicle
+    kind: text
+    meaning: The car securing an auto loan. One VIN on two loans suggests the car was pledged twice.
+    tape_fields: [vin, vehicle_make, vehicle_model, model_year, vehicle_condition,
+                  odometer_at_origination, vehicle_book_value, loan_to_value]
+    relations:
+      - {type: is a, target: collateral}
+      - {type: secures, target: auto_loan}
+  - id: dealer
+    layer: auto
+    label: Dealer
+    kind: text
+    meaning: The dealer that originated the loan. Variations of one dealer's name count as one dealer.
+    tape_fields: [dealer_name, dealer_state]
+    relations:
+      - {type: grouped by, target: concentration_limit}

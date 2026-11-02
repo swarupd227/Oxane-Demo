@@ -1,4 +1,4 @@
-"""The Facility Ontology covers everything the model is asked about, and its checks can fail."""
+"""The Private Credit Ontology covers all the model is asked about, and its checks can fail."""
 
 import json
 
@@ -25,9 +25,31 @@ def test_every_relation_points_at_a_concept():
             assert relation["target"] in known, (concept["id"], relation["target"])
 
 
+def test_every_concept_sits_in_a_layer_that_builds_on_the_core():
+    layers = ontology.layers()
+    for concept in ontology.concepts().values():
+        assert concept["layer"] in layers, concept["id"]
+    for layer in layers.values():
+        assert layer["id"] == "core" or layer["extends"] in layers
+
+
+def test_an_extension_concept_relates_only_to_its_own_layer_or_below():
+    layers = ontology.layers()
+    depth = {"core": 0}
+    for layer in layers.values():
+        if layer["id"] != "core":
+            depth[layer["id"]] = depth[layer["extends"]] + 1
+    known = ontology.concepts()
+    for concept in known.values():
+        for relation in concept.get("relations", []):
+            if relation["type"] in ("is a", "acts for", "owned by"):
+                assert depth[known[relation["target"]]["layer"]] <= depth[concept["layer"]]
+
+
 def test_grounding_brings_in_related_concepts():
-    given = {c["id"] for c in ontology.grounding({"advance_rate"})}
-    assert given == {"advance_rate", "eligible_pool", "amendment"}
+    given = {c["id"]: c["layer"] for c in ontology.grounding({"advance_rate"})}
+    assert given == {"advance_rate": "Asset-based finance", "eligible_pool": "Asset-based finance",
+                     "amendment": "Private credit"}
 
 
 @pytest.mark.parametrize(("concept", "value"), [

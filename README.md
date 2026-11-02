@@ -85,15 +85,23 @@ docker compose exec api python -m app.pipeline.run --mode record
 docker compose exec api python -m app.pipeline.run --mode replay
 ```
 
-## Facility Ontology
+## Private Credit Ontology
 
-`services/api/app/pipeline/facility_ontology.yaml` defines the asset-based finance concepts the analyst works with: what each means, the form its value takes, how concepts relate, and which facility terms and tape fields belong to each. Term extraction, tape mapping and rule drafting are grounded in it. The model must cite the concept IDs it relied on, and code checks every answer against it:
+`services/api/app/pipeline/private_credit_ontology.yaml` defines the business concepts of private lending: what each means, the form its value takes, how concepts relate, and which facility terms and tape fields belong to each. It is layered:
+
+| Layer | Builds on | Holds |
+| --- | --- | --- |
+| Private credit | | What every facility has: lender, agent, borrower, sponsor, commitment, advances, availability, pricing, covenants, triggers, events of default, reporting, alerts |
+| Asset-based finance | Private credit | Lending against a pool: receivables, obligors, servicer, eligibility, concentration, advance rate, reserve, borrowing base and its certificate |
+| Auto loans | Asset-based finance | The auto loan, its financed vehicle and its dealer |
+
+This facility uses all three. Direct lending, real estate debt and NAV lending are reserved as extension points on the core. Term extraction, tape mapping and rule drafting are grounded in it. The model must cite the concept IDs it relied on, and code checks every answer against it:
 
 - A term citing a concept it was not given, or a value not in its concept's form (an advance rate that is not a percentage, say), drops to low confidence with the reason.
 - A tape column whose concept disagrees with the ontology's is held for review.
 - A rule draft citing a concept it was not given stops the run.
 
-The workbench shows each value's concept on the Terms, Mapping and Rules screens, and `GET /api/ontology` returns the whole ontology.
+The workbench shows each value's concept on the Terms, Mapping and Rules screens (with its layer on Terms), and `GET /api/ontology` returns the whole ontology.
 
 ## Controls
 

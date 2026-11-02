@@ -113,7 +113,8 @@ def get_workbench() -> dict[str, Any]:
 
 @app.get("/api/ontology")
 def get_ontology() -> dict[str, Any]:
-    return {"version": ontology.version(),
+    return {"name": ontology.name(), "version": ontology.version(),
+            "layers": list(ontology.layers().values()),
             "concepts": [ontology.view(cid) for cid in ontology.concepts()]}
 
 

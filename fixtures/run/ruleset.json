@@ -80,9 +80,9 @@
  "eligibility": [
   {
    "id": "E1",
-   "plain_english": "Ineligible if any scheduled payment is more than 30 days past due at the cut-off date. Days past due must be 30 or less.",
+   "plain_english": "A loan is ineligible if any scheduled payment is more than 30 days past due at the cut-off date. Up to and including 30 days past due passes.",
    "clause_ref": "Schedule 1, paragraph 1",
-   "clause_text": "No scheduled payment on the Receivable is more than 30 days past due.",
+   "clause_text": "Delinquency. No scheduled payment on the Receivable is more than 30 days past due.",
    "test": {
     "kind": "compare",
     "op": "<=",
@@ -98,9 +98,9 @@
   },
   {
    "id": "E2",
-   "plain_english": "Ineligible if the loan has been charged off or its vehicle repossessed. The test excludes tape statuses CHARGED_OFF and REPO.",
+   "plain_english": "A loan that has been charged off, or whose vehicle has been repossessed, is ineligible.",
    "clause_ref": "Schedule 1, paragraph 2",
-   "clause_text": "The Receivable has not been charged off and the related Financed Vehicle has not been repossessed.",
+   "clause_text": "Status. The Receivable has not been charged off and the related Financed Vehicle has not been repossessed.",
    "test": {
     "kind": "member",
     "value": {
@@ -115,7 +115,7 @@
    "id": "E3",
    "plain_english": "The original term must be 84 months or less.",
    "clause_ref": "Schedule 1, paragraph 3",
-   "clause_text": "The original term of the Receivable is 84 months or less.",
+   "clause_text": "Term. The original term of the Receivable is 84 months or less.",
    "test": {
     "kind": "compare",
     "op": "<=",
@@ -131,9 +131,9 @@
   },
   {
    "id": "E4",
-   "plain_english": "The FICO score at origination must be 540 or higher.",
+   "plain_english": "The obligor's FICO score at origination must be 540 or higher.",
    "clause_ref": "Schedule 1, paragraph 4",
-   "clause_text": "The Obligor's FICO score at origination is 540 or higher.",
+   "clause_text": "Credit score. The Obligor's FICO score at origination is 540 or higher.",
    "test": {
     "kind": "compare",
     "op": ">=",
@@ -151,7 +151,7 @@
    "id": "E5",
    "plain_english": "The outstanding balance must not exceed US$75,000.",
    "clause_ref": "Schedule 1, paragraph 5",
-   "clause_text": "The Outstanding Balance of the Receivable does not exceed US$75,000.",
+   "clause_text": "Balance. The Outstanding Balance of the Receivable does not exceed US$75,000.",
    "test": {
     "kind": "compare",
     "op": "<=",
@@ -167,9 +167,9 @@
   },
   {
    "id": "E6",
-   "plain_english": "The obligor's billing address must be in one of the 50 US states or the District of Columbia. The tape field obligor_state is the proxy for billing address.",
+   "plain_english": "The obligor's billing address must be in one of the fifty US states or the District of Columbia. The tape has obligor_state, not a separate billing address field; obligor_state is used as the closest field.",
    "clause_ref": "Schedule 1, paragraph 6",
-   "clause_text": "The Obligor's billing address is in one of the fifty states of the United States or the District of Columbia.",
+   "clause_text": "Location. The Obligor's billing address is in one of the fifty states of the United States or the District of Columbia.",
    "test": {
     "kind": "member",
     "value": {
@@ -182,9 +182,9 @@
   },
   {
    "id": "E7",
-   "plain_english": "The obligor's billing address must not be in a Restricted Jurisdiction. The list of Restricted Jurisdictions is not in the material provided, so this test cannot be fully specified without it.",
+   "plain_english": "The obligor's billing address must not be in a Restricted Jurisdiction. The list of Restricted Jurisdictions is not in the material provided, so the test cannot be populated until that definition is obtained.",
    "clause_ref": "Schedule 1, paragraph 7",
-   "clause_text": "The Obligor's billing address is not in a Restricted Jurisdiction.",
+   "clause_text": "Restricted Jurisdictions. The Obligor's billing address is not in a Restricted Jurisdiction.",
    "test": {
     "kind": "member",
     "value": {
@@ -199,7 +199,7 @@
    "id": "E8",
    "plain_english": "The loan may have been modified at most once since origination.",
    "clause_ref": "Schedule 1, paragraph 8",
-   "clause_text": "The terms of the Receivable have been modified no more than once since origination.",
+   "clause_text": "Modifications. The terms of the Receivable have been modified no more than once since origination.",
    "test": {
     "kind": "compare",
     "op": "<=",
@@ -215,9 +215,9 @@
   },
   {
    "id": "E9",
-   "plain_english": "The APR must be between 6.00% and 29.99%, inclusive. The units of the tape's apr field (percent or decimal) should be confirmed.",
+   "plain_english": "The APR must be between 6.00% and 29.99%, both inclusive.",
    "clause_ref": "Schedule 1, paragraph 9",
-   "clause_text": "The annual percentage rate of the Receivable is not less than 6.00% and not more than 29.99%.",
+   "clause_text": "Annual percentage rate. The annual percentage rate of the Receivable is not less than 6.00% and not more than 29.99%.",
    "test": {
     "kind": "between",
     "value": {
@@ -230,9 +230,9 @@
   },
   {
    "id": "E10",
-   "plain_english": "The vehicle's model year must be no more than 10 years before the year of the loan's origination date.",
+   "plain_english": "The vehicle's model year must be no more than ten years before the year the loan was originated (compare model_year with the year of origination_date).",
    "clause_ref": "Schedule 1, paragraph 10",
-   "clause_text": "The model year of the Financed Vehicle is no more than ten years before the year of origination of the Receivable.",
+   "clause_text": "Vehicle age. The model year of the Financed Vehicle is no more than ten years before the year of origination of the Receivable.",
    "test": {
     "kind": "compare",
     "op": "<=",
@@ -258,9 +258,9 @@
   },
   {
    "id": "E11",
-   "plain_english": "At least one scheduled payment must have been made.",
+   "plain_english": "The obligor must have made at least one scheduled payment.",
    "clause_ref": "Schedule 1, paragraph 11",
-   "clause_text": "The Obligor has made at least one scheduled payment on the Receivable.",
+   "clause_text": "Seasoning. The Obligor has made at least one scheduled payment on the Receivable.",
    "test": {
     "kind": "compare",
     "op": ">=",
@@ -276,9 +276,9 @@
   },
   {
    "id": "E12",
-   "plain_english": "The VIN must appear on no other loan in the pool. A duplicate VIN suggests the vehicle was pledged twice.",
+   "plain_english": "The vehicle's VIN must not appear on any other loan in the pool; a repeated VIN suggests the car was pledged twice.",
    "clause_ref": "Schedule 1, paragraph 12",
-   "clause_text": "The Financed Vehicle is identified by a Vehicle Identification Number that appears on no other Receivable in the Pool.",
+   "clause_text": "Unique collateral. The Financed Vehicle is identified by a Vehicle Identification Number that appears on no other Receivable in the Pool.",
    "test": {
     "kind": "unique",
     "value": {
@@ -291,7 +291,7 @@
  "concentration": [
   {
    "id": "C1",
-   "plain_english": "Eligible loans to obligors with a billing address in any one state may be at most 20% of the eligible pool balance. Any excess is an excess concentration.",
+   "plain_english": "Loans to obligors billed in any one state may make up at most 20% of the Eligible Pool Balance; any excess is an excess concentration.",
    "clause_ref": "Schedule 2, row 1",
    "clause_text": "Obligors with a billing address in any one state",
    "limit_pct": "20",
@@ -304,7 +304,7 @@
   },
   {
    "id": "C2",
-   "plain_english": "Eligible loans originated by any one dealer may be at most 5% of the eligible pool balance. Dealers under common ownership or trading under variations of one name count as one dealer. Common ownership is not on the tape.",
+   "plain_english": "Loans originated by any one dealer may make up at most 5% of the Eligible Pool Balance. Dealers under common ownership or trading under variations of one name count as one dealer.",
    "clause_ref": "Schedule 2, row 2",
    "clause_text": "Receivables originated by any one Dealer, treating Dealers under common ownership or trading under variations of one name as one Dealer",
    "limit_pct": "5",
@@ -317,7 +317,7 @@
   },
   {
    "id": "C3",
-   "plain_english": "Eligible loans with an original term of more than 72 months may be at most 25% of the eligible pool balance.",
+   "plain_english": "Loans with an original term of more than 72 months (strictly greater than 72) may make up at most 25% of the Eligible Pool Balance.",
    "clause_ref": "Schedule 2, row 3",
    "clause_text": "Receivables with an original term of more than 72 months",
    "limit_pct": "25",
@@ -338,7 +338,7 @@
   },
   {
    "id": "C5",
-   "plain_english": "Eligible loans secured by used vehicles may be at most 70% of the eligible pool balance.",
+   "plain_english": "Loans secured by used vehicles may make up at most 70% of the Eligible Pool Balance.",
    "clause_ref": "Schedule 2, row 4",
    "clause_text": "Receivables secured by used Financed Vehicles",
    "limit_pct": "70",
@@ -356,7 +356,7 @@
   },
   {
    "id": "C4",
-   "plain_english": "Added by Amendment No. 1 with effect from 1 March 2026. Eligible loans whose obligor's FICO at origination is below 600 may be at most 35% of the eligible pool balance. Per Section 2(c), it applies to Borrowing Base Certificates for Collection Periods ending on or after 1 March 2026.",
+   "plain_english": "From 1 March 2026, loans whose obligor's FICO score at origination is below 600 (strictly less than 600) may make up at most 35% of the Eligible Pool Balance. Added by Amendment No. 1; it applies to Borrowing Base Certificates for Collection Periods ending on or after 1 March 2026, and the Amendment itself takes effect only once the conditions in its Section 3 are met.",
    "clause_ref": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))",
    "clause_text": "Receivables with an Obligor FICO score at origination below 600",
    "limit_pct": "35",

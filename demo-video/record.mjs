@@ -41,6 +41,9 @@ const context = await browser.newContext({
   viewport: { width: WIDTH, height: HEIGHT }, deviceScaleFactor: 1, colorScheme: 'light', locale: 'en-GB',
   recordVideo: { dir: 'rec', size: { width: 1920, height: 1080 } },
 });
+// A busy machine can stall a page load well past Playwright's 30 s default.
+context.setDefaultTimeout(120000);
+context.setDefaultNavigationTimeout(120000);
 // The app is held above a solid caption strip. Panels sized from 100vh are re-based on the app's height,
 // or they run under the strip and clicks below them scroll the page.
 const LAYOUT = `
@@ -174,7 +177,7 @@ await hold(2800); await end();
 
 // Rules drafted by the AI, accepted by the engine, and a change held for a second analyst.
 await go('/rules');
-const ruleConcepts = page.getByLabel('Facility Ontology concepts');
+const ruleConcepts = page.getByLabel('Private Credit Ontology concepts');
 await start('rules'); await caption(C.rules); await hold(600);
 for (const index of [0, 1]) await spotlight(ruleConcepts.nth(index), true);
 await hold(READ_MS);
@@ -192,7 +195,7 @@ await hold(2000); await end();
 // Mapping.
 await go('/mapping');
 await page.getByText('38 tape columns mapped').waitFor();
-const columnConcepts = page.locator('[title="Facility Ontology concept"]');
+const columnConcepts = page.locator('[title="Private Credit Ontology concept"]');
 await start('mapping'); await caption(C.mapping); await hold(600);
 for (const index of [0, 1, 2]) await spotlight(columnConcepts.nth(index), true);
 await hold(READ_MS - 400);

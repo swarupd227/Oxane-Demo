@@ -50,7 +50,13 @@ export interface Term {
 
 /** The ontology concept a value belongs to, and the concepts the model said it relied on. */
 export interface Grounding {
-  concept: { id: string; label: string; meaning: string; relations: { type: string; target: string }[] };
+  concept: {
+    id: string;
+    label: string;
+    meaning: string;
+    layer?: string;
+    relations: { type: string; target: string }[];
+  };
   cited: string[];
 }
 

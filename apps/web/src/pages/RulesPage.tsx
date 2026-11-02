@@ -113,7 +113,7 @@ function RuleRow({ rule, onEdit, pending }: { rule: Rule; onEdit: () => void; pe
       <td className="py-3 pr-5 text-sm font-medium">
         {rule.plain_english}
         {rule.concepts && rule.concepts.length > 0 && (
-          <p className="mt-1.5 flex flex-wrap gap-1" aria-label="Facility Ontology concepts">
+          <p className="mt-1.5 flex flex-wrap gap-1" aria-label="Private Credit Ontology concepts">
             {rule.concepts.map((label) => (
               <span
                 key={label}

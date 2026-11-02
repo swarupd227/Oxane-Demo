@@ -89,7 +89,7 @@ export function MappingPage() {
                     <td className="py-2 pr-4">
                       <span className="font-mono text-[0.8125rem]">{row.field}</span>
                       {row.concept && (
-                        <p className="mt-0.5 text-xs text-muted" title="Facility Ontology concept">
+                        <p className="mt-0.5 text-xs text-muted" title="Private Credit Ontology concept">
                           {row.concept}
                         </p>
                       )}

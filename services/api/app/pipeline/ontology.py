@@ -1,4 +1,4 @@
-"""The Facility Ontology: what the model is grounded in, and what its answers are checked by."""
+"""The Private Credit Ontology: what the model is grounded in, and what checks its answers."""
 
 import json
 import re
@@ -8,11 +8,12 @@ from typing import Any
 
 import yaml
 
-ONTOLOGY_PATH = Path(__file__).parent / "facility_ontology.yaml"
+ONTOLOGY_PATH = Path(__file__).parent / "private_credit_ontology.yaml"
 
 INSTRUCTION = (
-    "The material includes `ontology`: Artizent's Facility Ontology for the concepts that apply "
-    "here, with what each means, the form its value takes and how the concepts relate. Reason in "
+    "The material includes `ontology`: Artizent's Private Credit Ontology for the concepts that "
+    "apply here, with the layer each belongs to (private credit, asset-based finance or auto "
+    "loans), what each means, the form its value takes and how the concepts relate. Reason in "
     "those terms, and prefer their meanings to any guess of your own. Where the output asks for "
     "`concepts`, list the IDs you relied on, using only IDs given in the ontology."
 )
@@ -25,6 +26,14 @@ def _document() -> dict[str, Any]:
 
 def version() -> str:
     return _document()["version"]
+
+
+def name() -> str:
+    return _document()["name"]
+
+
+def layers() -> dict[str, dict[str, Any]]:
+    return {layer["id"]: layer for layer in _document()["layers"]}
 
 
 def concepts() -> dict[str, dict[str, Any]]:
@@ -47,7 +56,8 @@ def grounding(ids: set[str]) -> list[dict[str, Any]]:
     known = concepts()
     related = {r["target"] for cid in ids for r in known[cid].get("relations", [])}
     return [
-        {"id": cid, "label": c["label"], "kind": c["kind"], "meaning": c["meaning"],
+        {"id": cid, "layer": layers()[c["layer"]]["label"], "label": c["label"], "kind": c["kind"],
+         "meaning": c["meaning"],
          "relations": [f"{r['type']} {r['target']}" for r in c.get("relations", [])]}
         for cid, c in known.items() if cid in ids | related
     ]
@@ -89,6 +99,7 @@ def view(concept_id: str) -> dict[str, Any]:
     concept = known[concept_id]
     return {
         "id": concept_id, "label": concept["label"], "meaning": concept["meaning"],
+        "layer": layers()[concept["layer"]]["label"],
         "relations": [{"type": r["type"], "target": known[r["target"]]["label"]}
                       for r in concept.get("relations", [])],
     }

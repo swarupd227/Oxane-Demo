@@ -1,7 +1,7 @@
 import { Waypoints } from "lucide-react";
 import type { Grounding } from "../../lib/workbench";
 
-/** The ontology concept behind a value, how it relates to others, and what the model relied on. */
+/** The ontology concept behind a value, its layer, how it relates to others, and what the model relied on. */
 export function GroundingLine({ grounding }: { grounding: Grounding | undefined }) {
   if (!grounding) {
     return null;
@@ -25,6 +25,11 @@ export function GroundingLine({ grounding }: { grounding: Grounding | undefined 
         >
           {concept.label}
         </span>
+        {concept.layer && (
+          <span title="Layer of the Private Credit Ontology" className="text-xs text-muted">
+            {concept.layer} ·
+          </span>
+        )}
         {shown.map((relation) => (
           <span key={`${relation.type}-${relation.target}`} className="text-muted">
             {relation.type} <span className="text-ink">{relation.target}</span>

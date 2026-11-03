@@ -1,0 +1,14 @@
+{
+ "task": "read_compliance",
+ "model": "claude-opus-5-5",
+ "text": "{\"figures\":[{\"name\":\"Total Liabilities per balance sheet\",\"value\":\"320,800\",\"quote\":\"Total Liabilities per balance sheet 320,800\"},{\"name\":\"Less Subordinated Debt under 6.12(c)\",\"value\":\"(12,000)\",\"quote\":\"Less Subordinated Debt under 6.12(c) (12,000)\"},{\"name\":\"Adjusted Total Liabilities\",\"value\":\"308,800\",\"quote\":\"Adjusted Total Liabilities 308,800\"},{\"name\":\"Tangible Net Worth\",\"value\":\"46,500\",\"quote\":\"Tangible Net Worth 46,500\"},{\"name\":\"Add Subordinated Debt under 6.12(c)\",\"value\":\"12,000\",\"quote\":\"Add Subordinated Debt under 6.12(c) 12,000\"},{\"name\":\"Adjusted Tangible Net Worth\",\"value\":\"58,500\",\"quote\":\"Adjusted Tangible Net Worth 58,500\"},{\"name\":\"Leverage Ratio\",\"value\":\"5.28 to 1.00\",\"quote\":\"Leverage Ratio 5.28 to 1.00\"},{\"name\":\"Minimum Tangible Net Worth (6.12(a)) - Actual\",\"value\":\"46,500\",\"quote\":\"Minimum Tangible Net Worth 6.12(a) 40,000 46,500 Yes\"},{\"name\":\"Maximum Leverage Ratio (6.12(b)) - Actual\",\"value\":\"5.28 to 1.00\",\"quote\":\"Maximum Leverage Ratio 6.12(b) 6.00 to 1.00 5.28 to 1.00 Yes\"},{\"name\":\"Minimum Liquidity (6.12(d)) - Actual\",\"value\":\"12,600\",\"quote\":\"Minimum Liquidity 6.12(d) 10,000 12,600 Yes\"}],\"contingent_obligations\":[{\"description\":\"Guarantee by the Parent of the obligations of Bramble Dealer Services LLC, an affiliate under common ownership, under its dealer floor plan facility. The certificate states no payment has been demanded, the guarantee is not recognised on the balance sheet, and it is excluded from Total Liabilities in the Leverage Ratio calculation.\",\"amount\":\"US$53,900 thousand\",\"on_balance_sheet\":false,\"quote\":\"The amount guaranteed at quarter end was US$53,900\"}]}",
+ "usage": {
+  "task": "read_compliance",
+  "input_tokens": 93,
+  "output_tokens": 1165,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 1387,
+  "from_replay": false,
+  "seconds": 12.3
+ }
+}

@@ -4,6 +4,7 @@ import type { CaseStatus, CaseView, LlmMode } from "../../lib/api";
 import { useCase } from "../../lib/api";
 import { formatUsdShort } from "../../lib/format";
 import { useSession } from "../../lib/session";
+import { WorkbenchSwitch } from "../../monitoring/parts";
 import { Kbd } from "../ui/badges";
 import { Button } from "../ui/Button";
 import { Skeleton } from "../ui/layout";
@@ -91,6 +92,7 @@ export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
         </span>
         <span className="text-sm font-semibold tracking-tight">Onboarding Workbench</span>
       </div>
+      <WorkbenchSwitch current="onboarding" />
 
       <div className="flex min-w-0 flex-1 items-center gap-4 border-l border-line pl-6">
         {data && <DealIdentity data={data} />}

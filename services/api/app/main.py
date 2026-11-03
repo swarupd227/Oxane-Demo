@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 
+from engine.monitoring import rolling_trigger, what_if
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -26,6 +27,9 @@ from app.engine_service import (
 )
 from app.load_file import build_load_file
 from app.models import OnboardingCase
+from app.monitoring import session as cycle_session
+from app.monitoring.cycle import cycle_path, served_files
+from app.monitoring.scoring import scorecard as cycle_scorecard
 from app.pipeline import ontology
 from app.scoring import scorecard
 from app.seed import workbench
@@ -218,6 +222,82 @@ def post_preview(request: PreviewRequest) -> dict[str, Any]:
         return rule_preview(request.rule_id, request.value)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+# Monitoring: the monthly cycle across the lender's facilities.
+
+
+def current_cycle() -> dict[str, Any]:
+    path = settings.cycle_dir / "cycle.json"
+    if not path.exists():
+        raise HTTPException(status_code=503, detail="No monitoring cycle has been run. Run "
+                            "python -m app.monitoring.cycle --mode replay")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/monitoring/cycle")
+def get_cycle() -> dict[str, Any]:
+    return {**current_cycle(), "llm_mode": settings.llm_mode}
+
+
+@app.get("/api/monitoring/session")
+def get_cycle_session(session: SessionDep) -> dict[str, Any]:
+    return cycle_session.view(session, current_cycle())
+
+
+@app.post("/api/monitoring/session/events")
+def post_cycle_event(event: SessionEvent, request: Request, session: SessionDep) -> dict[str, Any]:
+    cycle = current_cycle()
+    actor, payload = event.actor, dict(event.payload)
+    if settings.auth_required:
+        user = signed_in_user(request) or ""
+        actor = settings.role_of(user) or "unassigned"
+        payload["user"] = user
+    try:
+        cycle_session.record(session, cycle, actor, event.type, payload)
+    except case_session.Refused as refused:
+        raise HTTPException(status_code=409, detail=str(refused)) from refused
+    return cycle_session.view(session, cycle)
+
+
+@app.post("/api/monitoring/session/reset")
+def post_cycle_reset(request: Request, session: SessionDep) -> dict[str, Any]:
+    if settings.auth_required and not settings.role_of(signed_in_user(request) or ""):
+        raise HTTPException(status_code=403, detail="User not recognised")
+    cycle = current_cycle()
+    cycle_session.reset(session, cycle)
+    return cycle_session.view(session, cycle)
+
+
+@app.get("/api/monitoring/scorecard")
+def get_cycle_scorecard(session: SessionDep) -> dict[str, Any]:
+    cycle = current_cycle()
+    return cycle_scorecard(cycle, cycle_session.view(session, cycle))
+
+
+class WhatIfRequest(BaseModel):
+    facility: Literal["northmoor", "bramble"]
+    value: Decimal
+
+
+@app.post("/api/monitoring/what-if")
+def post_what_if(request: WhatIfRequest) -> dict[str, Any]:
+    """The delinquency trigger with one more month at `value`, computed by the engine."""
+    trigger = current_cycle()["tests"][request.facility]["delinquency"]
+    monthly = [(m["month"], Decimal(str(m["value"]))) for m in trigger["monthly"]]
+    after = what_if(rolling_trigger(monthly, Decimal(str(trigger["limit"]))), request.value,
+                    "June 2026")
+    return {"value": float(request.value), "average": float(after.average),
+            "breached": after.breached, "limit": float(after.limit),
+            "window": [m for m, _ in after.monthly[-3:]]}
+
+
+@app.get("/api/monitoring/files/{path:path}")
+def get_cycle_file(path: str) -> FileResponse:
+    # Only listed documents are served, so a path can never escape the folders.
+    if path not in served_files():
+        raise HTTPException(status_code=404, detail="File not in this cycle")
+    return FileResponse(cycle_path(path))
 
 
 if settings.static_dir:

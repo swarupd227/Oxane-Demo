@@ -1,0 +1,14 @@
+{
+ "task": "suggest_triage",
+ "model": "claude-opus-5-5",
+ "text": "{\"suggestions\":[{\"id\":\"F-late-servicer-report\",\"outcome\":\"query\",\"reason\":\"The May servicer report, due 22 Jun 2026, has not been received despite a reminder and escalation, so the borrowing base cannot be finalised until the servicer supplies it.\"},{\"id\":\"F-roll-forward\",\"outcome\":\"query\",\"reason\":\"The May tape omits 27 loans that were on the April tape, with no payoff or charge-off status, leaving a gap of US$412,004.04 that the borrower or servicer must explain.\"},{\"id\":\"F-charge-offs\",\"outcome\":\"query\",\"reason\":\"Nine loans are shown as charged off in the servicer report but as live on the tape, a US$140,112.77 inconsistency that the servicer must reconcile.\"},{\"id\":\"F-northmoor-delinquency\",\"outcome\":\"confirmed\",\"reason\":\"The 60+ day delinquency average of 5.77% sits just below the 6.0% trigger on clear terms, with the latest month at 6.60%, so the lender must be told of the near breach.\"},{\"id\":\"F-bramble-leverage\",\"outcome\":\"expert\",\"reason\":\"Leverage is 5.28x on the balance sheet but 6.20x against the 6.00x covenant if the disclosed US$53,900 thousand off-balance-sheet guarantee counts, which turns on how the debt definition is read.\"},{\"id\":\"F-shared-vin\",\"outcome\":\"confirmed\",\"reason\":\"The tapes show VIN 7S0GBWZ96PJAEFF0W securing both Bramble loan BAF100764 and Northmoor loan NMC303235, so the same car is pledged in two facilities and the lender must be told.\"},{\"id\":\"F-kestrel-markdown\",\"outcome\":\"expert\",\"reason\":\"Loan-to-value rises from 30.3% to 32.2% only if the US$85m Corrin Healthcare Holdings markdown of 8 May 2026 is taken into account, and the Manager has not declared a Valuation Event, so it depends on how the valuation clause is read.\"},{\"id\":\"F-kestrel-stale-valuation\",\"outcome\":\"query\",\"reason\":\"Harlow Logistics Group was last valued on 15 Dec 2025, 106 days before the calculation date against a 90-day limit, so the fix is a fresh valuation from the sender.\"}]}",
+ "usage": {
+  "task": "suggest_triage",
+  "input_tokens": 1674,
+  "output_tokens": 1275,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 13.9
+ }
+}

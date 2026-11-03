@@ -1,0 +1,14 @@
+{
+ "task": "draft_pack",
+ "model": "claude-opus-5-5",
+ "text": "{\"facility\":\"Kestrel Credit Fund III\",\"summary\":\"All three quarterly submissions due were received, and both concentration tests pass. Loan-to-value counting a post-quarter markdown has been sent for expert review, and a query has been raised with the sender about one investment's valuation that is older than the agreement allows.\",\"sections\":[{\"heading\":\"Submissions\",\"text\":\"The quarterly NAV report, valuation report and compliance certificate were all received.\"},{\"heading\":\"Loan-to-value\",\"text\":\"Loan-to-value on reported NAV is {{ltv_reported}}, against a maximum loan-to-value of {{ltv_limit}}. Counting the post-quarter markdown of {{markdown}}, loan-to-value is {{ltv_with_markdown}}. The loan-to-value position with and without the markdown has been sent for expert review, and no conclusion is drawn here pending that review. Any decision on the outcome rests with the lender.\"},{\"heading\":\"Valuations and concentration\",\"text\":\"One investment's valuation is {{stale_days}} days old, which is older than the valuation age limit of {{valuation_limit}} days that the agreement allows. A query has been raised with the sender. The largest investment represents {{largest_position}} of NAV and the five largest investments together represent {{top_five}} of NAV. Both concentration tests pass.\"},{\"heading\":\"Open items\",\"text\":\"There are {{open_items}} items that need someone to act: the expert review of loan-to-value with and without the post-quarter markdown, and the query to the sender on the investment valuation that is older than the agreement allows.\"}]}",
+ "usage": {
+  "task": "draft_pack",
+  "input_tokens": 1264,
+  "output_tokens": 1436,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 18.6
+ }
+}

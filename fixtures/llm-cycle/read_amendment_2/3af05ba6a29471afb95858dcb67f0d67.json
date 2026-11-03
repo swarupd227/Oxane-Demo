@@ -1,0 +1,14 @@
+{
+ "task": "read_amendment_2",
+ "model": "claude-opus-5-5",
+ "text": "{\"signed\":\"2026-05-25 (the Amendment is dated 25 May 2026; both signature blocks read \\\"By: /s/ (signature on file)\\\")\",\"changes\":[{\"term\":\"Lender Commitment (Annex A)\",\"old_value\":\"US$250,000,000\",\"new_value\":\"US$300,000,000\",\"effective_from\":\"2026-06-01\",\"clause\":\"2(a)\",\"quote\":\"In Annex A, the Commitment of the Lender of US$250,000,000 is deleted and replaced with US$300,000,000, and the Facility Limit is increased accordingly, with effect from 1 June 2026.\"},{\"term\":\"Facility limit\",\"old_value\":\"Not stated in the amendment\",\"new_value\":\"Not stated in the amendment\",\"effective_from\":\"2026-06-01\",\"clause\":\"2(a)\",\"quote\":\"and the Facility Limit is increased accordingly, with effect from 1 June 2026.\"},{\"term\":\"Schedule 2, row 2 (the amendment does not name this term)\",\"old_value\":\"5%\",\"new_value\":\"7%\",\"effective_from\":\"2026-06-01\",\"clause\":\"2(b)\",\"quote\":\"In Schedule 2, row 2, \\\"5%\\\" is deleted and replaced with \\\"7%\\\", with effect from 1 June 2026.\"}],\"periods_note\":\"Clause 2(c): \\\"Each Borrowing Base Certificate for a Collection Period ending on or after 1 June 2026 shall be calculated using the Credit Agreement as amended by this Amendment. No Borrowing Base Certificate for an earlier Collection Period is reopened, and the Collection Period ending 31 May 2026 is calculated without it.\\\" Clause 3 adds a condition: \\\"This Amendment takes effect on the later of its effective date and the date on which the Lender has received this Amendment signed by each party and payment of the upsize fee agreed in a separate letter.\\\" The document does not say when, or whether, the upsize fee was paid. The 2(a) quote for the Commitment gives the old and new figures. The document does not state the old or new Facility Limit figures; it says only that the limit is \\\"increased accordingly\\\". The document also does not name the term in Schedule 2, row 2.\"}",
+ "usage": {
+  "task": "read_amendment_2",
+  "input_tokens": 136,
+  "output_tokens": 1413,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 1422,
+  "from_replay": false,
+  "seconds": 13.9
+ }
+}

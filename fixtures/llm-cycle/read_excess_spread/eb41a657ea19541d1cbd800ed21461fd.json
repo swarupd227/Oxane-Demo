@@ -1,0 +1,14 @@
+{
+ "task": "read_excess_spread",
+ "model": "claude-opus-5-5",
+ "text": "{\"figures\":[{\"name\":\"Interest collections\",\"value\":\"819,047.20\",\"quote\":\"Interest collections 819,047.20\"},{\"name\":\"Servicing fee (2.00% a year)\",\"value\":\"(86,186.17)\",\"quote\":\"Servicing fee (2.00% a year) (86,186.17)\"},{\"name\":\"Interest on Advances\",\"value\":\"(337,632.12)\",\"quote\":\"Interest on Advances (337,632.12)\"},{\"name\":\"Charge-offs net of recoveries\",\"value\":\"(218,547.27)\",\"quote\":\"Charge-offs net of recoveries (218,547.27)\"},{\"name\":\"Ending principal balance\",\"value\":\"51,711,699.94\",\"quote\":\"Ending principal balance 51,711,699.94\"},{\"name\":\"Excess spread, annualised\",\"value\":\"4.10%\",\"quote\":\"Excess spread, annualised 4.10%\"}],\"collections_history\":[{\"name\":\"Apr 2025\",\"value\":\"1,553 (US$ thousands)\",\"quote\":\"Apr 2025 1,553\"},{\"name\":\"May 2025\",\"value\":\"1,336 (US$ thousands)\",\"quote\":\"May 2025 1,336\"},{\"name\":\"Jun 2025\",\"value\":\"1,476 (US$ thousands)\",\"quote\":\"Jun 2025 1,476\"},{\"name\":\"Jul 2025\",\"value\":\"1,491 (US$ thousands)\",\"quote\":\"Jul 2025 1,491\"},{\"name\":\"Aug 2025\",\"value\":\"1,476 (US$ thousands)\",\"quote\":\"Aug 2025 1,476\"},{\"name\":\"Sep 2025\",\"value\":\"1,460 (US$ thousands)\",\"quote\":\"Sep 2025 1,460\"},{\"name\":\"Oct 2025\",\"value\":\"1,491 (US$ thousands)\",\"quote\":\"Oct 2025 1,491\"},{\"name\":\"Nov 2025\",\"value\":\"1,522 (US$ thousands)\",\"quote\":\"Nov 2025 1,522\"},{\"name\":\"Dec 2025\",\"value\":\"1,584 (US$ thousands)\",\"quote\":\"Dec 2025 1,584\"},{\"name\":\"Jan 2026\",\"value\":\"1,569 (US$ thousands)\",\"quote\":\"Jan 2026 1,569\"},{\"name\":\"Feb 2026\",\"value\":\"1,507 (US$ thousands)\",\"quote\":\"Feb 2026 1,507\"},{\"name\":\"Mar 2026\",\"value\":\"1,556 (US$ thousands)\",\"quote\":\"Mar 2026 1,556\"},{\"name\":\"Apr 2026\",\"value\":\"1,670 (US$ thousands)\",\"quote\":\"Apr 2026 1,670\"}]}",
+ "usage": {
+  "task": "read_excess_spread",
+  "input_tokens": 85,
+  "output_tokens": 867,
+  "cache_read_tokens": 515,
+  "cache_write_tokens": 568,
+  "from_replay": false,
+  "seconds": 7.7
+ }
+}

@@ -15,10 +15,11 @@ services:
       timeout: 3s
       retries: 20
 
-  # Builds the deal pack on a fresh checkout, so `docker compose up` is all anyone needs.
+  # Builds the deal pack and the monitoring cycle on a fresh checkout, so `docker compose up` is
+  # all anyone needs.
   pack:
     build: ./deal-kit
-    command: sh -c "test -f output/pack/Bramble_Credit_Agreement_Executed.pdf || python -m dealkit.build"
+    command: sh -c "(test -f output/pack/Bramble_Credit_Agreement_Executed.pdf || python -m dealkit.build) && (test -f output/cycle-key/key.json || python -m dealkit.cycle.build)"
     volumes:
       - ./deal-kit:/deal-kit
 

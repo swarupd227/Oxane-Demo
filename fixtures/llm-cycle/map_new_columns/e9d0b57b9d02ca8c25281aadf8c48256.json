@@ -1,0 +1,14 @@
+{
+ "task": "map_new_columns",
+ "model": "claude-opus-5-5",
+ "text": "{\"columns\":[{\"column\":\"CoBorrower\",\"field\":null,\"reason\":\"This column flags whether the loan has a co-borrower (Y/N), and no platform field records co-borrower presence, so it is left unmapped.\"},{\"column\":\"GAPCoverage\",\"field\":null,\"reason\":\"This column appears to flag whether GAP insurance was taken out on the vehicle (Y/N), and no platform field captures GAP coverage, so it is left unmapped.\"}]}",
+ "usage": {
+  "task": "map_new_columns",
+  "input_tokens": 1961,
+  "output_tokens": 154,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 4.7
+ }
+}

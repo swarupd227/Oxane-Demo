@@ -1,0 +1,14 @@
+{
+ "task": "read_servicer_report",
+ "model": "claude-opus-5-5",
+ "text": "{\"figures\":[{\"name\":\"pool balance at start of period\",\"value\":\"63,183,612.49\",\"quote\":\"Pool balance at start of period 63,183,612.49\"},{\"name\":\"receivables purchased\",\"value\":\"9,857,582.58\",\"quote\":\"Receivables purchased (300 loans) 9,857,582.58\"},{\"name\":\"principal collections\",\"value\":\"(1,487,923.26)\",\"quote\":\"Principal collections (1,487,923.26)\"},{\"name\":\"gross charge-offs\",\"value\":\"(495,508.03)\",\"quote\":\"Gross charge-offs (495,508.03)\"},{\"name\":\"pool balance at end of period\",\"value\":\"71,057,763.78\",\"quote\":\"Pool balance at end of period 71,057,763.78\"},{\"name\":\"interest received\",\"value\":\"1,089,456.74\",\"quote\":\"Interest received 1,089,456.74\"},{\"name\":\"60+ day ratio, February 2026\",\"value\":\"0.71%\",\"quote\":\"February 2026 0.71%\"},{\"name\":\"60+ day ratio, March 2026\",\"value\":\"0.76%\",\"quote\":\"March 2026 0.76%\"},{\"name\":\"60+ day ratio, April 2026\",\"value\":\"0.79%\",\"quote\":\"April 2026 0.79%\"},{\"name\":\"60+ day ratio, May 2026\",\"value\":\"0.84%\",\"quote\":\"May 2026 0.84%\"}],\"charge_offs\":[{\"loan_id\":\"BAF100058\",\"amount\":\"22,328.00\"},{\"loan_id\":\"BAF100086\",\"amount\":\"18,835.53\"},{\"loan_id\":\"BAF100143\",\"amount\":\"21,246.52\"},{\"loan_id\":\"BAF100256\",\"amount\":\"21,853.07\"},{\"loan_id\":\"BAF100341\",\"amount\":\"10,243.40\"},{\"loan_id\":\"BAF100386\",\"amount\":\"16,345.41\"},{\"loan_id\":\"BAF100501\",\"amount\":\"39,824.09\"},{\"loan_id\":\"BAF100512\",\"amount\":\"22,466.77\"},{\"loan_id\":\"BAF100548\",\"amount\":\"9,715.63\"},{\"loan_id\":\"BAF100629\",\"amount\":\"33,724.10\"},{\"loan_id\":\"BAF100656\",\"amount\":\"22,866.82\"},{\"loan_id\":\"BAF100788\",\"amount\":\"26,319.64\"},{\"loan_id\":\"BAF100799\",\"amount\":\"19,983.92\"},{\"loan_id\":\"BAF101044\",\"amount\":\"10,295.37\"},{\"loan_id\":\"BAF101062\",\"amount\":\"49,166.56\"},{\"loan_id\":\"BAF101130\",\"amount\":\"24,848.30\"},{\"loan_id\":\"BAF101250\",\"amount\":\"33,200.32\"},{\"loan_id\":\"BAF101349\",\"amount\":\"17,952.23\"},{\"loan_id\":\"BAF101620\",\"amount\":\"10,553.98\"},{\"loan_id\":\"BAF101750\",\"amount\":\"22,084.87\"},{\"loan_id\":\"BAF101789\",\"amount\":\"32,672.88\"},{\"loan_id\":\"BAF101799\",\"amount\":\"8,980.62\"}]}",
+ "usage": {
+  "task": "read_servicer_report",
+  "input_tokens": 132,
+  "output_tokens": 1150,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 1512,
+  "from_replay": false,
+  "seconds": 11.7
+ }
+}

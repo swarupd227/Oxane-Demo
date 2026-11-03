@@ -1,0 +1,14 @@
+{
+ "task": "draft_pack",
+ "model": "claude-opus-5-5",
+ "text": "{\"facility\":\"Northmoor Motor Credit Trust\",\"summary\":\"The May loan tape and borrowing base certificate have been received, but the May servicer report is late and has been chased with the servicer. The delinquency average is close to its trigger and one vehicle appears to secure a loan in both Bramble and Northmoor; both matters have been reported to the lender for its decision.\",\"sections\":[{\"heading\":\"Submissions\",\"text\":\"The May loan tape and the May borrowing base certificate were received. The May servicer report is late and has not yet been received. A reminder was sent to the servicer, followed by an escalation, and the query remains open with them.\"},{\"heading\":\"Triggers\",\"text\":\"The delinquency average stands at {{delinquency_average}}, against a trigger of {{delinquency_limit}}, above which an amortisation event would occur. The trigger has not been breached, but the average is close to it: a June delinquency figure above {{june_threshold}} would breach it. This has been confirmed and reported to the lender, who will decide what action, if any, to take. The excess spread average for March and April was {{excess_spread}}, against a floor of {{excess_spread_floor}}.\"},{\"heading\":\"Borrowing base and collections\",\"text\":\"The borrowing base position is pending until the May servicer report arrives. May principal collections fell by {{collections_change}} against April. This is in line with the pattern seen last May, when principal collections fell by {{last_year_change}}. The movement is within tolerance and has been logged; no alert has been raised.\"},{\"heading\":\"Collateral\",\"text\":\"One vehicle has been identified as securing a loan in both the Bramble and Northmoor portfolios. This has been confirmed and reported to the lender, who will decide how it should be resolved.\"},{\"heading\":\"Open items\",\"text\":\"There are {{open_items}} matters requiring action. The late May servicer report remains outstanding with the servicer, and the borrowing base cannot be completed until it arrives. The delinquency average close to its trigger and the vehicle securing loans in both Bramble and Northmoor have been reported to the lender and await its decision.\"}]}",
+ "usage": {
+  "task": "draft_pack",
+  "input_tokens": 1356,
+  "output_tokens": 1360,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 14.0
+ }
+}

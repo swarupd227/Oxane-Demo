@@ -20,6 +20,7 @@ tests/e2e/rehearsal-*.log
 demo-video/rec/
 demo-video/cuts/
 demo-video/probe/
+demo-video/probe-monitoring/
 demo-video/*.mp4
 demo-video/*.jpg
 demo-video/*.png

@@ -6,6 +6,16 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/shell/AppShell";
 import { SessionProvider } from "./lib/session";
+import { MonitoringShell } from "./monitoring/MonitoringShell";
+import { CollateralPage } from "./monitoring/pages/CollateralPage";
+import { CovenantsPage } from "./monitoring/pages/CovenantsPage";
+import { CycleScorecardPage } from "./monitoring/pages/CycleScorecardPage";
+import { PackPage } from "./monitoring/pages/PackPage";
+import { PortfolioPage } from "./monitoring/pages/PortfolioPage";
+import { ReconciliationPage } from "./monitoring/pages/ReconciliationPage";
+import { SubmissionsPage } from "./monitoring/pages/SubmissionsPage";
+import { TermsTimelinePage } from "./monitoring/pages/TermsTimelinePage";
+import { TriagePage } from "./monitoring/pages/TriagePage";
 import { ApprovePage } from "./pages/ApprovePage";
 import { DealCardPage } from "./pages/DealCardPage";
 import { ExceptionsPage } from "./pages/ExceptionsPage";
@@ -41,6 +51,17 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/exceptions" element={<ExceptionsPage />} />
                 <Route path="/approve" element={<ApprovePage />} />
                 <Route path="/results" element={<ScorecardPage />} />
+              </Route>
+              <Route path="/monitoring" element={<MonitoringShell />}>
+                <Route index element={<PortfolioPage />} />
+                <Route path="submissions" element={<SubmissionsPage />} />
+                <Route path="reconciliation" element={<ReconciliationPage />} />
+                <Route path="terms" element={<TermsTimelinePage />} />
+                <Route path="covenants" element={<CovenantsPage />} />
+                <Route path="collateral" element={<CollateralPage />} />
+                <Route path="triage" element={<TriagePage />} />
+                <Route path="pack" element={<PackPage />} />
+                <Route path="results" element={<CycleScorecardPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

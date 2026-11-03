@@ -1,0 +1,123 @@
+# The May 2026 monitoring cycle for Calderwood Bank's three facilities. Every name is fictional.
+# Bramble's terms and April tape come from deal.yaml, the facility record built at onboarding.
+# The generators in dealkit/cycle/ build every document, tape and the answer key from this file.
+
+seed: 20260531
+demo_date: 2026-06-24
+period: {start: 2026-05-01, end: 2026-05-31, label: May 2026}
+lender: Calderwood Bank plc
+tolerance_usd: 50
+
+bramble:
+  cutoff: 2026-05-31
+  new_loans: 300
+  payoff_rate: 0.012
+  # Bramble's onboarding history, from the April servicer report.
+  delinquency_history: {february: 0.71, march: 0.76, april: 0.79}
+  may_delinquency_pct: 0.84
+  outstanding_advances_usd: 50500000
+  planted:
+    m2_missing_loans: 27
+    m2_gap_usd: 412000
+    m3_charge_off_loans: 9
+    m3_charge_off_usd: 140000
+    n3_rounding_usd: 3.20
+  new_columns: {CoBorrower: "Y or N: a co-borrower signed the contract", GAPCoverage: "Y or N: GAP insurance in force"}
+  amendment_2:
+    signed: 2026-05-25
+    effective: 2026-06-01
+    limit_usd: 300000000
+    dealer_limit_pct: 7
+  compliance:
+    period_end: 2026-03-31
+    delivered: 2026-05-14
+    # The borrower reports leverage without this; counted as a liability it is 6.20x.
+    affiliate_guarantee_k: 53900
+    guaranteed_party: Bramble Dealer Services LLC
+  received:
+    loan_tape: 2026-06-19
+    servicer_report: 2026-06-19
+    borrowing_base_certificate: 2026-06-19
+    q1_financials: 2026-05-14
+    compliance_certificate: 2026-05-14
+    amendment_2: 2026-05-25
+
+northmoor:
+  name: Northmoor Motor Credit Trust
+  short_name: Northmoor Motor Credit
+  servicer: Northmoor Auto Finance Inc.
+  address: 900 Commerce Street, Suite 1400, Nashville, Tennessee 37203, United States
+  type: Senior secured revolving warehouse facility
+  limit_usd: 180000000
+  signed: 2025-09-12
+  advance_rate_pct: 75
+  reserve_pct: 2
+  outstanding_advances_usd: 28000000
+  loans: 2900
+  mean_original_balance_usd: 21500
+  delinquency_pct: {march: 5.10, april: 5.60, may: 6.60}
+  delinquency_trigger_pct: 6.0
+  excess_spread_pct: {march: 4.30, april: 4.10}
+  excess_spread_floor_pct: 3.0
+  eligibility:
+    - {id: E1, field: days_past_due, op: "<=", value: 30, text: Not more than 30 days past due}
+    - {id: E2, field: status, op: not_in, value: [CHARGED_OFF, REPO], text: Not charged off or in repossession}
+    - {id: E3, field: original_term, op: "<=", value: 84, text: Original term of 84 months or less}
+    - {id: E4, field: fico, op: ">=", value: 500, text: FICO at origination of 500 or more}
+    - {id: E5, field: current_balance, op: "<=", value: 40000, text: "Current balance of US$40,000 or less"}
+    - {id: E6, field: obligor_state, op: in_us_states, text: Obligor located in the United States}
+    - {id: E7, field: vin, op: unique, text: Vehicle has a unique VIN in the pool}
+  concentration:
+    - {id: C1, text: Loans to obligors in one state, limit_pct: 25}
+    - {id: C2, text: Loans originated by one dealer, limit_pct: 4}
+  new_loans_per_month: 140
+  charge_offs_per_month: 22
+  payoff_rate: {march: 0.0195, april: 0.018, may: 0.0165}
+  # Principal collections by month, relative to April, April 2025 to March 2026. Collections
+  # dip every May, when tax refunds stop paying loans off early.
+  seasonal_profile: [1.00, 0.86, 0.95, 0.96, 0.95, 0.94, 0.96, 0.98, 1.02, 1.01, 0.97, 1.03]
+  received:
+    loan_tape: 2026-06-18
+    borrowing_base_certificate: 2026-06-18
+  servicer_report_due: 2026-06-22
+  chase_sent: 2026-06-23
+  escalated: 2026-06-24
+
+kestrel:
+  name: Kestrel Credit Fund III LP
+  short_name: Kestrel Credit Fund III
+  manager: Kestrel Capital Partners LLP
+  address: 12 Hanover Street, London W1S 1YH, United Kingdom
+  type: NAV facility
+  signed: 2025-07-01
+  commitment_usd: 500000000
+  drawn_usd: 430000000
+  quarter_end: 2026-03-31
+  max_ltv_pct: 35
+  valuation_max_age_days: 90
+  max_single_position_pct: 15
+  max_top_five_pct: 55
+  nav_usd: 1420000000
+  stale_position: {name: Harlow Logistics Group, valued: 2025-12-15}
+  markdown: {position: Corrin Healthcare Holdings, amount_usd: 85000000, date: 2026-05-08}
+  positions:
+    - [Corrin Healthcare Holdings, Healthcare services, 182000000]
+    - [Aldwych Software Holdings, Software, 165000000]
+    - [Brightwater Utilities Services, Utilities services, 148000000]
+    - [Harlow Logistics Group, Logistics, 131000000]
+    - [Penrose Specialty Chemicals, Chemicals, 118000000]
+    - [Tamworth Education Partners, Education, 104000000]
+    - [Maple Ridge Foods, Food production, 96000000]
+    - [Sefton Insurance Brokers, Insurance services, 88000000]
+    - [Garrick Industrial Components, Industrials, 81000000]
+    - [Ludlow Veterinary Group, Healthcare services, 74000000]
+    - [Ashby Data Centres, Digital infrastructure, 69000000]
+    - [Kinross Building Products, Building products, 63000000]
+    - [Wexford Payments, Financial technology, 55000000]
+    - [Orwell Marine Services, Business services, 48000000]
+  # Positions above total 1,422,000,000 less US$2m of net other liabilities gives the NAV.
+  other_net_liabilities_usd: 2000000
+  received:
+    nav_report: 2026-05-27
+    valuation_report: 2026-05-27
+    compliance_certificate: 2026-05-28

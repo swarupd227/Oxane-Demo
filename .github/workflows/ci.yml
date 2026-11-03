@@ -39,6 +39,8 @@ jobs:
       - run: pytest
       - run: python -m dealkit.build
       - run: git diff --exit-code pack.manifest.json
+      - run: python -m dealkit.cycle.build
+      - run: git diff --exit-code cycle.manifest.json
 
   engine:
     runs-on: ubuntu-latest
@@ -53,7 +55,7 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e "../../deal-kit" -e ".[dev]"
-      - run: python -m dealkit.build
+      - run: python -m dealkit.build && python -m dealkit.cycle.build
         working-directory: deal-kit
       - run: ruff check .
       - run: pytest
@@ -83,6 +85,8 @@ jobs:
       RULESET_FILE: ${{ github.workspace }}/packages/engine/rulesets/calderwood-bramble.v1.json
       PIPELINE_DIR: ${{ github.workspace }}/fixtures/run
       LLM_FIXTURES: ${{ github.workspace }}/fixtures/llm
+      CYCLE_DIR: ${{ github.workspace }}/fixtures/cycle
+      CYCLE_LLM_FIXTURES: ${{ github.workspace }}/fixtures/llm-cycle
       PYTHONPATH: ${{ github.workspace }}/packages/engine
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +94,7 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e "../../deal-kit" -e ".[dev]"
-      - run: python -m dealkit.build
+      - run: python -m dealkit.build && python -m dealkit.cycle.build
         working-directory: deal-kit
       - run: ruff check .
       - run: alembic upgrade head

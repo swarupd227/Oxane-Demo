@@ -1,0 +1,109 @@
+# The platform's facility record for Calderwood Bank's warehouse and fund finance desk: what was
+# set up when each facility was onboarded, and the inbox log of what arrived this cycle.
+# Bramble's terms, rules and tape mapping come from its onboarding run, so they are not repeated.
+# The monitoring pipeline reads this file. It never reads the cycle answer key.
+
+lender: Calderwood Bank plc
+desk: Warehouse and fund finance desk
+cycle:
+  id: "M-2026-05"
+  label: May 2026
+  period_end: 2026-05-31
+  # The demo runs as of this date, so the late file and its chase are fixed in time.
+  as_of: 2026-06-24
+tolerances:
+  certificate_usd: 50
+  roll_forward_usd: 50
+  # A trigger within this many percentage points of its limit is an early warning.
+  trigger_warning_pts: 0.5
+
+facilities:
+  - id: bramble
+    name: Bramble Auto Receivables I
+    borrower: Bramble Auto Receivables I LLC
+    type: Auto loan warehouse
+    asset_class: Auto ABF
+    role: Verification agent
+    size: US$250m
+    size_note: US$300m from 1 Jun 2026
+    reporting: Monthly tape, servicer report and certificate; quarterly financials and compliance certificate
+    folder: bramble
+    tape: BAF_Loan_Tape_2026-05.csv
+    servicer_report: BAF_Servicer_Report_May_2026.pdf
+    certificate: Bramble_BBC_May_2026.xlsx
+    compliance_certificate: BAF_Compliance_Certificate_Q1_2026.pdf
+    financial_statements: BAF_Financial_Statements_Q1_2026.pdf
+    amendments: [Bramble_Amendment_No_2.pdf]
+    outstanding_advances_usd: 50500000
+    dealer_aliases: {Sunrise Motors: Sunrise Motors LLC}
+  - id: northmoor
+    name: Northmoor Motor Credit Trust
+    borrower: Northmoor Motor Credit Trust
+    type: Auto loan warehouse
+    asset_class: Auto ABF
+    role: Verification agent
+    size: US$180m
+    reporting: Monthly tape, servicer report and certificate
+    folder: northmoor
+    agreement: Northmoor_Credit_Agreement.pdf
+    tapes: {March: NMC_Tape_2026-03.csv, April: NMC_Tape_2026-04.csv, May: NMC_Tape_2026-05.csv}
+    servicer_reports: {March: NMC_Servicer_Report_March_2026.pdf, April: NMC_Servicer_Report_April_2026.pdf}
+    certificate: NMC_BBC_May_2026.xlsx
+    # Set when Northmoor was onboarded.
+    mapping: {Acct_No: loan_id, Vehicle_VIN: vin, Contract_Date: origination_date,
+              First_Due: first_payment_date, Maturity: maturity_date, Amt_Financed: original_balance,
+              Principal_Bal: current_balance, APR_Pct: apr, Term_Mos: original_term,
+              Mos_Remaining: remaining_term, Pmts_Paid: payments_made, Pmt_Amt: monthly_payment,
+              Score: fico, State: obligor_state, Zip3: obligor_zip3, Dealer: dealer_name,
+              Dealer_St: dealer_state, Make: vehicle_make, Model: vehicle_model, Yr: model_year,
+              Cond: vehicle_condition, Days_Delinq: days_past_due, Status_Cd: status,
+              CO_Date: charge_off_date, CO_Amt: charge_off_amount, Repo_Date: repossession_date,
+              AsOf: cutoff_date}
+    terms:
+      delinquency_trigger_pct: 6.0
+      delinquency_clause: Section 7.1(a)
+      delinquency_quote: "exceeds 6.0%"
+      excess_spread_floor_pct: 3.0
+      excess_spread_clause: Section 7.1(b)
+      excess_spread_quote: "is less than 3.0%"
+  - id: kestrel
+    name: Kestrel Credit Fund III
+    borrower: Kestrel Credit Fund III LP
+    type: NAV facility
+    asset_class: Fund finance
+    role: Reporting agent
+    size: US$430m drawn
+    reporting: Quarterly NAV report, valuation report and compliance certificate
+    folder: kestrel
+    agreement: Kestrel_NAV_Facility_Agreement.pdf
+    nav_report: Kestrel_Q1_2026_NAV_Report.pdf
+    valuation_report: Kestrel_Q1_2026_Valuation_Report.pdf
+    compliance_certificate: Kestrel_Q1_2026_Compliance_Certificate.pdf
+    calculation_date: 2026-03-31
+    terms:
+      max_ltv_pct: 35
+      ltv_clause: Section 7.1
+      valuation_max_age_days: 90
+      valuation_clause: Section 6.2
+      max_single_position_pct: 15
+      max_top_five_pct: 55
+      concentration_clause: Section 6.3
+      nav_clause: Section 1.1
+
+# Due dates follow each agreement's reporting clause. Received dates are the inbox log.
+submissions:
+  - {facility: bramble, label: "Loan tape, May", file: BAF_Loan_Tape_2026-05.csv, due: 2026-06-22, received: 2026-06-19}
+  - {facility: bramble, label: "Servicer report, May", file: BAF_Servicer_Report_May_2026.pdf, due: 2026-06-22, received: 2026-06-19}
+  - {facility: bramble, label: "Borrowing base certificate, May", file: Bramble_BBC_May_2026.xlsx, due: 2026-06-22, received: 2026-06-19}
+  - {facility: bramble, label: Q1 financial statements, file: BAF_Financial_Statements_Q1_2026.pdf, due: 2026-05-15, received: 2026-05-14}
+  - {facility: bramble, label: Q1 compliance certificate, file: BAF_Compliance_Certificate_Q1_2026.pdf, due: 2026-05-15, received: 2026-05-14}
+  - {facility: bramble, label: Amendment No. 2, file: Bramble_Amendment_No_2.pdf, due: 2026-05-25, received: 2026-05-25}
+  - {facility: northmoor, label: "Loan tape, May", file: NMC_Tape_2026-05.csv, due: 2026-06-22, received: 2026-06-18}
+  - {facility: northmoor, label: "Borrowing base certificate, May", file: NMC_BBC_May_2026.xlsx, due: 2026-06-22, received: 2026-06-18}
+  - {facility: northmoor, label: "Servicer report, May", file: null, due: 2026-06-22, received: null,
+     sender: Northmoor Auto Finance Inc., contact: Servicer reporting team}
+  - {facility: kestrel, label: Q1 NAV report, file: Kestrel_Q1_2026_NAV_Report.pdf, due: 2026-05-30, received: 2026-05-27}
+  - {facility: kestrel, label: Q1 valuation report, file: Kestrel_Q1_2026_Valuation_Report.pdf, due: 2026-05-30, received: 2026-05-27}
+  - {facility: kestrel, label: Q1 compliance certificate, file: Kestrel_Q1_2026_Compliance_Certificate.pdf, due: 2026-05-30, received: 2026-05-28}
+# Chasing runs itself: a reminder the morning after a due date, escalation a business day later.
+chase_policy: {first: 1, escalate: 2}

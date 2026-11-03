@@ -1,0 +1,2054 @@
+{
+ "cycle": {
+  "id": "M-2026-05",
+  "label": "May 2026",
+  "period_end": "2026-05-31",
+  "as_of": "2026-06-24"
+ },
+ "lender": "Calderwood Bank plc",
+ "desk": "Warehouse and fund finance desk",
+ "tolerances": {
+  "certificate_usd": 50,
+  "roll_forward_usd": 50,
+  "trigger_warning_pts": 0.5
+ },
+ "facilities": [
+  {
+   "id": "bramble",
+   "name": "Bramble Auto Receivables I",
+   "borrower": "Bramble Auto Receivables I LLC",
+   "type": "Auto loan warehouse",
+   "asset_class": "Auto ABF",
+   "role": "Verification agent",
+   "size": "US$250m",
+   "size_note": "US$300m from 1 Jun 2026",
+   "reporting": "Monthly tape, servicer report and certificate; quarterly financials and compliance certificate"
+  },
+  {
+   "id": "northmoor",
+   "name": "Northmoor Motor Credit Trust",
+   "borrower": "Northmoor Motor Credit Trust",
+   "type": "Auto loan warehouse",
+   "asset_class": "Auto ABF",
+   "role": "Verification agent",
+   "size": "US$180m",
+   "reporting": "Monthly tape, servicer report and certificate"
+  },
+  {
+   "id": "kestrel",
+   "name": "Kestrel Credit Fund III",
+   "borrower": "Kestrel Credit Fund III LP",
+   "type": "NAV facility",
+   "asset_class": "Fund finance",
+   "role": "Reporting agent",
+   "size": "US$430m drawn",
+   "reporting": "Quarterly NAV report, valuation report and compliance certificate"
+  }
+ ],
+ "submissions": [
+  {
+   "facility": "bramble",
+   "label": "Loan tape, May",
+   "file": "BAF_Loan_Tape_2026-05.csv",
+   "due": "2026-06-22",
+   "received": "2026-06-19",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "bramble",
+   "label": "Servicer report, May",
+   "file": "BAF_Servicer_Report_May_2026.pdf",
+   "due": "2026-06-22",
+   "received": "2026-06-19",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "bramble",
+   "label": "Borrowing base certificate, May",
+   "file": "Bramble_BBC_May_2026.xlsx",
+   "due": "2026-06-22",
+   "received": "2026-06-19",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "bramble",
+   "label": "Q1 financial statements",
+   "file": "BAF_Financial_Statements_Q1_2026.pdf",
+   "due": "2026-05-15",
+   "received": "2026-05-14",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "bramble",
+   "label": "Q1 compliance certificate",
+   "file": "BAF_Compliance_Certificate_Q1_2026.pdf",
+   "due": "2026-05-15",
+   "received": "2026-05-14",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "bramble",
+   "label": "Amendment No. 2",
+   "file": "Bramble_Amendment_No_2.pdf",
+   "due": "2026-05-25",
+   "received": "2026-05-25",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "northmoor",
+   "label": "Loan tape, May",
+   "file": "NMC_Tape_2026-05.csv",
+   "due": "2026-06-22",
+   "received": "2026-06-18",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "northmoor",
+   "label": "Borrowing base certificate, May",
+   "file": "NMC_BBC_May_2026.xlsx",
+   "due": "2026-06-22",
+   "received": "2026-06-18",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "northmoor",
+   "label": "Servicer report, May",
+   "file": null,
+   "sender": "Northmoor Auto Finance Inc.",
+   "contact": "Servicer reporting team",
+   "due": "2026-06-22",
+   "received": null,
+   "status": "late",
+   "chase": [
+    {
+     "at": "2026-06-23",
+     "action": "Reminder sent automatically",
+     "to": "Servicer reporting team, Northmoor Auto Finance Inc.",
+     "text": "The servicer report, may was due on 22 June 2026 and has not been received. Please send it today, or tell us when to expect it."
+    },
+    {
+     "at": "2026-06-24",
+     "action": "Escalated automatically",
+     "to": "Relationship manager at Northmoor Auto Finance Inc.; copied to the lender",
+     "text": "Still not received one business day after the reminder. The May borrowing base stays pending."
+    }
+   ]
+  },
+  {
+   "facility": "kestrel",
+   "label": "Q1 NAV report",
+   "file": "Kestrel_Q1_2026_NAV_Report.pdf",
+   "due": "2026-05-30",
+   "received": "2026-05-27",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "kestrel",
+   "label": "Q1 valuation report",
+   "file": "Kestrel_Q1_2026_Valuation_Report.pdf",
+   "due": "2026-05-30",
+   "received": "2026-05-27",
+   "status": "received",
+   "chase": []
+  },
+  {
+   "facility": "kestrel",
+   "label": "Q1 compliance certificate",
+   "file": "Kestrel_Q1_2026_Compliance_Certificate.pdf",
+   "due": "2026-05-30",
+   "received": "2026-05-28",
+   "status": "received",
+   "chase": []
+  }
+ ],
+ "layout": {
+  "facility": "bramble",
+  "file": "BAF_Loan_Tape_2026-05.csv",
+  "from_memory": 38,
+  "columns_total": 40,
+  "new_columns": [
+   {
+    "column": "CoBorrower",
+    "field": null,
+    "reason": "This column flags whether the loan has a co-borrower (Y/N), and no platform field records co-borrower presence, so it is left unmapped.",
+    "values": [
+     "N",
+     "Y"
+    ],
+    "outcome": "Kept as an extra attribute"
+   },
+   {
+    "column": "GAPCoverage",
+    "field": null,
+    "reason": "This column appears to flag whether GAP insurance was taken out on the vehicle (Y/N), and no platform field captures GAP coverage, so it is left unmapped.",
+    "values": [
+     "N",
+     "Y"
+    ],
+    "outcome": "Kept as an extra attribute"
+   }
+  ]
+ },
+ "reconciliation": {
+  "roll_forward": {
+   "opening": 63183612.49,
+   "additions": 9857582.58,
+   "new_loans": 300,
+   "collections": 1487923.26,
+   "charge_offs": 355395.26,
+   "expected": 71197876.55,
+   "actual": 70785872.51,
+   "gap": 412004.04,
+   "within_tolerance": false,
+   "sources": {
+    "collections": {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.14041013032003166,
+       "x1": 0.8598398445478452,
+       "top": 0.18329481645063916,
+       "bottom": 0.19337247598050822
+      }
+     ]
+    },
+    "opening": {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.14041013032003166,
+       "x1": 0.8602009692223244,
+       "top": 0.144964661261048,
+       "bottom": 0.15498860677083337
+      }
+     ]
+    }
+   },
+   "servicer_closing": 71057763.78,
+   "missing": [
+    {
+     "loan_id": "BAF100103",
+     "april_balance": 9552.08,
+     "dealer": "Riverbend Nissan",
+     "state": "TX",
+     "vehicle": "2023 Toyota RAV4"
+    },
+    {
+     "loan_id": "BAF100186",
+     "april_balance": 9848.72,
+     "dealer": "Harbor Motors",
+     "state": "GA",
+     "vehicle": "2017 Nissan Rogue"
+    },
+    {
+     "loan_id": "BAF100255",
+     "april_balance": 9874.83,
+     "dealer": "Frontier Nissan",
+     "state": "SC",
+     "vehicle": "2018 Jeep Compass"
+    },
+    {
+     "loan_id": "BAF100350",
+     "april_balance": 9738.34,
+     "dealer": "Harbor Toyota",
+     "state": "TX",
+     "vehicle": "2023 Hyundai Sonata"
+    },
+    {
+     "loan_id": "BAF100527",
+     "april_balance": 18593.06,
+     "dealer": "Pinnacle Auto Sales",
+     "state": "CA",
+     "vehicle": "2023 Honda Civic"
+    },
+    {
+     "loan_id": "BAF100658",
+     "april_balance": 9386.57,
+     "dealer": "Canyon Motors",
+     "state": "NC",
+     "vehicle": "2023 Chevrolet Equinox"
+    },
+    {
+     "loan_id": "BAF100738",
+     "april_balance": 22501.35,
+     "dealer": "Prairie Nissan",
+     "state": "PA",
+     "vehicle": "2015 Dodge Ram 1500"
+    },
+    {
+     "loan_id": "BAF100852",
+     "april_balance": 13951.65,
+     "dealer": "Desert Valley Auto Sales",
+     "state": "PA",
+     "vehicle": "2021 Hyundai Santa Fe"
+    },
+    {
+     "loan_id": "BAF100911",
+     "april_balance": 10711.54,
+     "dealer": "Heartland Nissan",
+     "state": "AZ",
+     "vehicle": "2015 Honda CR-V"
+    },
+    {
+     "loan_id": "BAF100928",
+     "april_balance": 9741.63,
+     "dealer": "Bluegrass Toyota",
+     "state": "CA",
+     "vehicle": "2023 Ford Escape"
+    },
+    {
+     "loan_id": "BAF100957",
+     "april_balance": 16993.57,
+     "dealer": "Desert Valley Auto Sales",
+     "state": "TX",
+     "vehicle": "2017 Jeep Grand Cherokee"
+    },
+    {
+     "loan_id": "BAF100989",
+     "april_balance": 25992.99,
+     "dealer": "Lone Star Auto Sales",
+     "state": "AZ",
+     "vehicle": "2025 Chevrolet Equinox"
+    },
+    {
+     "loan_id": "BAF101051",
+     "april_balance": 9947.31,
+     "dealer": "Sunrise Motors LLC",
+     "state": "NV",
+     "vehicle": "2020 Honda Civic"
+    },
+    {
+     "loan_id": "BAF101186",
+     "april_balance": 9475.07,
+     "dealer": "Desert Valley Chevrolet",
+     "state": "NC",
+     "vehicle": "2023 Kia Sorento"
+    },
+    {
+     "loan_id": "BAF101316",
+     "april_balance": 9436.09,
+     "dealer": "Cypress Toyota",
+     "state": "GA",
+     "vehicle": "2016 Kia Forte"
+    },
+    {
+     "loan_id": "BAF101399",
+     "april_balance": 22958.52,
+     "dealer": "Piedmont Motors",
+     "state": "GA",
+     "vehicle": "2022 Hyundai Elantra"
+    },
+    {
+     "loan_id": "BAF101440",
+     "april_balance": 21766.79,
+     "dealer": "Gulf Coast Nissan",
+     "state": "TX",
+     "vehicle": "2018 Jeep Compass"
+    },
+    {
+     "loan_id": "BAF101626",
+     "april_balance": 23879.34,
+     "dealer": "Palmetto Nissan",
+     "state": "AL",
+     "vehicle": "2025 Toyota Tacoma"
+    },
+    {
+     "loan_id": "BAF101717",
+     "april_balance": 20045.92,
+     "dealer": "Lakeshore Nissan",
+     "state": "NC",
+     "vehicle": "2022 Ford Escape"
+    },
+    {
+     "loan_id": "BAF101737",
+     "april_balance": 12144.38,
+     "dealer": "Desert Valley Auto Sales",
+     "state": "NC",
+     "vehicle": "2017 Dodge Ram 1500"
+    },
+    {
+     "loan_id": "BAF101890",
+     "april_balance": 20542.87,
+     "dealer": "Canyon Auto Sales",
+     "state": "NC",
+     "vehicle": "2024 Kia Sportage"
+    },
+    {
+     "loan_id": "BAF102150",
+     "april_balance": 23249.05,
+     "dealer": "Mesa Auto Sales",
+     "state": "TN",
+     "vehicle": "2016 Nissan Sentra"
+    },
+    {
+     "loan_id": "BAF102190",
+     "april_balance": 10513.46,
+     "dealer": "Lakeshore Nissan",
+     "state": "MO",
+     "vehicle": "2021 Nissan Altima"
+    },
+    {
+     "loan_id": "BAF102233",
+     "april_balance": 20892.89,
+     "dealer": "Riverbend Toyota",
+     "state": "OH",
+     "vehicle": "2016 Ford Fusion"
+    },
+    {
+     "loan_id": "BAF102301",
+     "april_balance": 18613.75,
+     "dealer": "Summit Motors",
+     "state": "PA",
+     "vehicle": "2024 Kia Optima"
+    },
+    {
+     "loan_id": "BAF102329",
+     "april_balance": 22024.4,
+     "dealer": "Prairie Auto Sales",
+     "state": "LA",
+     "vehicle": "2023 Jeep Compass"
+    },
+    {
+     "loan_id": "BAF102338",
+     "april_balance": 10041.03,
+     "dealer": "Desert Valley Ford",
+     "state": "CA",
+     "vehicle": "2019 Ford Fusion"
+    }
+   ],
+   "missing_april_balance": 422417.2
+  },
+  "charge_offs": {
+   "tape": 355395.26,
+   "report": 495508.03,
+   "difference": 140112.77,
+   "source": {
+    "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+    "page": 2,
+    "rects": [
+     {
+      "x0": 0.13988234326730367,
+      "x1": 0.8598398445478452,
+      "top": 0.2024437490135732,
+      "bottom": 0.21270389749546248
+     }
+    ]
+   },
+   "schedule_source": {
+    "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+    "page": 3,
+    "rects": [
+     {
+      "x0": 0.2167140486972784,
+      "x1": 0.28856127869849113,
+      "top": 0.18345580438170772,
+      "bottom": 0.19135484791765311
+     }
+    ]
+   },
+   "loans": [
+    {
+     "loan_id": "BAF100143",
+     "report_amount": 21246.52,
+     "tape_status": "DELINQUENT",
+     "tape_balance": 21246.52,
+     "days_past_due": 41
+    },
+    {
+     "loan_id": "BAF100341",
+     "report_amount": 10243.4,
+     "tape_status": "ACTIVE",
+     "tape_balance": 10243.4,
+     "days_past_due": 0
+    },
+    {
+     "loan_id": "BAF100386",
+     "report_amount": 16345.41,
+     "tape_status": "ACTIVE",
+     "tape_balance": 16345.41,
+     "days_past_due": 0
+    },
+    {
+     "loan_id": "BAF100512",
+     "report_amount": 22466.77,
+     "tape_status": "ACTIVE",
+     "tape_balance": 22466.77,
+     "days_past_due": 0
+    },
+    {
+     "loan_id": "BAF100548",
+     "report_amount": 9715.63,
+     "tape_status": "ACTIVE",
+     "tape_balance": 9715.63,
+     "days_past_due": 0
+    },
+    {
+     "loan_id": "BAF100656",
+     "report_amount": 22866.82,
+     "tape_status": "ACTIVE",
+     "tape_balance": 22866.82,
+     "days_past_due": 0
+    },
+    {
+     "loan_id": "BAF101044",
+     "report_amount": 10295.37,
+     "tape_status": "DELINQUENT",
+     "tape_balance": 10295.37,
+     "days_past_due": 36
+    },
+    {
+     "loan_id": "BAF101349",
+     "report_amount": 17952.23,
+     "tape_status": "ACTIVE",
+     "tape_balance": 17952.23,
+     "days_past_due": 0
+    },
+    {
+     "loan_id": "BAF101799",
+     "report_amount": 8980.62,
+     "tape_status": "ACTIVE",
+     "tape_balance": 8980.62,
+     "days_past_due": 0
+    }
+   ]
+  },
+  "interest": 1089456.74,
+  "delinquency_trend": {
+   "February 2026": {
+    "value": 0.71,
+    "source": {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 4,
+     "rects": [
+      {
+       "x0": 0.14041013032003166,
+       "x1": 0.8602426566329657,
+       "top": 0.31830427381727433,
+       "bottom": 0.3282960833925189
+      }
+     ]
+    }
+   },
+   "March 2026": {
+    "value": 0.76,
+    "source": {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 4,
+     "rects": [
+      {
+       "x0": 0.14022956798279207,
+       "x1": 0.8602426566329657,
+       "top": 0.3374962084221117,
+       "bottom": 0.3453952519580571
+      }
+     ]
+    }
+   },
+   "April 2026": {
+    "value": 0.79,
+    "source": {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 4,
+     "rects": [
+      {
+       "x0": 0.13941013111787684,
+       "x1": 0.8602426566329657,
+       "top": 0.3566881430269492,
+       "bottom": 0.3666048146257497
+      }
+     ]
+    }
+   },
+   "May 2026": {
+    "value": 0.84,
+    "source": {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 4,
+     "rects": [
+      {
+       "x0": 0.14022956798279207,
+       "x1": 0.8602426566329657,
+       "top": 0.37588007763178666,
+       "bottom": 0.3858718486747357
+      }
+     ]
+    }
+   }
+  }
+ },
+ "terms": {
+  "facility": "bramble",
+  "period_end": "2026-05-31",
+  "signed": "2026-05-25 (the Amendment is dated 25 May 2026; both signature blocks read \"By: /s/ (signature on file)\")",
+  "periods_note": "Clause 2(c): \"Each Borrowing Base Certificate for a Collection Period ending on or after 1 June 2026 shall be calculated using the Credit Agreement as amended by this Amendment. No Borrowing Base Certificate for an earlier Collection Period is reopened, and the Collection Period ending 31 May 2026 is calculated without it.\" Clause 3 adds a condition: \"This Amendment takes effect on the later of its effective date and the date on which the Lender has received this Amendment signed by each party and payment of the upsize fee agreed in a separate letter.\" The document does not say when, or whether, the upsize fee was paid. The 2(a) quote for the Commitment gives the old and new figures. The document does not state the old or new Facility Limit figures; it says only that the limit is \"increased accordingly\". The document also does not name the term in Schedule 2, row 2.",
+  "periods_source": null,
+  "terms": [
+   {
+    "name": "Facility limit",
+    "versions": [
+     {
+      "label": "Credit Agreement",
+      "effective_from": "2026-01-15",
+      "value": "US$250,000,000",
+      "source": {
+       "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+       "page": 61,
+       "rects": [
+        {
+         "bottom": 0.335,
+         "top": 0.271,
+         "x0": 0.226,
+         "x1": 0.767
+        }
+       ]
+      }
+     },
+     {
+      "label": "Amendment No. 2",
+      "effective_from": "2026-06-01",
+      "value": "US$300,000,000",
+      "clause": "Amendment No. 2, 2(a)",
+      "source": {
+       "document": "bramble/Bramble_Amendment_No_2.pdf",
+       "page": 2,
+       "rects": [
+        {
+         "x0": 0.19516862607469745,
+         "x1": 0.8723259221494587,
+         "top": 0.2389729047062421,
+         "bottom": 0.25147478508226795
+        },
+        {
+         "x0": 0.16886764725828482,
+         "x1": 0.8231446509267769,
+         "top": 0.25513450545494,
+         "bottom": 0.2676496409406566
+        }
+       ]
+      }
+     }
+    ],
+    "in_force": "Credit Agreement",
+    "value_in_force": "US$250,000,000",
+    "next": "Amendment No. 2",
+    "next_value": "US$300,000,000"
+   },
+   {
+    "name": "Advance rate",
+    "versions": [
+     {
+      "label": "Credit Agreement",
+      "effective_from": "2026-01-15",
+      "value": "85%",
+      "source": {
+       "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+       "label": "Credit Agreement 2.3",
+       "note": "85%, superseded from 1 Mar 2026",
+       "page": 16,
+       "rects": [
+        {
+         "bottom": 0.8429614847356623,
+         "top": 0.8334955735640093,
+         "x0": 0.12774264267067503,
+         "x1": 0.36309876784779666
+        }
+       ]
+      }
+     },
+     {
+      "label": "Amendment No. 1",
+      "effective_from": "2026-03-01",
+      "value": "82.5%",
+      "source": {
+       "document": "pack/Bramble_Amendment_No_1.pdf",
+       "page": 2,
+       "rects": [
+        {
+         "bottom": 0.25147478508226795,
+         "top": 0.2395562065972222,
+         "x0": 0.19226960574879365,
+         "x1": 0.823916566138174
+        }
+       ]
+      }
+     }
+    ],
+    "in_force": "Amendment No. 1",
+    "value_in_force": "82.5%",
+    "next": "Amendment No. 1",
+    "next_value": "82.5%"
+   },
+   {
+    "name": "Dealer concentration limit",
+    "versions": [
+     {
+      "label": "Credit Agreement",
+      "effective_from": "2026-01-15",
+      "value": "5%",
+      "source": {
+       "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+       "page": 59,
+       "rects": [
+        {
+         "bottom": 0.3025921908291903,
+         "top": 0.2923649489277541,
+         "x0": 0.18652450960446026,
+         "x1": 0.46705393074384705
+        }
+       ]
+      }
+     },
+     {
+      "label": "Amendment No. 2",
+      "effective_from": "2026-06-01",
+      "value": "7%",
+      "clause": "Amendment No. 2, 2(b)",
+      "source": {
+       "document": "bramble/Bramble_Amendment_No_2.pdf",
+       "page": 2,
+       "rects": [
+        {
+         "x0": 0.19323038587383196,
+         "x1": 0.828205881555096,
+         "top": 0.27945516567037565,
+         "bottom": 0.2913737441554214
+        }
+       ]
+      }
+     }
+    ],
+    "in_force": "Credit Agreement",
+    "value_in_force": "5%",
+    "next": "Amendment No. 2",
+    "next_value": "7%"
+   }
+  ]
+ },
+ "tests": {
+  "bramble": {
+   "borrowing_base": {
+    "system": {
+     "eligible_pool": 67818515.7,
+     "excess": 74952.69,
+     "borrowing_base": 55210254.32,
+     "availability": 4710254.32,
+     "advance_rate_pct": 82.5,
+     "provisional": true
+    },
+    "certificate": {
+     "eligible_pool": 67818518.9,
+     "borrowing_base": 55210256.93,
+     "availability": 4710256.93
+    },
+    "differences": {
+     "eligible_pool": 3.2,
+     "borrowing_base": 2.61,
+     "availability": 2.61
+    },
+    "within_tolerance": true,
+    "tolerance": 50.0,
+    "sunrise": {
+     "share_pct": 5.11,
+     "excess": 74952.69
+    }
+   },
+   "delinquency": {
+    "monthly": [
+     {
+      "month": "March 2026",
+      "value": 0.76
+     },
+     {
+      "month": "April 2026",
+      "value": 0.79
+     },
+     {
+      "month": "May 2026",
+      "value": 0.84
+     }
+    ],
+    "average": 0.8,
+    "limit": 6.0,
+    "direction": "max",
+    "breached": false,
+    "early_warning": false,
+    "headroom": 5.2,
+    "next_month_breaches_beyond": 16.37,
+    "clause": "Section 7.1",
+    "source": null
+   },
+   "leverage": {
+    "reported": 5.28,
+    "recomputed": 5.28,
+    "with_guarantees": 6.2,
+    "maximum": 6.0,
+    "tangible_net_worth_k": 46500,
+    "carve_out_k": 12000,
+    "total_liabilities_k": 320800,
+    "guarantees_k": 53900,
+    "guarantees": [
+     {
+      "description": "Guarantee by the Parent of the obligations of Bramble Dealer Services LLC, an affiliate under common ownership, under its dealer floor plan facility. The certificate states no payment has been demanded, the guarantee is not recognised on the balance sheet, and it is excluded from Total Liabilities in the Leverage Ratio calculation.",
+      "amount": "US$53,900 thousand",
+      "source": {
+       "document": "bramble/BAF_Compliance_Certificate_Q1_2026.pdf",
+       "page": 1,
+       "rects": [
+        {
+         "x0": 0.43824997446895425,
+         "x1": 0.8179709241281148,
+         "top": 0.6622948309387824,
+         "bottom": 0.674217802105528
+        }
+       ]
+      }
+     }
+    ],
+    "reported_source": {
+     "document": "bramble/BAF_Compliance_Certificate_Q1_2026.pdf",
+     "page": 1,
+     "rects": [
+      {
+       "x0": 0.14027124292710247,
+       "x1": 0.8603398940142464,
+       "top": 0.5765624768806226,
+       "bottom": 0.5866615988991477
+      }
+     ]
+    },
+    "clauses": [
+     {
+      "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+      "page": 13,
+      "rects": [
+       {
+        "x0": 0.12887499690834991,
+        "x1": 0.31234526790045447,
+        "top": 0.79854104013154,
+        "bottom": 0.8078743713070649
+       }
+      ],
+      "label": "Credit Agreement 1.1, Total Liabilities: balance sheet liabilities under GAAP"
+     },
+     {
+      "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+      "page": 11,
+      "rects": [
+       {
+        "x0": 0.12887499690834991,
+        "x1": 0.30771826451120815,
+        "top": 0.13338948259449968,
+        "bottom": 0.1452682957504735
+       }
+      ],
+      "label": "Credit Agreement 1.1, Leverage Ratio"
+     }
+    ]
+   },
+   "liquidity_k": 12600
+  },
+  "northmoor": {
+   "delinquency": {
+    "monthly": [
+     {
+      "month": "March 2026",
+      "value": 5.1
+     },
+     {
+      "month": "April 2026",
+      "value": 5.6
+     },
+     {
+      "month": "May 2026",
+      "value": 6.6
+     }
+    ],
+    "average": 5.77,
+    "limit": 6.0,
+    "direction": "max",
+    "breached": false,
+    "early_warning": true,
+    "headroom": 0.23,
+    "next_month_breaches_beyond": 5.8,
+    "clause": "Section 7.1(a)",
+    "source": {
+     "document": "northmoor/Northmoor_Credit_Agreement.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.7179560443155126,
+       "x1": 0.8097451403250102,
+       "top": 0.4385460747612847,
+       "bottom": 0.4480119955660117
+      }
+     ]
+    }
+   },
+   "excess_spread": {
+    "monthly": [
+     {
+      "month": "March 2026",
+      "value": 4.3
+     },
+     {
+      "month": "April 2026",
+      "value": 4.1
+     }
+    ],
+    "average": 4.2,
+    "limit": 3.0,
+    "direction": "min",
+    "breached": false,
+    "early_warning": false,
+    "headroom": 1.2,
+    "next_month_breaches_beyond": null,
+    "clause": "Section 7.1(b)",
+    "source": {
+     "document": "northmoor/Northmoor_Credit_Agreement.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.6892011056538501,
+       "x1": 0.8021446676815257,
+       "top": 0.46228347161803585,
+       "bottom": 0.4717493924227628
+      }
+     ]
+    },
+    "months_available": 2,
+    "months_required": 3,
+    "pending": "May servicer report not received"
+   },
+   "excess_spread_months": [
+    {
+     "month": "March 2026",
+     "value": 4.3,
+     "stated": "4.30%",
+     "source": {
+      "document": "northmoor/NMC_Servicer_Report_March_2026.pdf",
+      "page": 1,
+      "rects": [
+       {
+        "x0": 0.14027124292710247,
+        "x1": 0.8603954439848857,
+        "top": 0.5076230752347696,
+        "bottom": 0.5176148848100142
+       }
+      ]
+     }
+    },
+    {
+     "month": "April 2026",
+     "value": 4.1,
+     "stated": "4.10%",
+     "source": {
+      "document": "northmoor/NMC_Servicer_Report_April_2026.pdf",
+      "page": 1,
+      "rects": [
+       {
+        "x0": 0.14027124292710247,
+        "x1": 0.8603954439848857,
+        "top": 0.5076230752347696,
+        "bottom": 0.5176148848100142
+       }
+      ]
+     }
+    }
+   ],
+   "collections": {
+    "april": 1670330.25,
+    "may": 1458250.95,
+    "change": -0.127,
+    "last_year_change": -0.1397,
+    "seasonal": true,
+    "history": [
+     {
+      "month": "Apr 2025",
+      "value_k": 1553
+     },
+     {
+      "month": "May 2025",
+      "value_k": 1336
+     },
+     {
+      "month": "Jun 2025",
+      "value_k": 1476
+     },
+     {
+      "month": "Jul 2025",
+      "value_k": 1491
+     },
+     {
+      "month": "Aug 2025",
+      "value_k": 1476
+     },
+     {
+      "month": "Sep 2025",
+      "value_k": 1460
+     },
+     {
+      "month": "Oct 2025",
+      "value_k": 1491
+     },
+     {
+      "month": "Nov 2025",
+      "value_k": 1522
+     },
+     {
+      "month": "Dec 2025",
+      "value_k": 1584
+     },
+     {
+      "month": "Jan 2026",
+      "value_k": 1569
+     },
+     {
+      "month": "Feb 2026",
+      "value_k": 1507
+     },
+     {
+      "month": "Mar 2026",
+      "value_k": 1556
+     },
+     {
+      "month": "Apr 2026",
+      "value_k": 1670
+     }
+    ]
+   },
+   "borrowing_base": {
+    "status": "pending",
+    "reason": "May servicer report not received"
+   },
+   "tapes": {
+    "March": 3040,
+    "April": 3127,
+    "May": 3185
+   }
+  },
+  "kestrel": {
+   "nav": 1420000000.0,
+   "drawn": 430000000.0,
+   "nav_source": {
+    "document": "kestrel/Kestrel_Q1_2026_NAV_Report.pdf",
+    "page": 1,
+    "rects": [
+     {
+      "x0": 0.15782108182221458,
+      "x1": 0.8426928551368464,
+      "top": 0.5859810414940421,
+      "bottom": 0.5954791367656053
+     }
+    ]
+   },
+   "drawn_source": {
+    "document": "kestrel/Kestrel_Q1_2026_Compliance_Certificate.pdf",
+    "page": 1,
+    "rects": [
+     {
+      "x0": 0.15791830673716425,
+      "x1": 0.8426094803155637,
+      "top": 0.3337083296342329,
+      "bottom": 0.34376456520774146
+     }
+    ]
+   },
+   "ltv": {
+    "reported": 30.3,
+    "with_markdown": 32.2,
+    "limit": 35.0,
+    "stated": "30.3%",
+    "markdown": 85000000.0,
+    "headroom_pts": 2.8,
+    "clause": "Section 7.1",
+    "clauses": [
+     {
+      "document": "kestrel/Kestrel_NAV_Facility_Agreement.pdf",
+      "page": 2,
+      "rects": [
+       {
+        "x0": 0.1287720624138327,
+        "x1": 0.3020191067963644,
+        "top": 0.17162685201625627,
+        "bottom": 0.1808143384528883
+       }
+      ],
+      "label": "NAV Facility Agreement 1.1, Net Asset Value"
+     },
+     {
+      "document": "kestrel/Kestrel_NAV_Facility_Agreement.pdf",
+      "page": 2,
+      "rects": [
+       {
+        "x0": 0.1287720624138327,
+        "x1": 0.30099601994932085,
+        "top": 0.22768748890269885,
+        "bottom": 0.2369147406684028
+       }
+      ],
+      "label": "NAV Facility Agreement 1.1, Valuation Event"
+     }
+    ],
+    "events": [
+     {
+      "position": "Corrin Healthcare Holdings",
+      "amount": 85000000.0,
+      "date": "2026-05-08",
+      "source": {
+       "document": "kestrel/Kestrel_Q1_2026_Valuation_Report.pdf",
+       "page": 2,
+       "rects": [
+        {
+         "x0": 0.12766830593931908,
+         "x1": 0.8501653733596303,
+         "top": 0.15522411616161613,
+         "bottom": 0.16707510900015787
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "valuations": {
+    "max_age_days": 90,
+    "clause": "Section 6.2",
+    "calculation_date": "2026-03-31",
+    "positions": 14,
+    "stale": [
+     {
+      "name": "Harlow Logistics Group",
+      "valued": "2025-12-15",
+      "age_days": 106,
+      "value": 131000000.0,
+      "source": {
+       "document": "kestrel/Kestrel_Q1_2026_Valuation_Report.pdf",
+       "page": 1,
+       "rects": [
+        {
+         "x0": 0.14028513041976232,
+         "x1": 0.8602566189236112,
+         "top": 0.31961552783696334,
+         "bottom": 0.3298756763188526
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "concentration": {
+    "largest": "Corrin Healthcare Holdings",
+    "largest_pct": 12.8,
+    "top_five_pct": 52.4,
+    "largest_limit": 15.0,
+    "top_five_limit": 55.0,
+    "passed": true,
+    "clause": "Section 6.3"
+   },
+   "positions": [
+    {
+     "name": "Corrin Healthcare Holdings",
+     "value": 182000000.0,
+     "valued": "2026-03-31"
+    },
+    {
+     "name": "Aldwych Software Holdings",
+     "value": 165000000.0,
+     "valued": "2026-03-28"
+    },
+    {
+     "name": "Brightwater Utilities Services",
+     "value": 148000000.0,
+     "valued": "2026-03-25"
+    },
+    {
+     "name": "Harlow Logistics Group",
+     "value": 131000000.0,
+     "valued": "2025-12-15"
+    },
+    {
+     "name": "Penrose Specialty Chemicals",
+     "value": 118000000.0,
+     "valued": "2026-03-19"
+    },
+    {
+     "name": "Tamworth Education Partners",
+     "value": 104000000.0,
+     "valued": "2026-03-30"
+    },
+    {
+     "name": "Maple Ridge Foods",
+     "value": 96000000.0,
+     "valued": "2026-03-27"
+    },
+    {
+     "name": "Sefton Insurance Brokers",
+     "value": 88000000.0,
+     "valued": "2026-03-24"
+    },
+    {
+     "name": "Garrick Industrial Components",
+     "value": 81000000.0,
+     "valued": "2026-03-21"
+    },
+    {
+     "name": "Ludlow Veterinary Group",
+     "value": 74000000.0,
+     "valued": "2026-03-18"
+    },
+    {
+     "name": "Ashby Data Centres",
+     "value": 69000000.0,
+     "valued": "2026-03-29"
+    },
+    {
+     "name": "Kinross Building Products",
+     "value": 63000000.0,
+     "valued": "2026-03-26"
+    },
+    {
+     "name": "Wexford Payments",
+     "value": 55000000.0,
+     "valued": "2026-03-23"
+    },
+    {
+     "name": "Orwell Marine Services",
+     "value": 48000000.0,
+     "valued": "2026-03-20"
+    }
+   ]
+  }
+ },
+ "collateral": {
+  "checked": {
+   "bramble": 2623,
+   "northmoor": 3120
+  },
+  "within": [],
+  "across": [
+   {
+    "vin": "7S0GBWZ96PJAEFF0W",
+    "holdings": [
+     {
+      "facility": "bramble",
+      "loan_id": "BAF100764",
+      "status": "ACTIVE",
+      "dealer_name": "Golden Gate Ford",
+      "obligor_state": "TX",
+      "vehicle": "2024 Honda Pilot",
+      "origination_date": "12/11/2024",
+      "days_past_due": 0,
+      "current_balance": 46467.0
+     },
+     {
+      "facility": "northmoor",
+      "loan_id": "NMC303235",
+      "status": "ACTIVE",
+      "dealer_name": "Peachtree Auto Sales",
+      "obligor_state": "AL",
+      "vehicle": "2024 Honda Pilot",
+      "origination_date": "2026-04-13",
+      "days_past_due": 0,
+      "current_balance": 29911.99
+     }
+    ]
+   }
+  ],
+  "scope": "Calderwood Bank's own facilities only"
+ },
+ "findings": [
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [],
+   "clauses": [],
+   "id": "F-late-servicer-report",
+   "facility": "northmoor",
+   "check": "Submissions",
+   "title": "Servicer report, May not received",
+   "detail": "Due 22 Jun 2026. Reminder sent 23 Jun 2026, escalated 24 Jun 2026. The borrowing base stays pending until it arrives.",
+   "owner": "Servicer",
+   "sender": "Northmoor Auto Finance Inc.",
+   "suggested": {
+    "outcome": "query",
+    "reason": "The May servicer report, due 22 Jun 2026, has not been received despite a reminder and escalation, so the borrowing base cannot be finalised until the servicer supplies it.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [
+    {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.14041013032003166,
+       "x1": 0.8598398445478452,
+       "top": 0.18329481645063916,
+       "bottom": 0.19337247598050822
+      }
+     ]
+    }
+   ],
+   "clauses": [],
+   "id": "F-roll-forward",
+   "facility": "bramble",
+   "check": "Reconciliation",
+   "title": "27 loans missing from the May tape",
+   "detail": "The roll-forward expects US$71,197,876.55; the tape totals US$70,785,872.51. The gap of US$412,004.04 matches 27 loans on the April tape that the May tape does not list, not even as paid off or charged off.",
+   "amount": 412004.04,
+   "loans": [
+    "BAF100103",
+    "BAF100186",
+    "BAF100255",
+    "BAF100350",
+    "BAF100527",
+    "BAF100658",
+    "BAF100738",
+    "BAF100852",
+    "BAF100911",
+    "BAF100928",
+    "BAF100957",
+    "BAF100989",
+    "BAF101051",
+    "BAF101186",
+    "BAF101316",
+    "BAF101399",
+    "BAF101440",
+    "BAF101626",
+    "BAF101717",
+    "BAF101737",
+    "BAF101890",
+    "BAF102150",
+    "BAF102190",
+    "BAF102233",
+    "BAF102301",
+    "BAF102329",
+    "BAF102338"
+   ],
+   "owner": "Servicer",
+   "suggested": {
+    "outcome": "query",
+    "reason": "The May tape omits 27 loans that were on the April tape, with no payoff or charge-off status, leaving a gap of US$412,004.04 that the borrower or servicer must explain.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [
+    {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.13988234326730367,
+       "x1": 0.8598398445478452,
+       "top": 0.2024437490135732,
+       "bottom": 0.21270389749546248
+      }
+     ]
+    },
+    {
+     "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+     "page": 3,
+     "rects": [
+      {
+       "x0": 0.2167140486972784,
+       "x1": 0.28856127869849113,
+       "top": 0.18345580438170772,
+       "bottom": 0.19135484791765311
+      }
+     ]
+    }
+   ],
+   "clauses": [],
+   "id": "F-charge-offs",
+   "facility": "bramble",
+   "check": "Reconciliation",
+   "title": "Charge-offs US$140,112.77 higher in the servicer report",
+   "detail": "9 loans are charged off in the servicer report but live on the tape.",
+   "amount": 140112.77,
+   "loans": [
+    "BAF100143",
+    "BAF100341",
+    "BAF100386",
+    "BAF100512",
+    "BAF100548",
+    "BAF100656",
+    "BAF101044",
+    "BAF101349",
+    "BAF101799"
+   ],
+   "owner": "Servicer",
+   "suggested": {
+    "outcome": "query",
+    "reason": "Nine loans are shown as charged off in the servicer report but as live on the tape, a US$140,112.77 inconsistency that the servicer must reconcile.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": "logged",
+   "evidence": [],
+   "sources": [
+    {
+     "document": "bramble/Bramble_Amendment_No_2.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.19516862607469745,
+       "x1": 0.8723259221494587,
+       "top": 0.2389729047062421,
+       "bottom": 0.25147478508226795
+      },
+      {
+       "x0": 0.16886764725828482,
+       "x1": 0.8231446509267769,
+       "top": 0.25513450545494,
+       "bottom": 0.2676496409406566
+      }
+     ]
+    }
+   ],
+   "clauses": [],
+   "id": "F-terms-facility-limit",
+   "facility": "bramble",
+   "check": "Terms version",
+   "rule_reason": "Takes effect after the period end. May is tested on the terms then in force; both versions are on the timeline.",
+   "title": "Facility limit: US$300,000,000 from 1 Jun 2026",
+   "detail": "May uses US$250,000,000 (Credit Agreement).",
+   "suggested": {
+    "outcome": "logged",
+    "reason": "Takes effect after the period end. May is tested on the terms then in force; both versions are on the timeline.",
+    "by": "Rule"
+   }
+  },
+  {
+   "rule_outcome": "logged",
+   "evidence": [],
+   "sources": [
+    {
+     "document": "bramble/Bramble_Amendment_No_2.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.19323038587383196,
+       "x1": 0.828205881555096,
+       "top": 0.27945516567037565,
+       "bottom": 0.2913737441554214
+      }
+     ]
+    }
+   ],
+   "clauses": [],
+   "id": "F-terms-dealer-concentration-limit",
+   "facility": "bramble",
+   "check": "Terms version",
+   "rule_reason": "Takes effect after the period end. May is tested on the terms then in force; both versions are on the timeline.",
+   "title": "Dealer concentration limit: 7% from 1 Jun 2026",
+   "detail": "May uses 5% (Credit Agreement).",
+   "suggested": {
+    "outcome": "logged",
+    "reason": "Takes effect after the period end. May is tested on the terms then in force; both versions are on the timeline.",
+    "by": "Rule"
+   }
+  },
+  {
+   "rule_outcome": "logged",
+   "evidence": [],
+   "sources": [],
+   "clauses": [],
+   "id": "F-certificate-rounding",
+   "facility": "bramble",
+   "check": "Borrowing base",
+   "rule_reason": "Within the US$50 tolerance agreed for certificates.",
+   "title": "Certificate eligible pool US$3.20 above the recomputed figure",
+   "detail": "Recomputed borrowing base agrees with the certificate within tolerance.",
+   "suggested": {
+    "outcome": "logged",
+    "reason": "Within the US$50 tolerance agreed for certificates.",
+    "by": "Rule"
+   }
+  },
+  {
+   "rule_outcome": "logged",
+   "evidence": [],
+   "sources": [],
+   "clauses": [],
+   "id": "F-layout-coborrower",
+   "facility": "bramble",
+   "check": "Layout change",
+   "rule_reason": "New column with no platform field; the other 38 columns mapped from memory.",
+   "title": "New tape column CoBorrower",
+   "detail": "This column flags whether the loan has a co-borrower (Y/N), and no platform field records co-borrower presence, so it is left unmapped.",
+   "suggested": {
+    "outcome": "logged",
+    "reason": "New column with no platform field; the other 38 columns mapped from memory.",
+    "by": "Rule"
+   }
+  },
+  {
+   "rule_outcome": "logged",
+   "evidence": [],
+   "sources": [],
+   "clauses": [],
+   "id": "F-layout-gapcoverage",
+   "facility": "bramble",
+   "check": "Layout change",
+   "rule_reason": "New column with no platform field; the other 38 columns mapped from memory.",
+   "title": "New tape column GAPCoverage",
+   "detail": "This column appears to flag whether GAP insurance was taken out on the vehicle (Y/N), and no platform field captures GAP coverage, so it is left unmapped.",
+   "suggested": {
+    "outcome": "logged",
+    "reason": "New column with no platform field; the other 38 columns mapped from memory.",
+    "by": "Rule"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [
+    {
+     "document": "northmoor/Northmoor_Credit_Agreement.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.7179560443155126,
+       "x1": 0.8097451403250102,
+       "top": 0.4385460747612847,
+       "bottom": 0.4480119955660117
+      }
+     ]
+    }
+   ],
+   "clauses": [],
+   "id": "F-northmoor-delinquency",
+   "facility": "northmoor",
+   "check": "Triggers",
+   "title": "60+ day delinquency average 5.77% against a 6.0% trigger",
+   "detail": "Monthly 5.10%, 5.60%, 6.60%. June breaches the trigger above 5.80%.",
+   "owner": "Lender",
+   "suggested": {
+    "outcome": "confirmed",
+    "reason": "The 60+ day delinquency average of 5.77% sits just below the 6.0% trigger on clear terms, with the latest month at 6.60%, so the lender must be told of the near breach.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": "logged",
+   "evidence": [],
+   "sources": [],
+   "clauses": [],
+   "id": "F-northmoor-collections",
+   "facility": "northmoor",
+   "check": "Collections",
+   "rule_reason": "Down 12.7% on April; last May fell 14.0%, so within the seasonal range.",
+   "title": "May principal collections below April",
+   "detail": "Worked out from the tapes while the servicer report is outstanding.",
+   "suggested": {
+    "outcome": "logged",
+    "reason": "Down 12.7% on April; last May fell 14.0%, so within the seasonal range.",
+    "by": "Rule"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [
+    {
+     "document": "bramble/BAF_Compliance_Certificate_Q1_2026.pdf",
+     "page": 1,
+     "rects": [
+      {
+       "x0": 0.43824997446895425,
+       "x1": 0.8179709241281148,
+       "top": 0.6622948309387824,
+       "bottom": 0.674217802105528
+      }
+     ]
+    }
+   ],
+   "clauses": [
+    {
+     "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+     "page": 13,
+     "rects": [
+      {
+       "x0": 0.12887499690834991,
+       "x1": 0.31234526790045447,
+       "top": 0.79854104013154,
+       "bottom": 0.8078743713070649
+      }
+     ],
+     "label": "Credit Agreement 1.1, Total Liabilities: balance sheet liabilities under GAAP"
+    },
+    {
+     "document": "pack/Bramble_Credit_Agreement_Executed.pdf",
+     "page": 11,
+     "rects": [
+      {
+       "x0": 0.12887499690834991,
+       "x1": 0.30771826451120815,
+       "top": 0.13338948259449968,
+       "bottom": 0.1452682957504735
+      }
+     ],
+     "label": "Credit Agreement 1.1, Leverage Ratio"
+    }
+   ],
+   "id": "F-bramble-leverage",
+   "facility": "bramble",
+   "check": "Financial covenants",
+   "title": "Leverage 6.20x if the guarantee counts, against 6.00x",
+   "detail": "Reported 5.28x, recomputed 5.28x on the balance sheet. The certificate discloses a US$53,900 thousand guarantee kept off the balance sheet.",
+   "owner": "Credit expert",
+   "suggested": {
+    "outcome": "expert",
+    "reason": "Leverage is 5.28x on the balance sheet but 6.20x against the 6.00x covenant if the disclosed US$53,900 thousand off-balance-sheet guarantee counts, which turns on how the debt definition is read.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [],
+   "clauses": [],
+   "id": "F-shared-vin",
+   "facility": "bramble,northmoor",
+   "check": "Duplicate collateral",
+   "title": "VIN 7S0GBWZ96PJAEFF0W pledged in two facilities",
+   "detail": "Bramble loan BAF100764 and Northmoor loan NMC303235 are secured by the same car.",
+   "owner": "Lender",
+   "suggested": {
+    "outcome": "confirmed",
+    "reason": "The tapes show VIN 7S0GBWZ96PJAEFF0W securing both Bramble loan BAF100764 and Northmoor loan NMC303235, so the same car is pledged in two facilities and the lender must be told.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [
+    {
+     "document": "kestrel/Kestrel_Q1_2026_Valuation_Report.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.12766830593931908,
+       "x1": 0.8501653733596303,
+       "top": 0.15522411616161613,
+       "bottom": 0.16707510900015787
+      }
+     ]
+    }
+   ],
+   "clauses": [
+    {
+     "document": "kestrel/Kestrel_NAV_Facility_Agreement.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.1287720624138327,
+       "x1": 0.3020191067963644,
+       "top": 0.17162685201625627,
+       "bottom": 0.1808143384528883
+      }
+     ],
+     "label": "NAV Facility Agreement 1.1, Net Asset Value"
+    },
+    {
+     "document": "kestrel/Kestrel_NAV_Facility_Agreement.pdf",
+     "page": 2,
+     "rects": [
+      {
+       "x0": 0.1287720624138327,
+       "x1": 0.30099601994932085,
+       "top": 0.22768748890269885,
+       "bottom": 0.2369147406684028
+      }
+     ],
+     "label": "NAV Facility Agreement 1.1, Valuation Event"
+    }
+   ],
+   "id": "F-kestrel-markdown",
+   "facility": "kestrel",
+   "check": "NAV loan-to-value",
+   "title": "Loan-to-value 30.3% on reported NAV, 32.2% with the post-quarter markdown",
+   "detail": "Corrin Healthcare Holdings marked down US$85m on 8 May 2026. The Manager has not declared a Valuation Event.",
+   "owner": "Credit expert",
+   "suggested": {
+    "outcome": "expert",
+    "reason": "Loan-to-value rises from 30.3% to 32.2% only if the US$85m Corrin Healthcare Holdings markdown of 8 May 2026 is taken into account, and the Manager has not declared a Valuation Event, so it depends on how the valuation clause is read.",
+    "by": "AI"
+   }
+  },
+  {
+   "rule_outcome": null,
+   "evidence": [],
+   "sources": [
+    {
+     "document": "kestrel/Kestrel_Q1_2026_Valuation_Report.pdf",
+     "page": 1,
+     "rects": [
+      {
+       "x0": 0.14028513041976232,
+       "x1": 0.8602566189236112,
+       "top": 0.31961552783696334,
+       "bottom": 0.3298756763188526
+      }
+     ]
+    }
+   ],
+   "clauses": [],
+   "id": "F-kestrel-stale-valuation",
+   "facility": "kestrel",
+   "check": "Valuation freshness",
+   "title": "Harlow Logistics Group last valued 15 Dec 2025",
+   "detail": "106 days before the calculation date, against a 90-day limit.",
+   "owner": "Manager",
+   "suggested": {
+    "outcome": "query",
+    "reason": "Harlow Logistics Group was last valued on 15 Dec 2025, 106 days before the calculation date against a 90-day limit, so the fix is a fresh valuation from the sender.",
+    "by": "AI"
+   }
+  }
+ ],
+ "packs": [
+  {
+   "facility": "bramble",
+   "summary": "All expected submissions for the period were received, and our checks have raised queries to the borrower on missing loans and charge-off differences, referred a leverage question for expert review and confirmed a vehicle pledged across two facilities, which has been reported to the lender. The recomputed borrowing base and availability are set out below, and the remaining differences noted were within tolerance and logged without alert.",
+   "sections": [
+    {
+     "heading": "Submissions",
+     "text": "We received the monthly loan tape, servicer report and borrowing base certificate. We also received the quarterly financial statements, the quarterly compliance certificate and the latest amendment to the facility documents. No submissions are outstanding."
+    },
+    {
+     "heading": "Reconciliation",
+     "text": "Our roll-forward of the pool expected a balance of {{expected}}, against {{actual}} on the tape, leaving a gap of {{gap}}. The roll-forward identified {{missing}} loans missing from the tape, and we have queried this with the sender. The servicer report shows charge-offs {{charge_off_difference}} higher than the tape, with {{charge_off_loans}} loans charged off in the report but still live on the tape; this has also been queried with the sender. The tape includes new columns with no corresponding platform field; these have been logged within tolerance and no alert was raised."
+    },
+    {
+     "heading": "Borrowing base and terms",
+     "text": "We recomputed the borrowing base at {{borrowing_base}}, giving availability of {{availability}}. The borrower's certificate shows a borrowing base {{certificate_difference}} above our recomputed figure, a rounding difference within the agreed certificate tolerance of {{tolerance}}; this has been logged and no alert was raised. The latest amendment raises both the facility limit and the dealer limit with effect from a later period; we have logged the changes within tolerance and raised no alert."
+    },
+    {
+     "heading": "Triggers and covenants",
+     "text": "The rolling delinquency average was {{delinquency_average}}, against a delinquency trigger of {{delinquency_limit}}. The borrower reported leverage of {{leverage_reported}}, against a maximum of {{leverage_limit}}. The borrower keeps an affiliate guarantee of {{guarantee}} off its balance sheet; if that guarantee is counted, leverage would be {{leverage_with_guarantee}}, above the maximum. Whether the guarantee should count has been sent for expert review, and any conclusion on the covenant rests with the lender."
+    },
+    {
+     "heading": "Collateral",
+     "text": "We confirmed that a vehicle securing a loan in this facility also secures a loan in the Northmoor facility. The lender has been informed and will decide on the next steps."
+    },
+    {
+     "heading": "Open items",
+     "text": "There are {{open_items}} items requiring action. The queries to the sender on loans missing from the tape and on the charge-off differences remain open pending a response. The leverage question is with expert review, and the vehicle pledged in both facilities is with the lender for decision."
+    }
+   ],
+   "figures": {
+    "open_items": {
+     "value": "4",
+     "means": "findings that need someone to act",
+     "source": null
+    },
+    "expected": {
+     "value": "US$71,197,876.55",
+     "means": "pool balance the roll-forward expects",
+     "source": null
+    },
+    "actual": {
+     "value": "US$70,785,872.51",
+     "means": "pool balance on the May tape",
+     "source": null
+    },
+    "gap": {
+     "value": "US$412,004.04",
+     "means": "roll-forward gap",
+     "source": null
+    },
+    "missing": {
+     "value": "27",
+     "means": "loans missing from the May tape",
+     "source": null
+    },
+    "charge_off_difference": {
+     "value": "US$140,112.77",
+     "means": "charge-offs in the report above the tape",
+     "source": {
+      "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+      "page": 2,
+      "rects": [
+       {
+        "x0": 0.13988234326730367,
+        "x1": 0.8598398445478452,
+        "top": 0.2024437490135732,
+        "bottom": 0.21270389749546248
+       }
+      ]
+     }
+    },
+    "charge_off_loans": {
+     "value": "9",
+     "means": "loans charged off in the report but live on the tape",
+     "source": null
+    },
+    "borrowing_base": {
+     "value": "US$55,210,254.32",
+     "means": "May borrowing base, recomputed",
+     "source": null
+    },
+    "availability": {
+     "value": "US$4,710,254.32",
+     "means": "availability, recomputed",
+     "source": null
+    },
+    "certificate_difference": {
+     "value": "US$2.61",
+     "means": "certificate borrowing base above the recomputed one",
+     "source": null
+    },
+    "tolerance": {
+     "value": "US$50",
+     "means": "tolerance agreed for certificates",
+     "source": null
+    },
+    "delinquency_average": {
+     "value": "0.80%",
+     "means": "three-month 60+ day delinquency average",
+     "source": null
+    },
+    "delinquency_limit": {
+     "value": "6.0%",
+     "means": "delinquency trigger",
+     "source": null
+    },
+    "leverage_reported": {
+     "value": "5.28x",
+     "means": "leverage the borrower reported",
+     "source": {
+      "document": "bramble/BAF_Compliance_Certificate_Q1_2026.pdf",
+      "page": 1,
+      "rects": [
+       {
+        "x0": 0.14027124292710247,
+        "x1": 0.8603398940142464,
+        "top": 0.5765624768806226,
+        "bottom": 0.5866615988991477
+       }
+      ]
+     }
+    },
+    "leverage_with_guarantee": {
+     "value": "6.20x",
+     "means": "leverage if the affiliate guarantee counts",
+     "source": null
+    },
+    "leverage_limit": {
+     "value": "6.00x",
+     "means": "maximum leverage",
+     "source": null
+    },
+    "guarantee": {
+     "value": "US$53.9m",
+     "means": "affiliate guarantee kept off the balance sheet",
+     "source": {
+      "document": "bramble/BAF_Compliance_Certificate_Q1_2026.pdf",
+      "page": 1,
+      "rects": [
+       {
+        "x0": 0.43824997446895425,
+        "x1": 0.8179709241281148,
+        "top": 0.6622948309387824,
+        "bottom": 0.674217802105528
+       }
+      ]
+     }
+    }
+   },
+   "unknown_placeholders": [],
+   "numbers_in_text": []
+  },
+  {
+   "facility": "northmoor",
+   "summary": "The May loan tape and borrowing base certificate have been received, but the May servicer report is late and has been chased with the servicer. The delinquency average is close to its trigger and one vehicle appears to secure a loan in both Bramble and Northmoor; both matters have been reported to the lender for its decision.",
+   "sections": [
+    {
+     "heading": "Submissions",
+     "text": "The May loan tape and the May borrowing base certificate were received. The May servicer report is late and has not yet been received. A reminder was sent to the servicer, followed by an escalation, and the query remains open with them."
+    },
+    {
+     "heading": "Triggers",
+     "text": "The delinquency average stands at {{delinquency_average}}, against a trigger of {{delinquency_limit}}, above which an amortisation event would occur. The trigger has not been breached, but the average is close to it: a June delinquency figure above {{june_threshold}} would breach it. This has been confirmed and reported to the lender, who will decide what action, if any, to take. The excess spread average for March and April was {{excess_spread}}, against a floor of {{excess_spread_floor}}."
+    },
+    {
+     "heading": "Borrowing base and collections",
+     "text": "The borrowing base position is pending until the May servicer report arrives. May principal collections fell by {{collections_change}} against April. This is in line with the pattern seen last May, when principal collections fell by {{last_year_change}}. The movement is within tolerance and has been logged; no alert has been raised."
+    },
+    {
+     "heading": "Collateral",
+     "text": "One vehicle has been identified as securing a loan in both the Bramble and Northmoor portfolios. This has been confirmed and reported to the lender, who will decide how it should be resolved."
+    },
+    {
+     "heading": "Open items",
+     "text": "There are {{open_items}} matters requiring action. The late May servicer report remains outstanding with the servicer, and the borrowing base cannot be completed until it arrives. The delinquency average close to its trigger and the vehicle securing loans in both Bramble and Northmoor have been reported to the lender and await its decision."
+    }
+   ],
+   "figures": {
+    "open_items": {
+     "value": "3",
+     "means": "findings that need someone to act",
+     "source": null
+    },
+    "delinquency_average": {
+     "value": "5.77%",
+     "means": "three-month 60+ day delinquency average",
+     "source": {
+      "document": "northmoor/Northmoor_Credit_Agreement.pdf",
+      "page": 2,
+      "rects": [
+       {
+        "x0": 0.7179560443155126,
+        "x1": 0.8097451403250102,
+        "top": 0.4385460747612847,
+        "bottom": 0.4480119955660117
+       }
+      ]
+     }
+    },
+    "delinquency_limit": {
+     "value": "6.0%",
+     "means": "delinquency trigger: an amortisation event above it",
+     "source": null
+    },
+    "june_threshold": {
+     "value": "5.80%",
+     "means": "June delinquency above which the trigger is breached",
+     "source": null
+    },
+    "excess_spread": {
+     "value": "4.20%",
+     "means": "excess spread average, March and April",
+     "source": null
+    },
+    "excess_spread_floor": {
+     "value": "3.0%",
+     "means": "excess spread floor",
+     "source": null
+    },
+    "collections_change": {
+     "value": "12.7%",
+     "means": "fall in May principal collections against April",
+     "source": null
+    },
+    "last_year_change": {
+     "value": "14.0%",
+     "means": "fall in principal collections last May",
+     "source": null
+    }
+   },
+   "unknown_placeholders": [],
+   "numbers_in_text": []
+  },
+  {
+   "facility": "kestrel",
+   "summary": "All three quarterly submissions due were received, and both concentration tests pass. Loan-to-value counting a post-quarter markdown has been sent for expert review, and a query has been raised with the sender about one investment's valuation that is older than the agreement allows.",
+   "sections": [
+    {
+     "heading": "Submissions",
+     "text": "The quarterly NAV report, valuation report and compliance certificate were all received."
+    },
+    {
+     "heading": "Loan-to-value",
+     "text": "Loan-to-value on reported NAV is {{ltv_reported}}, against a maximum loan-to-value of {{ltv_limit}}. Counting the post-quarter markdown of {{markdown}}, loan-to-value is {{ltv_with_markdown}}. The loan-to-value position with and without the markdown has been sent for expert review, and no conclusion is drawn here pending that review. Any decision on the outcome rests with the lender."
+    },
+    {
+     "heading": "Valuations and concentration",
+     "text": "One investment's valuation is {{stale_days}} days old, which is older than the valuation age limit of {{valuation_limit}} days that the agreement allows. A query has been raised with the sender. The largest investment represents {{largest_position}} of NAV and the five largest investments together represent {{top_five}} of NAV. Both concentration tests pass."
+    },
+    {
+     "heading": "Open items",
+     "text": "There are {{open_items}} items that need someone to act: the expert review of loan-to-value with and without the post-quarter markdown, and the query to the sender on the investment valuation that is older than the agreement allows."
+    }
+   ],
+   "figures": {
+    "open_items": {
+     "value": "2",
+     "means": "findings that need someone to act",
+     "source": null
+    },
+    "ltv_reported": {
+     "value": "30.3%",
+     "means": "loan-to-value on reported NAV",
+     "source": {
+      "document": "kestrel/Kestrel_Q1_2026_NAV_Report.pdf",
+      "page": 1,
+      "rects": [
+       {
+        "x0": 0.15782108182221458,
+        "x1": 0.8426928551368464,
+        "top": 0.5859810414940421,
+        "bottom": 0.5954791367656053
+       }
+      ]
+     }
+    },
+    "ltv_with_markdown": {
+     "value": "32.2%",
+     "means": "loan-to-value counting the post-quarter markdown",
+     "source": null
+    },
+    "ltv_limit": {
+     "value": "35%",
+     "means": "maximum loan-to-value",
+     "source": null
+    },
+    "markdown": {
+     "value": "US$85m",
+     "means": "post-quarter markdown",
+     "source": null
+    },
+    "stale_days": {
+     "value": "106",
+     "means": "age of the stale valuation, in days",
+     "source": null
+    },
+    "valuation_limit": {
+     "value": "90",
+     "means": "valuation age limit, in days",
+     "source": null
+    },
+    "largest_position": {
+     "value": "12.8%",
+     "means": "largest investment, share of NAV",
+     "source": null
+    },
+    "top_five": {
+     "value": "52.4%",
+     "means": "five largest investments, share of NAV",
+     "source": null
+    }
+   },
+   "unknown_placeholders": [],
+   "numbers_in_text": []
+  }
+ ],
+ "unverified": [],
+ "usage": {
+  "model": "claude-opus-5-5",
+  "calls": 11,
+  "input_tokens": 9691,
+  "output_tokens": 13500,
+  "cost_usd": 0.3508,
+  "model_seconds": 143
+ }
+}

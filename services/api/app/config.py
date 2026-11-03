@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     ruleset_file: Path = Path("/packages/engine/rulesets/calderwood-bramble.v1.json")
     pipeline_dir: Path = Path("/fixtures/run")
     llm_fixtures: Path = Path("/fixtures/llm")
+    cycle_dir: Path = Path("/fixtures/cycle")
+    cycle_llm_fixtures: Path = Path("/fixtures/llm-cycle")
     llm_provider: Literal["anthropic", "foundry"] = "anthropic"
     llm_mode: Literal["replay", "record", "live"] = "replay"
     # With sign-in on, identity comes from the platform and never from the request body.

@@ -8,7 +8,7 @@
 # `fields` are the facility terms a concept governs, and `tape_fields` the platform fields.
 # Kinds: money, percent, ratio, count, date, text, list.
 name: Private Credit Ontology
-version: "2.0"
+version: "2.1"
 layers:
   - id: core
     label: Private credit
@@ -21,10 +21,13 @@ layers:
     label: Auto loans
     extends: abf
     meaning: Pools of auto loans, each secured on a vehicle and originated through a dealer.
+  - id: nav
+    label: NAV lending
+    extends: core
+    meaning: Lending to a fund against the net asset value of its investments.
 planned:
   - {id: direct_lending, label: Direct lending, extends: core}
   - {id: real_estate, label: Real estate debt, extends: core}
-  - {id: nav, label: NAV lending, extends: core}
 concepts:
   # Core: the parties
   - id: party
@@ -409,6 +412,58 @@ concepts:
     relations:
       - {type: is a, target: trigger}
       - {type: measured by, target: days_past_due}
+
+  # NAV lending: the fund, its investments and their valuations
+  - id: fund
+    layer: nav
+    label: Fund
+    kind: text
+    meaning: The borrowing fund, whose investments support the facility through their net asset value.
+    relations:
+      - {type: is a, target: borrower}
+      - {type: holds, target: investment}
+  - id: investment
+    layer: nav
+    label: Investment
+    kind: money
+    meaning: One position the fund holds, carried at its fair value from the latest valuation.
+    relations:
+      - {type: is a, target: collateral}
+      - {type: valued by, target: valuation}
+  - id: valuation
+    layer: nav
+    label: Valuation
+    kind: date
+    meaning: An approved valuer's fair value of an investment as of a stated date. An old one may not count.
+    relations:
+      - {type: dated, target: valuation_date}
+  - id: valuation_date
+    layer: nav
+    label: Valuation date
+    kind: date
+    meaning: The date a valuation speaks to. The agreement limits how old it may be on a calculation date.
+  - id: valuation_event
+    layer: nav
+    label: Valuation event
+    kind: text
+    meaning: An event after a valuation that cuts an investment's value, which may or may not adjust NAV for the tests.
+    relations:
+      - {type: may adjust, target: net_asset_value}
+  - id: net_asset_value
+    layer: nav
+    label: Net asset value
+    kind: money
+    meaning: The fund's investments at fair value less its other liabilities, as the quarterly NAV report states.
+    relations:
+      - {type: made up of, target: investment}
+  - id: loan_to_value
+    layer: nav
+    label: Loan-to-value ratio
+    kind: percent
+    meaning: Loans outstanding under the facility divided by net asset value. The NAV facility's main test.
+    relations:
+      - {type: measured against, target: net_asset_value}
+      - {type: is a, target: financial_covenant}
 
   # Auto loans: the receivable, its vehicle and its dealer
   - id: auto_loan

@@ -1,0 +1,14 @@
+{
+ "task": "read_excess_spread",
+ "model": "claude-opus-5-5",
+ "text": "{\"figures\":[{\"name\":\"Interest collections\",\"value\":\"US$809,505.56\",\"quote\":\"Interest collections 809,505.56\"},{\"name\":\"Servicing fee\",\"value\":\"US$(84,469.25) (2.00% a year)\",\"quote\":\"Servicing fee (2.00% a year) (84,469.25)\"},{\"name\":\"Interest on Advances\",\"value\":\"US$(543,427.43)\",\"quote\":\"Interest on Advances (543,427.43)\"},{\"name\":\"Charge-offs net of recoveries\",\"value\":\"US$(0.00)\",\"quote\":\"Charge-offs net of recoveries (0.00)\"},{\"name\":\"Ending principal balance\",\"value\":\"US$50,681,549.00\",\"quote\":\"Ending principal balance 50,681,549.00\"},{\"name\":\"Excess spread, annualised (stated)\",\"value\":\"4.30%\",\"quote\":\"Excess spread, annualised 4.30%\"}],\"collections_history\":[]}",
+ "usage": {
+  "task": "read_excess_spread",
+  "input_tokens": 85,
+  "output_tokens": 706,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 866,
+  "from_replay": false,
+  "seconds": 8.7
+ }
+}

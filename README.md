@@ -1,8 +1,11 @@
-# Oxane AI-Assisted Onboarding Demo
+# Oxane AI-Assisted Onboarding and Monitoring Demos
 
-A demo workbench that takes a fictional asset-based finance facility from a raw document pack to approved, platform-ready data. All documents and data are synthetic. It is not connected to Panorama.
+One workbench for two of Oxane's RFP use cases. All documents and data are synthetic. It is not connected to Panorama.
 
-The build plan is in [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
+- **Onboarding** (use case 1) takes a fictional asset-based finance facility from a raw document pack to approved, platform-ready data. Build plan: [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
+- **Monitoring** (use case 2, at `/monitoring`) runs one lender's May 2026 cycle across three facilities: submissions, reconciliation, effective terms, covenants and triggers, duplicate collateral, triage and lender packs. Build plan: [docs/MONITORING_PLAN.md](docs/MONITORING_PLAN.md).
+
+The two share one facility record, rules engine, event log and workbench; the switch in the top bar moves between them.
 
 ## Run it
 
@@ -84,6 +87,26 @@ docker compose exec api python -m app.pipeline.run --mode record
 ```bash
 docker compose exec api python -m app.pipeline.run --mode replay
 ```
+
+## Run the monitoring cycle
+
+The cycle kit generates the three facilities' May submissions, three months of tapes and the cycle answer key from `deal-kit/cycle.yaml`, building on Bramble's April tape from `deal.yaml`. `deal-kit/cycle.manifest.json` records the hashes, and `docker compose up` builds it if missing.
+
+```bash
+docker compose run --rm deal-kit python -m dealkit.cycle.build
+```
+
+The cycle reads `services/api/app/monitoring/portfolio.yaml` (the facility record and inbox log) and the onboarding run, never the answer key. Code computes every number; the model reads documents, maps new tape columns, suggests triage outcomes and drafts the lender packs' words, and every figure it reads must be found, quoted, in its document. Recording costs about US$0.35; responses go to `fixtures/llm-cycle` and the output to `fixtures/cycle`.
+
+```bash
+docker compose exec api python -m app.monitoring.cycle --mode record
+```
+
+```bash
+docker compose exec api python -m app.monitoring.cycle --mode replay
+```
+
+The scorecard (`GET /api/monitoring/scorecard`) is the only code that reads the cycle key. It checks 20 extracted and reconciled values, the nine planted issues (M1 to M9) and their outcomes, and the three noise items that must stay logged.
 
 ## Private Credit Ontology
 

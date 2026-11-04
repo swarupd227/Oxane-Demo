@@ -1,0 +1,18 @@
+{
+  "portfolio": "Calderwood Bank has three facilities. Each month, every one is checked.",
+  "late": "First, collection. A late servicer report was chased automatically.",
+  "layout": "Two new tape columns. The AI mapped them, so no alert was raised.",
+  "rollforward": "Then reconciliation. No AI here: code rolls April's tape forward to May.",
+  "gap": "A US$412,004 gap. It traces to 27 loans missing from the May tape.",
+  "chargeoffs": "Nine loans are charged off in the report but still live on the tape.",
+  "terms": "Each test uses the terms in force for May, not the latest amendment.",
+  "trigger": "Northmoor's delinquency is just below its trigger: an early warning.",
+  "whatif": "If June is above 5.8%, the trigger breaks. The what-if shows it.",
+  "leverage": "Bramble's leverage passes, unless a guarantee counts. An expert decides.",
+  "collateral": "One car secures loans in two facilities. Possible double pledging.",
+  "triage": "Every finding gets one of four outcomes. The AI suggests, the analyst decides.",
+  "noise": "Noise is held back with its reason. Only eight items need action.",
+  "pack": "The AI drafts each lender pack. Code inserts every figure, with its source.",
+  "approve": "The analyst who prepared the cycle cannot approve. A second analyst does.",
+  "results": "Measured, not forecast: all nine issues found, no false alarms."
+}

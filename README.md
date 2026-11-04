@@ -106,6 +106,12 @@ docker compose exec api python -m app.monitoring.cycle --mode record
 docker compose exec api python -m app.monitoring.cycle --mode replay
 ```
 
+A captioned walkthrough video of the cycle is recorded the same way as the onboarding one, against a production build served by `demo-video/serve.mjs`:
+
+```bash
+node demo-video/record-monitoring.mjs && node demo-video/assemble.mjs Monitoring_Workbench_Demo.mp4
+```
+
 The scorecard (`GET /api/monitoring/scorecard`) is the only code that reads the cycle key. It checks 20 extracted and reconciled values, the nine planted issues (M1 to M9) and their outcomes, and the three noise items that must stay logged.
 
 ## Private Credit Ontology

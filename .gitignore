@@ -26,3 +26,6 @@ demo-video/*.jpg
 demo-video/*.png
 demo-video/segments.json
 demo-video/*.log
+demo-video/voice/build/
+demo-video/voice/check/
+demo-video/voice/*.log

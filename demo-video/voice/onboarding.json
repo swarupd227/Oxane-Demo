@@ -1,0 +1,33 @@
+{
+  "_note": "Voice-over for the caption-free Onboarding Workbench video. Each line starts on its cue: a caption key (the moment that caption appeared in the captioned cut) or a scene and seconds into it. A line must finish before the next line's cue.",
+  "captioned": "Onboarding_Workbench_Demo_Captioned.mp4",
+  "out": "Onboarding_Workbench_Demo",
+  "captions": "captions.json",
+  "scenes": ["opening", "prologue", "deal", "intake", "terms", "rules", "mapping", "validation", "exceptions", "approve", "results", "epilogue", "closing"],
+  "cards": ["opening", "prologue", "epilogue", "closing"],
+  "lines": [
+    { "scene": "opening", "at": 1.0, "text": "Oxane's Onboarding Workbench, from Artizent. So, what does it take to set up a new loan?" },
+    { "scene": "prologue", "at": 0.5, "text": "Before a bank can keep watch over a loan, someone has to set it up. That means reading the whole agreement, then turning it into checks a system can run, without a mistake. Here's how it goes for a bank called Calderwood." },
+    { "caption": "deal", "text": "Calderwood is lending to a car finance company, and the loan is secured on its car loans." },
+    { "caption": "intake", "text": "First, the paperwork arrives. The AI sorts every document, and notices that a page is missing." },
+    { "caption": "terms", "text": "Next, the key terms. The AI reads each one, and shows where it found it." },
+    { "caption": "facility", "text": "Code checks every answer. This one came from a blurry scan, so it's flagged." },
+    { "caption": "ontology", "text": "The AI understands lending terms, because it's grounded in Artizent's private credit ontology." },
+    { "caption": "amended", "text": "This term was changed by a later amendment, and the new value is already applied." },
+    { "caption": "bulk", "text": "Routine terms are approved together. A person signs off each one." },
+    { "caption": "rules", "text": "Then the AI turns the agreement's tests into rules a system can run." },
+    { "caption": "ruleEdit", "text": "Anyone changing a rule sees its effect first, and someone else has to agree." },
+    { "caption": "mapping", "text": "The AI matches the borrower's loan file to the bank's own fields, so nothing is typed by hand." },
+    { "caption": "validation", "text": "Now, the real check. There's no AI here. Code tests every loan, to the cent." },
+    { "caption": "bridge", "text": "The borrower claimed too much, and every dollar of the gap is explained." },
+    { "caption": "drill", "text": "And some cars appear twice, on two different loans." },
+    { "caption": "queue", "text": "Anything doubtful goes to one place, and the analyst decides what happens to each one." },
+    { "caption": "sunrise", "text": "One dealer was spelled two ways. Counted together, it breaks a limit." },
+    { "caption": "approve", "text": "Then sign-off. The analyst who did the work can't approve it." },
+    { "caption": "reviewer", "text": "A second analyst reviews every change, and then approves." },
+    { "caption": "approved", "text": "The loan is ready to watch, with a full record." },
+    { "caption": "results", "text": "The result: every real problem found, and nothing harmless flagged." },
+    { "scene": "epilogue", "at": 0.5, "text": "By the end, the loan is set up and ready to watch. Every value traces back to its page, and every doubt was settled by a person. From next month, the regular checks begin." },
+    { "scene": "closing", "at": 0.8, "text": "Every value has a source. Every doubt has an owner. That's the Onboarding Workbench, from Artizent." }
+  ]
+}

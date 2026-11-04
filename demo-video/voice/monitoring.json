@@ -1,0 +1,30 @@
+{
+  "_note": "Voice-over for the caption-free Monitoring Workbench video. Each line starts on its cue: a caption key (the moment that caption appeared in the captioned cut) or a scene and seconds into it. A line must finish before the next line's cue.",
+  "captioned": "Monitoring_Workbench_Demo_Captioned.mp4",
+  "out": "Monitoring_Workbench_Demo",
+  "captions": "captions-monitoring.json",
+  "scenes": ["opening", "prologue", "portfolio", "submissions", "reconcile", "terms", "covenants", "collateral", "triage", "pack", "results", "epilogue", "closing"],
+  "cards": ["opening", "prologue", "epilogue", "closing"],
+  "lines": [
+    { "scene": "opening", "at": 1.0, "text": "Oxane's Monitoring Workbench, from Artizent. So, what happens after a bank lends the money?" },
+    { "scene": "prologue", "at": 0.5, "text": "When a bank lends money, the work doesn't stop there. Every month, the borrower sends files to show the loan is still safe. Checking them is careful work, and things are easy to miss. Here's one month at a bank called Calderwood." },
+    { "caption": "portfolio", "text": "This is Calderwood's month at a glance: each borrower, and how its checks are going." },
+    { "caption": "late", "text": "First, the paperwork. One report is late, so the system has already chased it." },
+    { "caption": "layout", "text": "One borrower changed its file layout. The AI matched the new columns itself." },
+    { "caption": "rollforward", "text": "Next, the numbers. Last month's loans, plus the new ones, should equal this month's." },
+    { "caption": "gap", "text": "They don't. Some loans have quietly gone missing from the borrower's file." },
+    { "caption": "chargeoffs", "text": "And the borrower's two reports disagree about which loans were written off." },
+    { "caption": "terms", "text": "The loan agreement changed in June, so May is still checked against the old terms." },
+    { "caption": "trigger", "text": "Now, the warning signs. Late payments at one borrower are close to the limit." },
+    { "caption": "whatif", "text": "One more bad month and the bank stops lending. The analyst can test that now." },
+    { "caption": "leverage", "text": "Another borrower's debt looks fine, unless a guarantee counts. So an expert decides." },
+    { "caption": "collateral", "text": "And one car has been used to secure loans with two different borrowers." },
+    { "caption": "triage", "text": "Everything found goes to one place. The AI suggests, and the analyst decides." },
+    { "caption": "noise", "text": "Small, harmless differences are set aside, with a reason, so they don't distract." },
+    { "caption": "pack", "text": "Then the report to the bank. The AI writes it, and every number comes from the checks." },
+    { "caption": "approve", "text": "The analyst can't sign off their own work, so a second analyst approves and sends it." },
+    { "caption": "results", "text": "The result: every real problem found, and nothing harmless flagged." },
+    { "scene": "epilogue", "at": 0.5, "text": "By the end of the day, the bank has its report. Each real problem is with the person who can fix it, and small differences never got in the way. Next month, it all starts again." },
+    { "scene": "closing", "at": 0.8, "text": "Less noise. More certainty. That's the Monitoring Workbench, from Artizent." }
+  ]
+}

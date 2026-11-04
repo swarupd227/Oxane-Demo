@@ -135,7 +135,12 @@ await context.request.post(BASE + '/api/session/reset');
 // ---------------------------------------------------------------- scenes --
 await localGo('opening');
 await hold(2500);
-await start('opening'); await hold(7500); await end();
+await start('opening'); await hold(6500); await end();
+
+// Prologue: why this work exists, before any screen. Its lines start fading in with the scene.
+const replay = () => page.evaluate(() => document.getAnimations().forEach((a) => { a.currentTime = 0; }));
+await localGo('prologue');
+await start('prologue'); await replay(); await page.waitForTimeout(15500); await end();
 
 // The deal and the analyst's mandate.
 await go('/');
@@ -258,6 +263,10 @@ await caption(C.approved); await hold(READ_MS - 800); await end();
 await go('/results');
 await page.getByText('Exceptions found', { exact: true }).waitFor();
 await start('results'); await caption(C.results); await hold(READ_MS + 1200); await end();
+
+// Epilogue: where the work leaves the loan.
+await localGo('epilogue');
+await start('epilogue'); await replay(); await page.waitForTimeout(13000); await end();
 
 await localGo('closing');
 await hold(2500);

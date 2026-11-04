@@ -1,5 +1,5 @@
 {
-  "portfolio": "Every month, Calderwood Bank asks Oxane to check the loans it has made.",
+  "portfolio": "This is Calderwood's month at a glance: each borrower, and how its check is going.",
   "late": "First, the paperwork. One report is late, so the system has already chased it.",
   "layout": "One borrower changed its file layout. The AI matched the new columns itself.",
   "rollforward": "Next, the numbers. Last month's loans plus new ones should equal this month's.",

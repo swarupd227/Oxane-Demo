@@ -126,7 +126,11 @@ await context.request.post(BASE + '/api/monitoring/session/reset');
 // ---------------------------------------------------------------- scenes --
 await localGo('monitoring-opening');
 await hold(2500);
-await start('opening'); await hold(7500); await end();
+await start('opening'); await hold(6500); await end();
+
+// Prologue: why this work exists, before any screen.
+await localGo('monitoring-prologue');
+await start('prologue'); await page.evaluate(() => document.getAnimations().forEach((a) => { a.currentTime = 0; })); await page.waitForTimeout(15500); await end();
 
 // The portfolio: three facilities, one cycle.
 await go('/monitoring');
@@ -233,6 +237,10 @@ for (const facility of ['northmoor', 'kestrel']) await act('approve-pack', 'appr
 await go('/monitoring/results');
 await page.getByText('Material issues missed').waitFor();
 await start('results'); await caption(C.results); await hold(READ_MS + 1600); await end();
+
+// Epilogue: where the month leaves everyone.
+await localGo('monitoring-epilogue');
+await start('epilogue'); await page.evaluate(() => document.getAnimations().forEach((a) => { a.currentTime = 0; })); await page.waitForTimeout(13000); await end();
 
 await localGo('monitoring-closing');
 await hold(2500);

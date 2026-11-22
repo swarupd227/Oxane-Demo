@@ -1,0 +1,121 @@
+# Onboarding casework for case 0412: the scenarios that sit around the document pack.
+# Every name is fictional. The generators in dealkit/casework/ build the client's own model,
+# the domain team's independent QC workbook, the backbook tapes and the casework answer key
+# from this file, deal.yaml and the seed, so the numbers always agree.
+
+seed: 20260512
+
+# Calderwood's own borrowing base model, as it sends it with a new facility. Its template
+# predates Amendment No. 1 and carries the desk's house conventions, some of which differ
+# from the Bramble agreement. `expected` is how the agreement treats the same point.
+client_model:
+  file: Calderwood_BB_Model_Template_v3.2.xlsx
+  template_version: "3.2"
+  issued: 2025-11-14
+  parameters:
+    - {ref: P1, topic: advance_rate, label: Advance rate, value: 0.85, note: "Per facility agreement s2.3", differs: true}
+    - {ref: P2, topic: reserve, label: Reserve, value: 0.01, note: "Of eligible pool balance", differs: false}
+    - {ref: P3, topic: past_due_exclusion, label: Delinquency exclusion, value: "Exclude receivables 30+ days past due", note: "Contractual days past due at cut-off", differs: true}
+    - {ref: P4, topic: status_exclusion, label: Status exclusion, value: "Exclude charged-off (CO) and repossessed (REPO) receivables", note: "", differs: false}
+    - {ref: P5, topic: concentration_denominator, label: Concentration basis, value: "All concentration limits measured against total pool balance (every receivable on the tape)", note: "Desk standard since 2023", differs: true}
+    - {ref: P6, topic: dealer_grouping, label: Dealer concentration, value: "Measured per servicer dealer code; affiliated dealers are not combined", note: "", differs: true}
+    - {ref: P7, topic: fico_bucket, label: Sub-600 FICO bucket, value: "FICO <= 600", note: "Same band as the stratification report", differs: true}
+    - {ref: P8, topic: missing_fico, label: No-score obligors, value: "Obligors with no FICO score are placed in the sub-600 bucket", note: "Desk policy", differs: true}
+    - {ref: P9, topic: excess_order, label: Excess concentration, value: "Limits applied in schedule order; an amount is excluded once", note: "", differs: false}
+  limits:
+    - {ref: L1, topic: limit_state, label: Obligors in any one state, value: 0.20}
+    - {ref: L2, topic: limit_dealer, label: Any one dealer, value: 0.05}
+    - {ref: L3, topic: limit_term, label: Original term above 72 months, value: 0.25}
+    - {ref: L4, topic: limit_used, label: Used vehicles, value: 0.70}
+    - {ref: L5, topic: limit_fico, label: Sub-600 FICO bucket, value: 0.35}
+  reporting:
+    - {ref: R1, topic: report_due, label: Report due, value: "Borrowing base report by 12:00 London time on the 17th business day after month end"}
+    - {ref: R2, topic: report_percent_format, label: Percentages, value: "Show percentages as decimals to four places, for example 0.8250"}
+    - {ref: R3, topic: report_negative_format, label: Deductions, value: "Show deductions as negative numbers"}
+    - {ref: R4, topic: report_nil_format, label: Nil values, value: "Show nil as a dash"}
+    - {ref: R5, topic: report_fico_bands, label: FICO stratification, value: "Bands: <=600, 601-660, 661-720, above 720"}
+    - {ref: R6, topic: report_delinquency, label: Delinquency, value: "60+ day delinquency ratio as defined in the facility agreement"}
+
+# The domain team's independent QC calculation of the first borrowing base, in its own template.
+# Two figures differ for a real reason; the rest differ only in how they are presented.
+qc:
+  file: QC_Bramble_Onboarding_April_2026.xlsx
+  preparer: Domain team, Gurgaon
+
+# Existing Calderwood auto facilities whose servicers export from the same loan servicing
+# system as Bramble, so Bramble's stored mapping applies. Each differs in at most a few ways.
+backbook:
+  - id: ashdown
+    name: Ashdown Auto Funding II LLC
+    deal_type: Auto warehouse
+    file: Ashdown_Tape_2026-04.csv
+    loans: 180
+    prefix: ADF
+    servicer_code: ADF02
+  - id: kingsbury
+    name: Kingsbury Motor Credit Warehouse LLC
+    deal_type: Auto warehouse
+    file: Kingsbury_Tape_2026-04.csv
+    loans: 240
+    prefix: KMC
+    servicer_code: KMC01
+    renamed: {CreditScore: FICO}
+  - id: redfern
+    name: Redfern Auto Receivables 2025-W LLC
+    deal_type: Auto warehouse
+    file: Redfern_Tape_2026-04.csv
+    loans: 150
+    prefix: RAR
+    servicer_code: RAR01
+    extra_column: {name: ExtCount, field_hint: extension count}
+    blank_dpd_when_current: true
+  - id: whitcombe
+    name: Whitcombe Auto Trust 2024-2
+    deal_type: Auto term securitisation
+    file: Whitcombe_Tape_2026-04.csv
+    loans: 210
+    prefix: WAT
+    servicer_code: WAT24
+    status_codes: {ACTIVE: CUR, DELINQUENT: DQ, CHARGED_OFF: CO, REPO: RP}
+
+# The onboarding pipeline around case 0412: the other cases the onboarding team has open or has
+# taken live, across clients and deal types. Only identities, stages and dates are written here.
+# dealkit/casework/pipeline.py works out every count and amount from the seed and the deal-type
+# profiles, and the API adds case 0412 and the backbook deals from the live session.
+pipeline:
+  file: cases.json
+  as_of: 2026-05-15
+  seed: 20260515
+  stages: [Intake, Interpretation, Clarification, QC, Live]
+  # Per deal type: documents in a complete pack, terms and rules to configure, and the
+  # first tape's size and average balance (fund finance counts investor commitments).
+  profiles:
+    Auto ABF: {documents: 8, terms: 26, rules: 17, records: [1600, 3400], balance: 21500, spread: 0.45}
+    Consumer instalment: {documents: 7, terms: 22, rules: 14, records: [6000, 14500], balance: 7800, spread: 0.6}
+    SME loans: {documents: 9, terms: 24, rules: 12, records: [220, 680], balance: 148000, spread: 0.8}
+    Fund finance: {documents: 6, terms: 19, rules: 8, records: [14, 42], balance: 6200000, spread: 0.7}
+    CLO warehouse: {documents: 7, terms: 28, rules: 22, records: [95, 190], balance: 2350000, spread: 0.35}
+  team:
+    - {initials: AM, name: Aanya Mehta}
+    - {initials: RK, name: Rohan Kapoor}
+    - {initials: SN, name: Sana Naqvi}
+    - {initials: DB, name: Dev Bhatia}
+    - {initials: TL, name: Tom Lister}
+  cases:
+    - {number: "0371", client: Calderwood Bank plc, facility: Northmoor Motor Credit Trust, deal_type: Auto ABF, stage: Live, limit_usd: 180000000, opened: 2025-11-03, stage_entered: 2026-01-12, owner: RK}
+    - {number: "0384", client: Calderwood Bank plc, facility: Kestrel Credit Fund III, deal_type: Fund finance, stage: Live, limit_usd: 120000000, opened: 2025-12-08, stage_entered: 2026-02-02, owner: SN}
+    - {number: "0390", client: Thornbury Bank N.A., facility: Larkspur CLO 2026-1 Warehouse, deal_type: CLO warehouse, stage: Live, limit_usd: 400000000, opened: 2026-01-19, stage_entered: 2026-03-16, owner: DB}
+    - {number: "0403", client: Marlow Fund Finance LLP, facility: Granite Peak Fund IV subscription line, deal_type: Fund finance, stage: QC, limit_usd: 75000000, opened: 2026-03-23, stage_entered: 2026-05-11, owner: SN}
+    - {number: "0406", client: Halden Bank AG, facility: Ferncliff Consumer Loans 2026-1, deal_type: Consumer instalment, stage: Clarification, limit_usd: 150000000, opened: 2026-04-01, stage_entered: 2026-04-27, owner: AM}
+    - {number: "0408", client: Thornbury Bank N.A., facility: Larkspur CLO 2026-2 Warehouse, deal_type: CLO warehouse, stage: Interpretation, limit_usd: 350000000, opened: 2026-04-14, stage_entered: 2026-05-06, owner: DB}
+    - {number: "0410", client: Northgate Capital Partners, facility: Osprey SME Lending Facility, deal_type: SME loans, stage: Clarification, limit_usd: 90000000, opened: 2026-04-20, stage_entered: 2026-05-08, owner: TL}
+    - {number: "0415", client: Halden Bank AG, facility: Pennant Point-of-Sale Receivables, deal_type: Consumer instalment, stage: Interpretation, limit_usd: 60000000, opened: 2026-05-05, stage_entered: 2026-05-12, owner: AM}
+    - {number: "0419", client: Northgate Capital Partners, facility: Cobalt Equipment and SME Finance II, deal_type: SME loans, stage: Intake, limit_usd: 110000000, opened: 2026-05-13, stage_entered: 2026-05-13, owner: TL}
+    - {number: "0421", client: Calderwood Bank plc, facility: Harrowgate Auto Lease Funding, deal_type: Auto ABF, stage: Intake, limit_usd: 200000000, opened: 2026-05-14, stage_entered: 2026-05-14, owner: RK}
+  # The backbook deals load as cases of their own under Calderwood; the API fills their
+  # counts and stage from the backbook load in the session.
+  backbook:
+    ashdown: {number: "0412-B1", opened: 2026-05-11}
+    kingsbury: {number: "0412-B2", opened: 2026-05-11}
+    redfern: {number: "0412-B3", opened: 2026-05-11}
+    whitcombe: {number: "0412-B4", opened: 2026-05-11}

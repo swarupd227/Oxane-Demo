@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Any
 
 from app import engine_service
+from app.casework.scoring import brief_measures
 from app.engine_service import read_key
 
 
@@ -175,15 +176,17 @@ def scorecard(run: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
                 f"{usage['model_seconds']} s" if usage.get("model_seconds") else "Not recorded"),
         measure("Analyst effort", "Actions an analyst took in this session",
                 "No target set", f"{len(live)} actions, {terms_done} terms approved",
-                [f"{earlier} more were preloaded in the sandbox"]),
+                [f"{earlier} carried over from earlier work"]),
         measure("Onboarding time", "Pack upload to approved load file, this session",
                 "No target set",
                 f"{_minutes(started, approved)} min" if started and approved
                 else "In progress"),
     ]
+    minutes = _minutes(started, approved) if started and approved else None
     return {
         "available": True,
         "measures": measures,
+        "brief": brief_measures(run, state, rows, minutes),
         "caveat": "Extraction was tuned on this synthetic pack. Results are not independent and "
                   "do not indicate accuracy on live facilities.",
     }

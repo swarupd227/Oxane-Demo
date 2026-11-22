@@ -27,6 +27,7 @@ from engine.monitoring import (
 )
 from engine.rules import RuleSet
 from engine.run import coerce_loan, run, to_cents
+from engine.validation import exact_duplicates
 
 CYCLE = OUTPUT / "cycle"
 SUNRISE = {"Sunrise Motors": "Sunrise Motors LLC"}
@@ -85,7 +86,11 @@ def may(may_raw) -> list[dict]:
 
 
 def _northmoor(month: str) -> list[dict]:
-    return [_light(r) for r in _tape(CYCLE / "northmoor" / f"NMC_Tape_2026-{month}.csv", NORTHMOOR)]
+    """The tape as loaded: May's repeated line is collapsed once the analyst has resolved it."""
+    rows, _ = exact_duplicates(
+        _tape(CYCLE / "northmoor" / f"NMC_Tape_2026-{month}.csv", NORTHMOOR), "loan_id"
+    )
+    return [_light(r) for r in rows]
 
 
 def test_roll_forward_finds_the_gap_and_the_missing_loans(april, may, key):

@@ -1,0 +1,3608 @@
+{
+ "backbook": [
+  {
+   "clean": true,
+   "columns": 38,
+   "deal_type": "Auto warehouse",
+   "differences": [],
+   "exceptions": 0,
+   "file": "Ashdown_Tape_2026-04.csv",
+   "id": "ashdown",
+   "matched": 38,
+   "name": "Ashdown Auto Funding II LLC",
+   "pool_balance": 4606131.55,
+   "rows": 180,
+   "stored": 38
+  },
+  {
+   "clean": false,
+   "columns": 38,
+   "deal_type": "Auto warehouse",
+   "differences": [
+    {
+     "absent_stored_columns": [
+      "CreditScore"
+     ],
+     "check": {
+      "evidence": "All 240 values fit fico, and the stored column CreditScore is absent from this tape",
+      "ok": true
+     },
+     "column": "FICO",
+     "deal": "kingsbury",
+     "kind": "unknown_column",
+     "samples": [
+      "540",
+      "544",
+      "547",
+      "552",
+      "554",
+      "556"
+     ],
+     "suggestion": {
+      "code_map": [],
+      "field": "fico",
+      "kind": "renamed_column",
+      "reason": "This column replaces the absent CreditScore column, and its samples are credit scores.",
+      "treat_blank_as": null
+     }
+    }
+   ],
+   "exceptions": 1,
+   "file": "Kingsbury_Tape_2026-04.csv",
+   "id": "kingsbury",
+   "matched": 37,
+   "name": "Kingsbury Motor Credit Warehouse LLC",
+   "pool_balance": 5792563.91,
+   "rows": 240,
+   "stored": 38
+  },
+  {
+   "clean": false,
+   "columns": 39,
+   "deal_type": "Auto warehouse",
+   "differences": [
+    {
+     "absent_stored_columns": [],
+     "check": {
+      "evidence": "Kept as raw data on the loan record; no platform field is loaded",
+      "ok": true
+     },
+     "column": "ExtCount",
+     "deal": "redfern",
+     "kind": "unknown_column",
+     "samples": [
+      "0",
+      "1",
+      "2"
+     ],
+     "suggestion": {
+      "code_map": [],
+      "field": null,
+      "kind": "new_column",
+      "reason": "This looks like a count of extensions, which no platform field holds exactly, so it should be kept as raw data.",
+      "treat_blank_as": null
+     }
+    },
+    {
+     "check": {
+      "evidence": "All 75 blank rows are current: next payment due after the cut-off, no charge-off or repossession date",
+      "ok": true
+     },
+     "column": "DPD",
+     "deal": "redfern",
+     "field": "days_past_due",
+     "kind": "blank_values",
+     "rows": 75,
+     "statuses_of_blank_rows": {
+      "ACTIVE": 75
+     },
+     "suggestion": {
+      "code_map": [],
+      "field": "days_past_due",
+      "kind": "blank_values",
+      "reason": "All 75 blank rows are ACTIVE, which the mapping keeps apart from DELINQUENT, so a blank most likely means no days past due; please confirm this with the servicer.",
+      "treat_blank_as": "0"
+     }
+    }
+   ],
+   "exceptions": 2,
+   "file": "Redfern_Tape_2026-04.csv",
+   "id": "redfern",
+   "matched": 38,
+   "name": "Redfern Auto Receivables 2025-W LLC",
+   "pool_balance": 3685989.3,
+   "rows": 150,
+   "stored": 38
+  },
+  {
+   "clean": false,
+   "columns": 38,
+   "deal_type": "Auto term securitisation",
+   "differences": [
+    {
+     "check": {
+      "evidence": "Each code agrees with the dates and days past due on its rows: CO (2 rows) to CHARGED_OFF; CUR (201 rows) to ACTIVE; DQ (4 rows) to DELINQUENT; RP (3 rows) to REPO",
+      "ok": true
+     },
+     "codes": [
+      "CO",
+      "CUR",
+      "DQ",
+      "RP"
+     ],
+     "column": "LoanStatus",
+     "deal": "whitcombe",
+     "field": "status",
+     "kind": "code_values",
+     "rows": 210,
+     "stored_values": [
+      "ACTIVE",
+      "CHARGED_OFF",
+      "DELINQUENT",
+      "REPO"
+     ],
+     "suggestion": {
+      "code_map": [
+       [
+        "CO",
+        "CHARGED_OFF"
+       ],
+       [
+        "CUR",
+        "ACTIVE"
+       ],
+       [
+        "DQ",
+        "DELINQUENT"
+       ],
+       [
+        "RP",
+        "REPO"
+       ]
+      ],
+      "field": "status",
+      "kind": "code_values",
+      "reason": "Each short code lines up clearly with one of the stored status values.",
+      "treat_blank_as": null
+     }
+    }
+   ],
+   "exceptions": 1,
+   "file": "Whitcombe_Tape_2026-04.csv",
+   "id": "whitcombe",
+   "matched": 38,
+   "name": "Whitcombe Auto Trust 2024-2",
+   "pool_balance": 5206251.17,
+   "rows": 210,
+   "stored": 38
+  }
+ ],
+ "case": "0412",
+ "client_model": {
+  "differences": [
+   {
+    "placeholders": {
+     "agreement_value": {
+      "means": "how the facility agreement treats it",
+      "value": "82.5% from 1 March 2026"
+     },
+     "cell": {
+      "means": "the cell in the lender's model",
+      "value": "Parameters!C2"
+     },
+     "clause": {
+      "means": "where the agreement says so",
+      "value": "Amendment No. 1, 2(a)"
+     },
+     "impact": {
+      "means": "what the difference does this month",
+      "value": "an April 2026 borrowing base US$1,478,462.91 higher than under the agreement"
+     },
+     "model_value": {
+      "means": "how the lender's model treats it",
+      "value": "85% throughout"
+     }
+    },
+    "silent": false,
+    "topic": "advance_rate"
+   },
+   {
+    "placeholders": {
+     "agreement_value": {
+      "means": "how the facility agreement treats it",
+      "value": "excluded when more than 30 days past due"
+     },
+     "cell": {
+      "means": "the cell in the lender's model",
+      "value": "Parameters!C4"
+     },
+     "clause": {
+      "means": "where the agreement says so",
+      "value": "Schedule 1, paragraph 1"
+     },
+     "impact": {
+      "means": "what the difference does this month",
+      "value": "no change for April 2026, as no receivable sits on the boundary"
+     },
+     "model_value": {
+      "means": "how the lender's model treats it",
+      "value": "excluded at 30 or more days past due"
+     }
+    },
+    "silent": false,
+    "topic": "past_due_exclusion"
+   },
+   {
+    "placeholders": {
+     "agreement_value": {
+      "means": "how the facility agreement treats it",
+      "value": "the Eligible Pool Balance before any excess is deducted"
+     },
+     "cell": {
+      "means": "the cell in the lender's model",
+      "value": "Parameters!C6"
+     },
+     "clause": {
+      "means": "where the agreement says so",
+      "value": "Section 1.1, Eligible Pool Balance"
+     },
+     "impact": {
+      "means": "what the difference does this month",
+      "value": "an April 2026 borrowing base US$157,256.80 higher than under the agreement"
+     },
+     "model_value": {
+      "means": "how the lender's model treats it",
+      "value": "the total pool balance, every receivable on the tape"
+     }
+    },
+    "silent": false,
+    "topic": "concentration_denominator"
+   },
+   {
+    "placeholders": {
+     "agreement_value": {
+      "means": "how the facility agreement treats it",
+      "value": "dealers under common ownership or trading under variations of one name counted as one dealer"
+     },
+     "cell": {
+      "means": "the cell in the lender's model",
+      "value": "Parameters!C7"
+     },
+     "clause": {
+      "means": "where the agreement says so",
+      "value": "Schedule 2, row 2"
+     },
+     "impact": {
+      "means": "what the difference does this month",
+      "value": "an April 2026 borrowing base US$374,908.09 higher than under the agreement"
+     },
+     "model_value": {
+      "means": "how the lender's model treats it",
+      "value": "each servicer dealer code as a separate dealer"
+     }
+    },
+    "silent": false,
+    "topic": "dealer_grouping"
+   },
+   {
+    "placeholders": {
+     "agreement_value": {
+      "means": "how the facility agreement treats it",
+      "value": "a FICO score below 600"
+     },
+     "cell": {
+      "means": "the cell in the lender's model",
+      "value": "Parameters!C8"
+     },
+     "clause": {
+      "means": "where the agreement says so",
+      "value": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))"
+     },
+     "impact": {
+      "means": "what the difference does this month",
+      "value": "no change to the April 2026 borrowing base, though the sub-600 bucket would hold US$563,838.32 more"
+     },
+     "model_value": {
+      "means": "how the lender's model treats it",
+      "value": "a FICO score of 600 and below"
+     }
+    },
+    "silent": false,
+    "topic": "fico_bucket"
+   },
+   {
+    "placeholders": {
+     "agreement_value": {
+      "means": "how the facility agreement treats it",
+      "value": "not addressed"
+     },
+     "cell": {
+      "means": "the cell in the lender's model",
+      "value": "Parameters!C9"
+     },
+     "clause": {
+      "means": "where the agreement says so",
+      "value": "Schedule 1 and Schedule 2"
+     },
+     "impact": {
+      "means": "what the difference does this month",
+      "value": "no change for April 2026, as every receivable has a score"
+     },
+     "model_value": {
+      "means": "how the lender's model treats it",
+      "value": "placing them in the sub-600 bucket"
+     }
+    },
+    "silent": true,
+    "topic": "missing_fico"
+   }
+  ],
+  "file": "Calderwood_BB_Model_Template_v3.2.xlsx",
+  "rejected": [],
+  "rows": [
+   {
+    "agreement": "82.5% from 1 March 2026",
+    "availability_with_model": 1671809.6,
+    "borrowing_base_change": 1478462.91,
+    "bucket_change": 0.0,
+    "cell": "Parameters!C2",
+    "clause": "Amendment No. 1, 2(a)",
+    "impact": "an April 2026 borrowing base US$1,478,462.91 higher than under the agreement",
+    "kind": "parameter",
+    "label": "Advance rate",
+    "loans_moved": 0,
+    "quote": "0.85",
+    "reading": "The advance rate is 85%.",
+    "source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.25147478508226795,
+       "top": 0.2395562065972222,
+       "x0": 0.19226960574879365,
+       "x1": 0.823916566138174
+      }
+     ]
+    },
+    "status": "differs",
+    "topic": "advance_rate"
+   },
+   {
+    "agreement": "1% of the Eligible Pool Balance",
+    "cell": "Parameters!C3",
+    "clause": "Section 1.1, Reserve Amount",
+    "kind": "parameter",
+    "label": "Reserve",
+    "quote": "0.01",
+    "reading": "The reserve is 1% of the eligible pool balance.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.6434072244046914,
+       "top": 0.6313693499324298,
+       "x0": 0.12887499690834991,
+       "x1": 0.7723947163500817
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "reserve"
+   },
+   {
+    "agreement": "excluded when more than 30 days past due",
+    "availability_with_model": 193346.69,
+    "borrowing_base_change": 0.0,
+    "bucket_change": 0.0,
+    "cell": "Parameters!C4",
+    "clause": "Schedule 1, paragraph 1",
+    "impact": "no change for April 2026, as no receivable sits on the boundary",
+    "kind": "parameter",
+    "label": "Past-due exclusion",
+    "loans_moved": 0,
+    "quote": "Exclude receivables 30+ days past due",
+    "reading": "Receivables that are 30 or more contractual days past due at cut-off are excluded.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.1769930906970092,
+       "top": 0.1650612571022727,
+       "x0": 0.18605881734611163,
+       "x1": 0.7768897760927288
+      }
+     ]
+    },
+    "status": "differs",
+    "topic": "past_due_exclusion"
+   },
+   {
+    "agreement": "charged-off and repossessed receivables excluded",
+    "cell": "Parameters!C5",
+    "clause": "Schedule 1, paragraph 2",
+    "kind": "parameter",
+    "label": "Status exclusion",
+    "quote": "Exclude charged-off (CO) and repossessed (REPO) receivables",
+    "reading": "Charged-off and repossessed receivables are excluded.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.20073044902146464,
+       "top": 0.18879861542672827,
+       "x0": 0.18874983694039138,
+       "x1": 0.8722915150760825
+      },
+      {
+       "bottom": 0.21687879466047189,
+       "top": 0.20496021617542615,
+       "x0": 0.16871322681701262,
+       "x1": 0.2527303758010366
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "status_exclusion"
+   },
+   {
+    "agreement": "the Eligible Pool Balance before any excess is deducted",
+    "availability_with_model": 350603.49,
+    "borrowing_base_change": 157256.8,
+    "bucket_change": 0.0,
+    "cell": "Parameters!C6",
+    "clause": "Section 1.1, Eligible Pool Balance",
+    "impact": "an April 2026 borrowing base US$157,256.80 higher than under the agreement",
+    "kind": "parameter",
+    "label": "Concentration basis",
+    "loans_moved": 0,
+    "quote": "All concentration limits measured against total pool balance (every receivable on the tape)",
+    "reading": "All concentration limits are measured against the total pool balance, including every receivable on the tape.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 10,
+     "rects": [
+      {
+       "bottom": 0.20148799395320394,
+       "top": 0.18955616035846745,
+       "x0": 0.12772548899931066,
+       "x1": 0.8322205886342167
+      }
+     ]
+    },
+    "status": "differs",
+    "topic": "concentration_denominator"
+   },
+   {
+    "agreement": "dealers under common ownership or trading under variations of one name counted as one dealer",
+    "availability_with_model": 568254.78,
+    "borrowing_base_change": 374908.09,
+    "bucket_change": 0.0,
+    "cell": "Parameters!C7",
+    "clause": "Schedule 2, row 2",
+    "impact": "an April 2026 borrowing base US$374,908.09 higher than under the agreement",
+    "kind": "parameter",
+    "label": "Dealer grouping",
+    "loans_moved": 0,
+    "quote": "Measured per servicer dealer code; affiliated dealers are not combined",
+    "reading": "Dealer concentration is measured per servicer dealer code, without combining affiliated dealers.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.24829926153626103,
+       "top": 0.23807201963482483,
+       "x0": 0.46318792206010007,
+       "x1": 0.6605637992908752
+      },
+      {
+       "bottom": 0.26218815042515,
+       "top": 0.25196090852371367,
+       "x0": 0.1867009829851537,
+       "x1": 0.5677451339422488
+      }
+     ]
+    },
+    "status": "differs",
+    "topic": "dealer_grouping"
+   },
+   {
+    "agreement": "a FICO score below 600",
+    "availability_with_model": 193346.69,
+    "borrowing_base_change": 0.0,
+    "bucket_change": 563838.32,
+    "cell": "Parameters!C8",
+    "clause": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))",
+    "impact": "no change to the April 2026 borrowing base, though the sub-600 bucket would hold US$563,838.32 more",
+    "kind": "parameter",
+    "label": "Sub-600 FICO bucket",
+    "loans_moved": 0,
+    "quote": "FICO <= 600",
+    "reading": "The sub-600 bucket holds receivables with a FICO score of 600 or below.",
+    "source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.291386999265112,
+       "top": 0.27945516567037565,
+       "x0": 0.5544853459775837,
+       "x1": 0.7051226048687704
+      }
+     ]
+    },
+    "status": "differs",
+    "topic": "fico_bucket"
+   },
+   {
+    "agreement": "not addressed",
+    "availability_with_model": 193346.69,
+    "borrowing_base_change": 0.0,
+    "bucket_change": 0.0,
+    "cell": "Parameters!C9",
+    "clause": "Schedule 1 and Schedule 2",
+    "impact": "no change for April 2026, as every receivable has a score",
+    "kind": "parameter",
+    "label": "Obligors with no score",
+    "loans_moved": 0,
+    "quote": "Obligors with no FICO score are placed in the sub-600 bucket",
+    "reading": "Obligors with no FICO score are placed in the sub-600 bucket.",
+    "source": null,
+    "status": "silent",
+    "topic": "missing_fico"
+   },
+   {
+    "agreement": "limits applied in schedule order, each amount counted once",
+    "cell": "Parameters!C10",
+    "clause": "Section 1.1, Excess Concentration Amount",
+    "kind": "parameter",
+    "label": "Order of excess",
+    "quote": "Limits applied in schedule order; an amount is excluded once",
+    "reading": "Limits are applied in schedule order and any amount is excluded only once.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 10,
+     "rects": [
+      {
+       "bottom": 0.3373333709408538,
+       "top": 0.32541479245580807,
+       "x0": 0.2765553293664471,
+       "x1": 0.6514548507391238
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "excess_order"
+   },
+   {
+    "agreement": "20%",
+    "cell": "Limits!C2",
+    "clause": "Schedule 2, row 1",
+    "kind": "parameter",
+    "label": "Single-state limit",
+    "quote": "0.2",
+    "reading": "Obligors in any one state are limited to 20% of the total pool balance.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.2280972413342408,
+       "top": 0.2178699994328046,
+       "x0": 0.18677450940499898,
+       "x1": 0.46292154150071485
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "limit_state"
+   },
+   {
+    "agreement": "5%",
+    "cell": "Limits!C3",
+    "clause": "Schedule 2, row 2",
+    "kind": "parameter",
+    "label": "Single-dealer limit",
+    "quote": "0.05",
+    "reading": "Any one dealer is limited to 5% of the total pool balance.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.24829926153626103,
+       "top": 0.23807201963482483,
+       "x0": 0.18652450960446026,
+       "x1": 0.6605637992908752
+      },
+      {
+       "bottom": 0.26218815042515,
+       "top": 0.25196090852371367,
+       "x0": 0.1867009829851537,
+       "x1": 0.5677451339422488
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "limit_dealer"
+   },
+   {
+    "agreement": "25%",
+    "cell": "Limits!C4",
+    "clause": "Schedule 2, row 3",
+    "kind": "parameter",
+    "label": "Long-term limit",
+    "quote": "0.25",
+    "reading": "Receivables with an original term above 72 months are limited to 25% of the total pool balance.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.2823901706271701,
+       "top": 0.2721629287257339,
+       "x0": 0.18652450960446026,
+       "x1": 0.5283626980251737
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "limit_term"
+   },
+   {
+    "agreement": "70%",
+    "cell": "Limits!C5",
+    "clause": "Schedule 2, row 4",
+    "kind": "parameter",
+    "label": "Used-vehicle limit",
+    "quote": "0.7",
+    "reading": "Used vehicles are limited to 70% of the total pool balance.",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.3025921908291903,
+       "top": 0.2923649489277541,
+       "x0": 0.18652450960446026,
+       "x1": 0.46705393074384705
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "limit_used"
+   },
+   {
+    "agreement": "35%",
+    "cell": "Limits!C6",
+    "clause": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))",
+    "kind": "parameter",
+    "label": "Sub-600 FICO limit",
+    "quote": "0.35",
+    "reading": "The sub-600 FICO bucket is limited to 35% of the total pool balance.",
+    "source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.291386999265112,
+       "top": 0.27945516567037565,
+       "x0": 0.5544853459775837,
+       "x1": 0.7051226048687704
+      }
+     ]
+    },
+    "status": "agrees",
+    "topic": "limit_fico"
+   },
+   {
+    "agreement": null,
+    "cell": "Reporting!C2",
+    "clause": null,
+    "kind": "reporting",
+    "label": "Report deadline",
+    "quote": "Borrowing base report by 12:00 London time on the 17th business day after month end",
+    "reading": "The borrowing base report is due by 12:00 London time on the 17th business day after month end.",
+    "source": null,
+    "status": "adopted",
+    "topic": "report_due"
+   },
+   {
+    "agreement": null,
+    "cell": "Reporting!C3",
+    "clause": null,
+    "kind": "reporting",
+    "label": "Percentages",
+    "quote": "Show percentages as decimals to four places, for example 0.8250",
+    "reading": "Percentages are shown as decimals to four places.",
+    "source": null,
+    "status": "adopted",
+    "topic": "report_percent_format"
+   },
+   {
+    "agreement": null,
+    "cell": "Reporting!C4",
+    "clause": null,
+    "kind": "reporting",
+    "label": "Deductions",
+    "quote": "Show deductions as negative numbers",
+    "reading": "Deductions are shown as negative numbers.",
+    "source": null,
+    "status": "adopted",
+    "topic": "report_negative_format"
+   },
+   {
+    "agreement": null,
+    "cell": "Reporting!C5",
+    "clause": null,
+    "kind": "reporting",
+    "label": "Nil values",
+    "quote": "Show nil as a dash",
+    "reading": "Nil values are shown as a dash.",
+    "source": null,
+    "status": "adopted",
+    "topic": "report_nil_format"
+   },
+   {
+    "agreement": null,
+    "cell": "Reporting!C6",
+    "clause": null,
+    "kind": "reporting",
+    "label": "FICO stratification",
+    "quote": "Bands: <=600, 601-660, 661-720, above 720",
+    "reading": "FICO stratification uses bands of 600 or below, 601 to 660, 661 to 720 and above 720.",
+    "source": null,
+    "status": "adopted",
+    "topic": "report_fico_bands"
+   },
+   {
+    "agreement": null,
+    "cell": "Reporting!C7",
+    "clause": null,
+    "kind": "reporting",
+    "label": "Delinquency ratio",
+    "quote": "60+ day delinquency ratio as defined in the facility agreement",
+    "reading": "Delinquency is reported as the 60+ day delinquency ratio as defined in the facility agreement.",
+    "source": null,
+    "status": "adopted",
+    "topic": "report_delinquency"
+   }
+  ],
+  "template_version": "3.2"
+ },
+ "config": {
+  "fields": [
+   {
+    "expected": "51840.15",
+    "field": "amount_financed",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Amount financed",
+    "sample": "51840.15",
+    "source": "AmtFinanced",
+    "transform": "As received"
+   },
+   {
+    "expected": "52666.15",
+    "field": "vehicle_book_value",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Vehicle book value",
+    "sample": "52666.15",
+    "source": "BookValue",
+    "transform": "As received"
+   },
+   {
+    "expected": "FL",
+    "field": "obligor_state",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Obligor's state",
+    "sample": "FL",
+    "source": "BorrState",
+    "transform": "As received"
+   },
+   {
+    "expected": "339",
+    "field": "obligor_zip3",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "First three digits of the obligor's ZIP code",
+    "sample": "339",
+    "source": "BorrZip3",
+    "transform": "As received"
+   },
+   {
+    "expected": "",
+    "field": "charge_off_amount",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Charge-off amount",
+    "sample": "",
+    "source": "ChgOffAmt",
+    "transform": "As received"
+   },
+   {
+    "expected": "",
+    "field": "charge_off_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Charge-off date",
+    "sample": "",
+    "source": "ChgOffDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "614",
+    "field": "fico",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "FICO score at origination",
+    "sample": "614",
+    "source": "CreditScore",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "4712245 cents",
+    "field": "current_balance",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Unpaid principal at the cut-off date",
+    "sample": "47122.45",
+    "source": "CurrBal",
+    "transform": "US dollars to whole cents"
+   },
+   {
+    "expected": "2026-04-30",
+    "field": "cutoff_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Pool cut-off date",
+    "sample": "2026-04-30",
+    "source": "CutoffDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "0",
+    "field": "days_past_due",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Days past due at the cut-off date",
+    "sample": "0",
+    "source": "DPD",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "Keystone Auto Sales",
+    "field": "dealer_name",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Originating dealer",
+    "sample": "Keystone Auto Sales",
+    "source": "DealerName",
+    "transform": "As received"
+   },
+   {
+    "expected": "FL",
+    "field": "dealer_state",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Dealer's state",
+    "sample": "FL",
+    "source": "DealerState",
+    "transform": "As received"
+   },
+   {
+    "expected": "SELF_EMPLOYED",
+    "field": "employment_type",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Obligor's employment type",
+    "sample": "SELF_EMPLOYED",
+    "source": "EmployType",
+    "transform": "As received"
+   },
+   {
+    "expected": "2025-05-18",
+    "field": "first_payment_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Date of the first scheduled payment",
+    "sample": "2025-05-18",
+    "source": "FirstPmtDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "98.43",
+    "field": "loan_to_value",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Loan to value ratio",
+    "sample": "98.43",
+    "source": "LTV",
+    "transform": "As received"
+   },
+   {
+    "expected": "2026-04-18",
+    "field": "last_payment_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Date of the last payment",
+    "sample": "2026-04-18",
+    "source": "LastPmtDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "BAF100000",
+    "field": "loan_id",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Unique loan number",
+    "sample": "BAF100000",
+    "source": "LoanNumber",
+    "transform": "As received"
+   },
+   {
+    "expected": "ACTIVE",
+    "field": "status",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Loan status",
+    "sample": "ACTIVE",
+    "source": "LoanStatus",
+    "transform": "Stored code list"
+   },
+   {
+    "expected": "Honda",
+    "field": "vehicle_make",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Vehicle make",
+    "sample": "Honda",
+    "source": "Make",
+    "transform": "As received"
+   },
+   {
+    "expected": "2031-04-18",
+    "field": "maturity_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Final scheduled payment date",
+    "sample": "2031-04-18",
+    "source": "MaturityDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "30",
+    "field": "odometer_at_origination",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Mileage at origination",
+    "sample": "30",
+    "source": "Mileage",
+    "transform": "As received"
+   },
+   {
+    "expected": "0",
+    "field": "modification_count",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Number of modifications",
+    "sample": "0",
+    "source": "ModCount",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "Accord",
+    "field": "vehicle_model",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Vehicle model",
+    "sample": "Accord",
+    "source": "Model",
+    "transform": "As received"
+   },
+   {
+    "expected": "2025",
+    "field": "model_year",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Vehicle model year",
+    "sample": "2025",
+    "source": "ModelYr",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "1294.25",
+    "field": "monthly_payment",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Scheduled monthly payment",
+    "sample": "1294.25",
+    "source": "MonthlyPmt",
+    "transform": "As received"
+   },
+   {
+    "expected": "NEW",
+    "field": "vehicle_condition",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "New or used",
+    "sample": "NEW",
+    "source": "NewUsed",
+    "transform": "As received"
+   },
+   {
+    "expected": "2026-05-18",
+    "field": "next_due_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Date the next payment is due",
+    "sample": "2026-05-18",
+    "source": "NextDueDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "21.73",
+    "field": "apr",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Annual percentage rate",
+    "sample": "21.73",
+    "source": "NoteRate",
+    "transform": "Per cent, two places"
+   },
+   {
+    "expected": "5184015 cents",
+    "field": "original_balance",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Principal at origination",
+    "sample": "51840.15",
+    "source": "OrigBal",
+    "transform": "US dollars to whole cents"
+   },
+   {
+    "expected": "2025-04-17",
+    "field": "origination_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Date the loan was originated",
+    "sample": "04/17/2025",
+    "source": "OrigDate",
+    "transform": "Month first (MM/DD/YYYY); 117 day-first rows resolved against the first payment date"
+   },
+   {
+    "expected": "72",
+    "field": "original_term",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Original term in months",
+    "sample": "72",
+    "source": "OrigTerm",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "14.91",
+    "field": "payment_to_income",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Payment to income ratio",
+    "sample": "14.91",
+    "source": "PTI",
+    "transform": "As received"
+   },
+   {
+    "expected": "12",
+    "field": "payments_made",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Number of scheduled payments made",
+    "sample": "12",
+    "source": "PmtsMade",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "60",
+    "field": "remaining_term",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Remaining term in months",
+    "sample": "60",
+    "source": "RemTerm",
+    "transform": "Whole number"
+   },
+   {
+    "expected": "",
+    "field": "repossession_date",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Repossession date",
+    "sample": "",
+    "source": "RepoDate",
+    "transform": "ISO date"
+   },
+   {
+    "expected": "BAF01",
+    "field": "servicer_code",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Servicer identifier",
+    "sample": "BAF01",
+    "source": "ServicerCode",
+    "transform": "As received"
+   },
+   {
+    "expected": "8680.34",
+    "field": "stated_monthly_income",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Obligor's stated monthly income",
+    "sample": "8680.34",
+    "source": "StatedIncome",
+    "transform": "As received"
+   },
+   {
+    "expected": "ZRLYU0347EY9SYD5P",
+    "field": "vin",
+    "file": "BAF_Loan_Tape_2026-04.csv",
+    "meaning": "Vehicle Identification Number",
+    "sample": "ZRLYU0347EY9SYD5P",
+    "source": "VIN",
+    "transform": "As received"
+   }
+  ],
+  "report": [
+   {
+    "client_format": "2,400",
+    "line": "Loans on the tape",
+    "unit": "count",
+    "value": 2400
+   },
+   {
+    "client_format": "63,405,236.89",
+    "line": "Aggregate outstanding balance of pool receivables",
+    "unit": "US$",
+    "value": 63405236.89
+   },
+   {
+    "client_format": "59,592,950.65",
+    "line": "Eligible pool balance",
+    "unit": "US$",
+    "value": 59592950.65
+   },
+   {
+    "client_format": "-454,434.05",
+    "line": "Excess concentration amount",
+    "unit": "US$",
+    "value": 454434.05
+   },
+   {
+    "client_format": "0.8250",
+    "line": "Advance rate",
+    "unit": "%",
+    "value": 82.5
+   },
+   {
+    "client_format": "-595,929.51",
+    "line": "Reserve amount",
+    "unit": "US$",
+    "value": 595929.51
+   },
+   {
+    "client_format": "48,193,346.69",
+    "line": "Borrowing base",
+    "unit": "US$",
+    "value": 48193346.69
+   },
+   {
+    "client_format": "193,346.69",
+    "line": "Availability",
+    "unit": "US$",
+    "value": 193346.69
+   },
+   {
+    "client_format": "-",
+    "line": "Excluded under criterion 7 (Restricted Jurisdictions)",
+    "unit": "US$",
+    "value": null
+   },
+   {
+    "client_format": "16,275,535.21",
+    "line": "Sub-600 FICO bucket balance",
+    "unit": "US$",
+    "value": 16275535.21
+   },
+   {
+    "client_format": "0.1932",
+    "line": "Largest single-state share",
+    "unit": "%",
+    "value": 19.32
+   },
+   {
+    "client_format": "0.2147",
+    "line": "Weighted average APR, eligible pool",
+    "unit": "%",
+    "value": 21.47
+   },
+   {
+    "client_format": "0.0079",
+    "line": "60+ day delinquency ratio, April",
+    "unit": "%",
+    "value": 0.79
+   }
+  ],
+  "rules": [
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 1",
+    "engine": "30",
+    "id": "CFG-E1",
+    "in_source": true,
+    "parameter": "A loan is ineligible if any scheduled payment is more than 30 days past due at the cut-off date. Up to and including 30 days past due passes.",
+    "quote": "Delinquency. No scheduled payment on the Receivable is more than 30 days past due.",
+    "rule": "E1",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.1769930906970092,
+       "top": 0.1650612571022727,
+       "x0": 0.18605881734611163,
+       "x1": 0.7768897760927288
+      }
+     ]
+    },
+    "value": "30"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 2",
+    "engine": "List",
+    "id": "CFG-E2",
+    "in_source": true,
+    "parameter": "A loan that has been charged off, or whose vehicle has been repossessed, is ineligible.",
+    "quote": "Status. The Receivable has not been charged off and the related Financed Vehicle has not been repossessed.",
+    "rule": "E2",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.20073044902146464,
+       "top": 0.18879861542672827,
+       "x0": 0.18874983694039138,
+       "x1": 0.8722915150760825
+      },
+      {
+       "bottom": 0.21687879466047189,
+       "top": 0.20496021617542615,
+       "x0": 0.16871322681701262,
+       "x1": 0.2527303758010366
+      }
+     ]
+    },
+    "value": "List"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 3",
+    "engine": "84",
+    "id": "CFG-E3",
+    "in_source": true,
+    "parameter": "The original term must be 84 months or less.",
+    "quote": "Term. The original term of the Receivable is 84 months or less.",
+    "rule": "E3",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.24062940809461808,
+       "top": 0.2286975744998816,
+       "x0": 0.186075971017476,
+       "x1": 0.619664310629851
+      }
+     ]
+    },
+    "value": "84"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 4",
+    "engine": "540",
+    "id": "CFG-E4",
+    "in_source": true,
+    "parameter": "The obligor's FICO score at origination must be 540 or higher.",
+    "quote": "Credit score. The Obligor's FICO score at origination is 540 or higher.",
+    "rule": "E4",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.2643668434836648,
+       "top": 0.2524350098889283,
+       "x0": 0.18626469880147697,
+       "x1": 0.6675490834354575
+      }
+     ]
+    },
+    "value": "540"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 5",
+    "engine": "75000",
+    "id": "CFG-E5",
+    "in_source": true,
+    "parameter": "The outstanding balance must not exceed US$75,000.",
+    "quote": "Balance. The Outstanding Balance of the Receivable does not exceed US$75,000.",
+    "rule": "E5",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.28810420180812024,
+       "top": 0.27558906632240376,
+       "x0": 0.186075971017476,
+       "x1": 0.7473285151462928
+      }
+     ]
+    },
+    "value": "75000"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 6",
+    "engine": "List",
+    "id": "CFG-E6",
+    "in_source": true,
+    "parameter": "The obligor's billing address must be in one of the fifty US states or the District of Columbia. The tape has obligor_state, not a separate billing address field; obligor_state is used as the closest field.",
+    "quote": "Location. The Obligor's billing address is in one of the fifty states of the United States or the District of Columbia.",
+    "rule": "E6",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.3118415601325758,
+       "top": 0.2999097265378393,
+       "x0": 0.18578121708888634,
+       "x1": 0.8725660735485601
+      },
+      {
+       "bottom": 0.32529857905224113,
+       "top": 0.3160713272865372,
+       "x0": 0.1691249897277433,
+       "x1": 0.2579975502163756
+      }
+     ]
+    },
+    "value": "List"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 7",
+    "engine": "List",
+    "id": "CFG-E7",
+    "in_source": true,
+    "parameter": "The obligor's billing address must not be in a Restricted Jurisdiction. The list of Restricted Jurisdictions is not in the material provided, so the test cannot be populated until that definition is obtained.",
+    "quote": "Restricted Jurisdictions. The Obligor's billing address is not in a Restricted Jurisdiction.",
+    "rule": "E7",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.35174051920572913,
+       "top": 0.33980868561099276,
+       "x0": 0.186075971017476,
+       "x1": 0.7867378783381842
+      }
+     ]
+    },
+    "value": "List"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 8",
+    "engine": "1",
+    "id": "CFG-E8",
+    "in_source": true,
+    "parameter": "The loan may have been modified at most once since origination.",
+    "quote": "Modifications. The terms of the Receivable have been modified no more than once since origination.",
+    "rule": "E8",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.3727733727657434,
+       "top": 0.3635460824677439,
+       "x0": 0.19154849083595027,
+       "x1": 0.8722057467192607
+      },
+      {
+       "bottom": 0.39163955534347383,
+       "top": 0.37970772174873735,
+       "x0": 0.1691249897277433,
+       "x1": 0.2470343097362643
+      }
+     ]
+    },
+    "value": "1"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 9",
+    "engine": "6, 29.99",
+    "id": "CFG-E9",
+    "in_source": true,
+    "parameter": "The APR must be between 6.00% and 29.99%, both inclusive.",
+    "quote": "Annual percentage rate. The annual percentage rate of the Receivable is not less than 6.00% and not more than 29.99%.",
+    "rule": "E9",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.4153768751356337,
+       "top": 0.4034450415408972,
+       "x0": 0.1860250834546058,
+       "x1": 0.8725663727405024
+      },
+      {
+       "bottom": 0.42907260162661776,
+       "top": 0.4196066808218908,
+       "x0": 0.1689019546010136,
+       "x1": 0.29800734177134397
+      }
+     ]
+    },
+    "value": "6, 29.99"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 10",
+    "engine": "10",
+    "id": "CFG-E10",
+    "in_source": true,
+    "parameter": "The vehicle's model year must be no more than ten years before the year the loan was originated (compare model_year with the year of origination_date).",
+    "quote": "Vehicle age. The model year of the Financed Vehicle is no more than ten years before the year of origination of the Receivable.",
+    "rule": "E10",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.4552758727410827,
+       "top": 0.44334403914634624,
+       "x0": 0.1951497645159952,
+       "x1": 0.8734068029067096
+      },
+      {
+       "bottom": 0.4714375120220762,
+       "top": 0.4595056784273398,
+       "x0": 0.1691249897277433,
+       "x1": 0.3713872572954963
+      }
+     ]
+    },
+    "value": "10"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 11",
+    "engine": "1",
+    "id": "CFG-E11",
+    "in_source": true,
+    "parameter": "The obligor must have made at least one scheduled payment.",
+    "quote": "Seasoning. The Obligor has made at least one scheduled payment on the Receivable.",
+    "rule": "E11",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.4951749088788273,
+       "top": 0.48324307528409094,
+       "x0": 0.19508333143845102,
+       "x1": 0.7745049171198427
+      }
+     ]
+    },
+    "value": "1"
+   },
+   {
+    "area": "Eligibility",
+    "clause": "Schedule 1, paragraph 12",
+    "engine": "List",
+    "id": "CFG-E12",
+    "in_source": true,
+    "parameter": "The vehicle's VIN must not appear on any other loan in the pool; a repeated VIN suggests the car was pledged twice.",
+    "quote": "Unique collateral. The Financed Vehicle is identified by a Vehicle Identification Number that appears on no other Receivable in the Pool.",
+    "rule": "E12",
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.5189122286709873,
+       "top": 0.5069803950762508,
+       "x0": 0.19732634849797667,
+       "x1": 0.8725660735485601
+      },
+      {
+       "bottom": 0.5350606128422901,
+       "top": 0.5231420343572444,
+       "x0": 0.1692622440313202,
+       "x1": 0.46573284872217113
+      }
+     ]
+    },
+    "value": "List"
+   },
+   {
+    "area": "Concentration",
+    "clause": "Schedule 2, row 1",
+    "effective_from": null,
+    "engine": "20%",
+    "id": "CFG-C1",
+    "in_source": true,
+    "parameter": "Loans to obligors billed in any one state may make up at most 20% of the Eligible Pool Balance; any excess is an excess concentration.",
+    "quote": "Obligors with a billing address in any one state",
+    "rule": "C1",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.2280972413342408,
+       "top": 0.2178699994328046,
+       "x0": 0.18677450940499898,
+       "x1": 0.46292154150071485
+      }
+     ]
+    },
+    "value": "20%"
+   },
+   {
+    "area": "Concentration",
+    "clause": "Schedule 2, row 2",
+    "effective_from": null,
+    "engine": "5%",
+    "id": "CFG-C2",
+    "in_source": true,
+    "parameter": "Loans originated by any one dealer may make up at most 5% of the Eligible Pool Balance. Dealers under common ownership or trading under variations of one name count as one dealer.",
+    "quote": "Receivables originated by any one Dealer, treating Dealers under common ownership or trading under variations of one name as one Dealer",
+    "rule": "C2",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.24829926153626103,
+       "top": 0.23807201963482483,
+       "x0": 0.18652450960446026,
+       "x1": 0.6605637992908752
+      },
+      {
+       "bottom": 0.26218815042515,
+       "top": 0.25196090852371367,
+       "x0": 0.1867009829851537,
+       "x1": 0.5677451339422488
+      }
+     ]
+    },
+    "value": "5%"
+   },
+   {
+    "area": "Concentration",
+    "clause": "Schedule 2, row 3",
+    "effective_from": null,
+    "engine": "25%",
+    "id": "CFG-C3",
+    "in_source": true,
+    "parameter": "Loans with an original term of more than 72 months (strictly greater than 72) may make up at most 25% of the Eligible Pool Balance.",
+    "quote": "Receivables with an original term of more than 72 months",
+    "rule": "C3",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.2823901706271701,
+       "top": 0.2721629287257339,
+       "x0": 0.18652450960446026,
+       "x1": 0.5283626980251737
+      }
+     ]
+    },
+    "value": "25%"
+   },
+   {
+    "area": "Concentration",
+    "clause": "Schedule 2, row 4",
+    "effective_from": null,
+    "engine": "70%",
+    "id": "CFG-C5",
+    "in_source": true,
+    "parameter": "Loans secured by used vehicles may make up at most 70% of the Eligible Pool Balance.",
+    "quote": "Receivables secured by used Financed Vehicles",
+    "rule": "C5",
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.3025921908291903,
+       "top": 0.2923649489277541,
+       "x0": 0.18652450960446026,
+       "x1": 0.46705393074384705
+      }
+     ]
+    },
+    "value": "70%"
+   },
+   {
+    "area": "Concentration",
+    "clause": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))",
+    "effective_from": "2026-03-01",
+    "engine": "35%",
+    "id": "CFG-C4",
+    "in_source": true,
+    "parameter": "From 1 March 2026, loans whose obligor's FICO score at origination is below 600 (strictly less than 600) may make up at most 35% of the Eligible Pool Balance. Added by Amendment No. 1; it applies to Borrowing Base Certificates for Collection Periods ending on or after 1 March 2026, and the Amendment itself takes effect only once the conditions in its Section 3 are met.",
+    "quote": "Receivables with an Obligor FICO score at origination below 600",
+    "rule": "C4",
+    "source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.291386999265112,
+       "top": 0.27945516567037565,
+       "x0": 0.25360538756925294,
+       "x1": 0.7051226048687704
+      }
+     ]
+    },
+    "value": "35%"
+   }
+  ],
+  "ruleset_digest": "2b5c6ff633ff425f5bdfbe90c0a6ec8d00d533bf6fb8d03360e90bba5c50188d",
+  "terms": [
+   {
+    "area": "Facility terms",
+    "clause": "Amendment No. 1, 2(a), amending Credit Agreement 2.3",
+    "engine": "82.5%",
+    "id": "CFG-ADV",
+    "in_source": true,
+    "parameter": "Advance rate",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.25147478508226795,
+       "top": 0.2395562065972222,
+       "x0": 0.19226960574879365,
+       "x1": 0.823916566138174
+      }
+     ]
+    },
+    "term": "Advance rate",
+    "value": "82.5% from 1 Mar 2026"
+   },
+   {
+    "area": "Facility terms",
+    "clause": "Section 1.1, definition of Reserve Amount",
+    "engine": "1%",
+    "id": "CFG-RES",
+    "in_source": true,
+    "parameter": "Reserve",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.6434072244046914,
+       "top": 0.6313693499324298,
+       "x0": 0.12887499690834991,
+       "x1": 0.7723947163500817
+      }
+     ]
+    },
+    "term": "Reserve amount",
+    "value": "1% of Eligible Pool Balance"
+   },
+   {
+    "area": "Facility terms",
+    "clause": "Annex A (Commitment Schedule)",
+    "engine": "250000000",
+    "id": "CFG-LIM",
+    "in_source": true,
+    "parameter": "Facility limit",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 61,
+     "rects": [
+      {
+       "bottom": 0.335,
+       "top": 0.271,
+       "x0": 0.226,
+       "x1": 0.767
+      }
+     ]
+    },
+    "term": "Facility limit",
+    "value": "US$250,000,000"
+   },
+   {
+    "area": "Facility terms",
+    "clause": "Section 6.12(a)",
+    "engine": "40000000",
+    "id": "CFG-TNW",
+    "in_source": true,
+    "parameter": "Minimum tangible net worth",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 43,
+     "rects": [
+      {
+       "bottom": 0.329770868474787,
+       "top": 0.3178390348800505,
+       "x0": 0.41521887685738357,
+       "x1": 0.8725657743566176
+      },
+      {
+       "bottom": 0.3449115945835306,
+       "top": 0.3334173337377683,
+       "x0": 0.1689019546010136,
+       "x1": 0.38524996688942503
+      }
+     ]
+    },
+    "term": "Minimum tangible net worth covenant",
+    "value": "US$40,000,000"
+   },
+   {
+    "area": "Facility terms",
+    "clause": "Section 6.12(b)",
+    "engine": "6",
+    "id": "CFG-LEV",
+    "in_source": true,
+    "parameter": "Maximum leverage",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 43,
+     "rects": [
+      {
+       "bottom": 0.3669122638124408,
+       "top": 0.35773799395320394,
+       "x0": 0.8415638044768688,
+       "x1": 0.8718456193512562
+      },
+      {
+       "bottom": 0.383126923532197,
+       "top": 0.3738996332341974,
+       "x0": 0.1689019546010136,
+       "x1": 0.3283235138537837
+      }
+     ]
+    },
+    "term": "Maximum leverage covenant",
+    "value": "6.00 to 1.00"
+   },
+   {
+    "area": "Facility terms",
+    "clause": "Section 6.12(d)",
+    "engine": "10000000",
+    "id": "CFG-LIQ",
+    "in_source": true,
+    "parameter": "Minimum liquidity",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 43,
+     "rects": [
+      {
+       "bottom": 0.4817910242562342,
+       "top": 0.46927585023822205,
+       "x0": 0.338349884631587,
+       "x1": 0.8723258224188113
+      },
+      {
+       "bottom": 0.4952083549114189,
+       "top": 0.4860208299424913,
+       "x0": 0.16905636257595485,
+       "x1": 0.27798526738983353
+      }
+     ]
+    },
+    "term": "Minimum liquidity covenant",
+    "value": "US$10,000,000"
+   },
+   {
+    "area": "Facility terms",
+    "clause": "Section 7.1",
+    "engine": "6%",
+    "id": "CFG-DQT",
+    "in_source": true,
+    "parameter": "Delinquency trigger",
+    "quote": null,
+    "rule": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 44,
+     "rects": [
+      {
+       "bottom": 0.29921529750631315,
+       "top": 0.28728346391157666,
+       "x0": 0.3750232871061836,
+       "x1": 0.8723944371042688
+      },
+      {
+       "bottom": 0.3129109854650016,
+       "top": 0.30344506466027465,
+       "x0": 0.127931370454676,
+       "x1": 0.3617209889530356
+      }
+     ]
+    },
+    "term": "Delinquency trigger",
+    "value": "Three-period average Delinquency Ratio exceeds 6.0%"
+   }
+  ]
+ },
+ "definitions": {
+  "borrowing_base_reproduced": true,
+  "checks": {
+   "amendment_quotes_unverified": [],
+   "input_cycles": [],
+   "mentioned_only": [
+    "Administrative Agent",
+    "Borrower",
+    "Borrowing Base Certificate",
+    "Certificate of Title",
+    "Collateral",
+    "Originator",
+    "Person",
+    "Section 3.3",
+    "Section 5.11",
+    "Section 6.11",
+    "Servicer",
+    "Verification Agent"
+   ],
+   "mutual_references": [
+    [
+     "Advance Rate",
+     "Section 2.3",
+     "Borrowing Base"
+    ],
+    [
+     "Concentration Limit",
+     "Schedule 2",
+     "Excess Concentration Amount"
+    ],
+    [
+     "Eligible Pool Balance",
+     "Excess Concentration Amount",
+     "Schedule 2"
+    ],
+    [
+     "Eligible Pool Balance",
+     "Reserve Amount"
+    ],
+    [
+     "Eligible Pool Balance",
+     "Schedule 2"
+    ],
+    [
+     "Excess Concentration Amount",
+     "Schedule 2"
+    ]
+   ],
+   "quotes": 23,
+   "quotes_found": 23,
+   "unresolved_references": [],
+   "unverified": []
+  },
+  "delinquency": {
+   "literal": 0.79,
+   "without_repossessed": 0.8
+  },
+  "nodes": [
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 0,
+    "document": "credit_agreement",
+    "key": "borrowing base",
+    "quote": "\"Borrowing Base\" means, on any date of determination, an amount equal to (a) the Eligible Pool Balance less the Excess Concentration Amount, multiplied by (b) the Advance Rate",
+    "refers_to": [
+     {
+      "key": "eligible pool balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Eligible Pool Balance"
+     },
+     {
+      "key": "excess concentration amount",
+      "role": "input",
+      "status": "traced",
+      "target": "Excess Concentration Amount"
+     },
+     {
+      "key": "advance rate",
+      "role": "input",
+      "status": "traced",
+      "target": "Advance Rate"
+     },
+     {
+      "key": "reserve amount",
+      "role": "input",
+      "status": "traced",
+      "target": "Reserve Amount"
+     },
+     {
+      "key": "schedule 2",
+      "role": "input",
+      "status": "traced",
+      "target": "Schedule 2"
+     },
+     {
+      "key": "borrowing base certificate",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Borrowing Base Certificate"
+     },
+     {
+      "key": "verification agent",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Verification Agent"
+     }
+    ],
+    "resolved": {
+     "check": true,
+     "rule": "(Eligible Pool Balance - Excess Concentration Amount) x Advance Rate - Reserve Amount",
+     "value": "US$48,193,346.69",
+     "worked": "(US$59,592,950.65 - US$454,434.05) x 82.5% - US$595,929.51"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 7,
+     "rects": [
+      {
+       "bottom": 0.8603264009109651,
+       "top": 0.8482885168056296,
+       "x0": 0.12887499690834991,
+       "x1": 0.8722059461805556
+      },
+      {
+       "bottom": 0.8764880112927369,
+       "top": 0.8645561873310744,
+       "x0": 0.12777696247973475,
+       "x1": 0.675254223393459
+      }
+     ]
+    },
+    "term": "Borrowing Base"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "eligible pool balance",
+    "quote": "\"Eligible Pool Balance\" means, on any date, the aggregate Outstanding Balance of all Pool Receivables that are Eligible Receivables on that date.",
+    "refers_to": [
+     {
+      "key": "outstanding balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Outstanding Balance"
+     },
+     {
+      "key": "pool receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Pool Receivable"
+     },
+     {
+      "key": "eligible receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Eligible Receivable"
+     },
+     {
+      "key": "schedule 2",
+      "role": "context",
+      "status": "traced",
+      "target": "Schedule 2"
+     },
+     {
+      "key": "reserve amount",
+      "role": "context",
+      "status": "traced",
+      "target": "Reserve Amount"
+     },
+     {
+      "key": "excess concentration amount",
+      "role": "context",
+      "status": "traced",
+      "target": "Excess Concentration Amount"
+     }
+    ],
+    "resolved": {
+     "check": true,
+     "rule": "Sum of the Outstanding Balance of every Pool Receivable that is an Eligible Receivable",
+     "value": "US$59,592,950.65",
+     "worked": "2,269 eligible receivables"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 10,
+     "rects": [
+      {
+       "bottom": 0.1691647153912168,
+       "top": 0.15712684091895512,
+       "x0": 0.12887499690834991,
+       "x1": 0.8718457190819036
+      },
+      {
+       "bottom": 0.18532639320450595,
+       "top": 0.17339455960976957,
+       "x0": 0.1276740155188866,
+       "x1": 0.41535570730570875
+      }
+     ]
+    },
+    "term": "Eligible Pool Balance"
+   },
+   {
+    "amended_by": "Amendment No. 1, Section 2(b)",
+    "amendment_quote": "In Schedule 2, a new row 5 is added after row 4, with effect from 1 March 2026, reading as follows: \"5. Receivables with an Obligor FICO score at origination below 600: 35%\".",
+    "amendment_source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.27522539851641414,
+       "top": 0.26329356492167777,
+       "x0": 0.19586101856107027,
+       "x1": 0.8718455196206086
+      },
+      {
+       "bottom": 0.291386999265112,
+       "top": 0.27945516567037565,
+       "x0": 0.16897058175280202,
+       "x1": 0.7561470979179432
+      }
+     ]
+    },
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "excess concentration amount",
+    "quote": "\"Excess Concentration Amount\" means, on any date, the sum of the amounts determined under Schedule 2 by which the Outstanding Balance of Eligible Receivables in any category exceeds",
+    "refers_to": [
+     {
+      "key": "schedule 2",
+      "role": "input",
+      "status": "traced",
+      "target": "Schedule 2"
+     },
+     {
+      "key": "outstanding balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Outstanding Balance"
+     },
+     {
+      "key": "eligible receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Eligible Receivable"
+     },
+     {
+      "key": "concentration limit",
+      "role": "input",
+      "status": "traced",
+      "target": "Concentration Limit"
+     }
+    ],
+    "resolved": {
+     "rule": "Amount above each limit in Schedule 2, in schedule order, counted once",
+     "value": "US$454,434.05",
+     "worked": "Sunrise Motors LLC US$454,434.05"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 10,
+     "rects": [
+      {
+       "bottom": 0.3050233474885574,
+       "top": 0.29298547301629574,
+       "x0": 0.12887499690834991,
+       "x1": 0.8722059461805556
+      },
+      {
+       "bottom": 0.3211849482372554,
+       "top": 0.3092531146425189,
+       "x0": 0.1279656902637357,
+       "x1": 0.7628195768867443
+      }
+     ]
+    },
+    "term": "Excess Concentration Amount"
+   },
+   {
+    "amended_by": "Amendment No. 1, Section 2(a)",
+    "amendment_quote": "In Section 2.3, \"85%\" is deleted and replaced with \"82.5%\", with effect from 1 March 2026.",
+    "amendment_source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.25147478508226795,
+       "top": 0.2395562065972222,
+       "x0": 0.19226960574879365,
+       "x1": 0.823916566138174
+      }
+     ]
+    },
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "advance rate",
+    "quote": "\"Advance Rate\" has the meaning given in Section 2.3.",
+    "refers_to": [
+     {
+      "key": "section 2.3",
+      "role": "input",
+      "status": "traced",
+      "target": "Section 2.3"
+     }
+    ],
+    "resolved": {
+     "rule": "85% from 15 Jan 2026 (Credit Agreement 2.3); 82.5% from 01 Mar 2026 (Amendment No. 1, 2(a))",
+     "value": "82.5%",
+     "worked": "In effect on 30 April 2026: Amendment No. 1, 2(a)"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 7,
+     "rects": [
+      {
+       "bottom": 0.4517405346186474,
+       "top": 0.4397026601463857,
+       "x0": 0.12887499690834991,
+       "x1": 0.5093798668555964
+      }
+     ]
+    },
+    "term": "Advance Rate"
+   },
+   {
+    "amended_by": "Amendment No. 1, Section 2(a)",
+    "amendment_quote": "In Section 2.3, \"85%\" is deleted and replaced with \"82.5%\", with effect from 1 March 2026.",
+    "amendment_source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.25147478508226795,
+       "top": 0.2395562065972222,
+       "x0": 0.19226960574879365,
+       "x1": 0.823916566138174
+      }
+     ]
+    },
+    "clause": "Section 2.3",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "section 2.3",
+    "quote": "The \"Advance Rate\" means 85%. The Advance Rate applies to the amount described in clause (a) of the definition of Borrowing Base,",
+    "refers_to": [
+     {
+      "key": "collection period",
+      "role": "input",
+      "status": "traced",
+      "target": "Collection Period"
+     },
+     {
+      "key": "borrowing base",
+      "role": "context",
+      "status": "traced",
+      "target": "Borrowing Base"
+     },
+     {
+      "key": "borrowing base certificate",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Borrowing Base Certificate"
+     }
+    ],
+    "resolved": {
+     "rule": "85% from 15 Jan 2026 (Credit Agreement 2.3); 82.5% from 01 Mar 2026 (Amendment No. 1, 2(a))",
+     "value": "82.5%",
+     "worked": "In effect on 30 April 2026: Amendment No. 1, 2(a)"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 16,
+     "rects": [
+      {
+       "bottom": 0.8454141327829072,
+       "top": 0.8334955735640093,
+       "x0": 0.12774264267067503,
+       "x1": 0.8722058464499081
+      },
+      {
+       "bottom": 0.8615890175405174,
+       "top": 0.8496571935788549,
+       "x0": 0.12791421678331164,
+       "x1": 0.33612100439133985
+      }
+     ]
+    },
+    "term": "Section 2.3"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "reserve amount",
+    "quote": "\"Reserve Amount\" means, on any date, an amount equal to 1% of the Eligible Pool Balance.",
+    "refers_to": [
+     {
+      "key": "eligible pool balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Eligible Pool Balance"
+     }
+    ],
+    "resolved": {
+     "check": true,
+     "rule": "1% x Eligible Pool Balance",
+     "value": "US$595,929.51",
+     "worked": "1% x US$59,592,950.65"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.6434072244046914,
+       "top": 0.6313693499324298,
+       "x0": 0.12887499690834991,
+       "x1": 0.7723947163500817
+      }
+     ]
+    },
+    "term": "Reserve Amount"
+   },
+   {
+    "amended_by": "Amendment No. 1, Section 2(b)",
+    "amendment_quote": "In Schedule 2, a new row 5 is added after row 4, with effect from 1 March 2026, reading as follows: \"5. Receivables with an Obligor FICO score at origination below 600: 35%\".",
+    "amendment_source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.27522539851641414,
+       "top": 0.26329356492167777,
+       "x0": 0.19586101856107027,
+       "x1": 0.8718455196206086
+      },
+      {
+       "bottom": 0.291386999265112,
+       "top": 0.27945516567037565,
+       "x0": 0.16897058175280202,
+       "x1": 0.7561470979179432
+      }
+     ]
+    },
+    "clause": "Schedule 2",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "schedule 2",
+    "quote": "On any date of determination, the amount by which the aggregate Outstanding Balance of Eligible Receivables in a category below exceeds the stated percentage of the Eligible Pool Balance",
+    "refers_to": [
+     {
+      "key": "outstanding balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Outstanding Balance"
+     },
+     {
+      "key": "eligible receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Eligible Receivable"
+     },
+     {
+      "key": "eligible pool balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Eligible Pool Balance"
+     },
+     {
+      "key": "obligor",
+      "role": "input",
+      "status": "traced",
+      "target": "Obligor"
+     },
+     {
+      "key": "dealer",
+      "role": "input",
+      "status": "traced",
+      "target": "Dealer"
+     },
+     {
+      "key": "financed vehicle",
+      "role": "input",
+      "status": "traced",
+      "target": "Financed Vehicle"
+     },
+     {
+      "key": "excess concentration amount",
+      "role": "context",
+      "status": "traced",
+      "target": "Excess Concentration Amount"
+     }
+    ],
+    "resolved": {
+     "rule": "C1 20%; C2 5%; C3 25%; C5 70%; C4 35%",
+     "value": "5 limits",
+     "worked": "C4 applies from 01 March 2026"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 59,
+     "rects": [
+      {
+       "bottom": 0.1370940545592645,
+       "top": 0.12516222096452811,
+       "x0": 0.12803431741552415,
+       "x1": 0.8722057467192607
+      },
+      {
+       "bottom": 0.15325573237255363,
+       "top": 0.14132389877781726,
+       "x0": 0.12774264267067503,
+       "x1": 0.7806829315385008
+      }
+     ]
+    },
+    "term": "Schedule 2"
+   },
+   {
+    "amended_by": "Amendment No. 1, Section 2(b)",
+    "amendment_quote": "In Schedule 2, a new row 5 is added after row 4, with effect from 1 March 2026, reading as follows: \"5. Receivables with an Obligor FICO score at origination below 600: 35%\".",
+    "amendment_source": {
+     "document": "amendment_1",
+     "page": 2,
+     "rects": [
+      {
+       "bottom": 0.27522539851641414,
+       "top": 0.26329356492167777,
+       "x0": 0.19586101856107027,
+       "x1": 0.8718455196206086
+      },
+      {
+       "bottom": 0.291386999265112,
+       "top": 0.27945516567037565,
+       "x0": 0.16897058175280202,
+       "x1": 0.7561470979179432
+      }
+     ]
+    },
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "concentration limit",
+    "quote": "\"Concentration Limits\" means the limits set out in Schedule 2.",
+    "refers_to": [
+     {
+      "key": "schedule 2",
+      "role": "input",
+      "status": "traced",
+      "target": "Schedule 2"
+     }
+    ],
+    "resolved": {
+     "rule": "C1 20%; C2 5%; C3 25%; C5 70%; C4 35%",
+     "value": "5 limits",
+     "worked": "C4 applies from 01 March 2026"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 9,
+     "rects": [
+      {
+       "bottom": 0.10289016877761992,
+       "top": 0.09349052352134624,
+       "x0": 0.12887499690834991,
+       "x1": 0.5713676502502042
+      }
+     ]
+    },
+    "term": "Concentration Limit"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "outstanding balance",
+    "quote": "\"Outstanding Balance\" means, for a Receivable on any date, the unpaid principal balance of that Receivable on that date.",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Receivable"
+     }
+    ],
+    "resolved": {
+     "value": "Tape column CurrBal",
+     "worked": "Mapped to current_balance, held in cents"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 11,
+     "rects": [
+      {
+       "bottom": 0.8191647770428898,
+       "top": 0.8071269025706281,
+       "x0": 0.12887499690834991,
+       "x1": 0.8725661732792075
+      },
+      {
+       "bottom": 0.8326218537609986,
+       "top": 0.8233945827291469,
+       "x0": 0.12774264267067503,
+       "x1": 0.2911274729211346
+      }
+     ]
+    },
+    "term": "Outstanding Balance"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "pool receivable",
+    "quote": "\"Pool Receivable\" means each Receivable that is included in the Pool at the time of determination, and that has not been released from the Collateral in accordance with Section 3.3",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "pool",
+      "role": "input",
+      "status": "traced",
+      "target": "Pool"
+     },
+     {
+      "key": "collateral",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Collateral"
+     },
+     {
+      "key": "section 3.3",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Section 3.3"
+     }
+    ],
+    "resolved": {
+     "value": "2,400 receivables",
+     "worked": "US$63,405,236.89 on the April tape"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.3211741591944839,
+       "top": 0.31015715936217647,
+       "x0": 0.12887499690834991,
+       "x1": 0.8725661732792075
+      },
+      {
+       "bottom": 0.33565212981869474,
+       "top": 0.3264248780529908,
+       "x0": 0.12760538836709814,
+       "x1": 0.6618259404998978
+      }
+     ]
+    },
+    "term": "Pool Receivable"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "pool",
+    "quote": "\"Pool\" means, at any time, the aggregate of all Receivables then owned by the Borrower and pledged to the Administrative Agent as Collateral under the Security Agreement.",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "borrower",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Borrower"
+     },
+     {
+      "key": "administrative agent",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Administrative Agent"
+     },
+     {
+      "key": "collateral",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Collateral"
+     },
+     {
+      "key": "security agreement",
+      "role": "context",
+      "status": "not_in_pack",
+      "target": "Security Agreement"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.282296151825876,
+       "top": 0.2702582773536143,
+       "x0": 0.12887499690834991,
+       "x1": 0.8722059461805556
+      },
+      {
+       "bottom": 0.29845775257457385,
+       "top": 0.2865259189798375,
+       "x0": 0.1277083353279463,
+       "x1": 0.5808555253970078
+      }
+     ]
+    },
+    "term": "Pool"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "receivable",
+    "quote": "\"Receivable\" means any retail installment sale contract or installment loan agreement, whether or not evidenced by a promissory note or electronic record, that is originated",
+    "refers_to": [
+     {
+      "key": "dealer",
+      "role": "context",
+      "status": "traced",
+      "target": "Dealer"
+     },
+     {
+      "key": "originator",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Originator"
+     },
+     {
+      "key": "financed vehicle",
+      "role": "context",
+      "status": "traced",
+      "target": "Financed Vehicle"
+     },
+     {
+      "key": "obligor",
+      "role": "context",
+      "status": "traced",
+      "target": "Obligor"
+     },
+     {
+      "key": "certificate of title",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Certificate of Title"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.4504779083560212,
+       "top": 0.4384400338837595,
+       "x0": 0.12887499690834991,
+       "x1": 0.8725661732792075
+      },
+      {
+       "bottom": 0.4666395091047191,
+       "top": 0.4547076755099826,
+       "x0": 0.12787989697425195,
+       "x1": 0.6135524176304636
+      }
+     ]
+    },
+    "term": "Receivable"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "eligible receivable",
+    "quote": "\"Eligible Receivable\" means, on any date of determination, a Pool Receivable that satisfies each of the criteria set out in Schedule 1 on that date.",
+    "refers_to": [
+     {
+      "key": "pool receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Pool Receivable"
+     },
+     {
+      "key": "schedule 1",
+      "role": "input",
+      "status": "traced",
+      "target": "Schedule 1"
+     }
+    ],
+    "resolved": {
+     "rule": "A Pool Receivable that meets every criterion in Schedule 1",
+     "value": "2,269 of 2,400",
+     "worked": "131 fail at least one criterion; criterion E7 not yet run"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 10,
+     "rects": [
+      {
+       "bottom": 0.22522535227765939,
+       "top": 0.2131874778053977,
+       "x0": 0.12887499690834991,
+       "x1": 0.8722059461805556
+      },
+      {
+       "bottom": 0.23868244826191598,
+       "top": 0.22945519649621215,
+       "x0": 0.12787989697425195,
+       "x1": 0.42266391928679026
+      }
+     ]
+    },
+    "term": "Eligible Receivable"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Schedule 1",
+    "depth": 3,
+    "document": "credit_agreement",
+    "key": "schedule 1",
+    "quote": "A Receivable satisfies this Schedule 1 on a date of determination only if, on that date, each of the following is true.",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "outstanding balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Outstanding Balance"
+     },
+     {
+      "key": "obligor",
+      "role": "input",
+      "status": "traced",
+      "target": "Obligor"
+     },
+     {
+      "key": "financed vehicle",
+      "role": "input",
+      "status": "traced",
+      "target": "Financed Vehicle"
+     },
+     {
+      "key": "restricted jurisdiction",
+      "role": "input",
+      "status": "traced",
+      "target": "Restricted Jurisdiction"
+     },
+     {
+      "key": "vehicle identification number",
+      "role": "input",
+      "status": "traced",
+      "target": "Vehicle Identification Number"
+     },
+     {
+      "key": "pool",
+      "role": "input",
+      "status": "traced",
+      "target": "Pool"
+     }
+    ],
+    "resolved": {
+     "rule": "E1: days_past_due <= 30; E2: status not in excluded_statuses; E3: original_term <= 84; E4: fico >= 540; E5: current_balance <= 75,000; E6: obligor_state in us_states; E7: obligor_state not in schedule_4; E8: modification_count <= 1; E9: 6.00 <= apr <= 29.99; E10: year(origination_date) - model_year <= 10; E11: payments_made >= 1; E12: vin appears once in the tape",
+     "value": "12 criteria",
+     "worked": "11 run, E7 waits for Schedule 4"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 58,
+     "rects": [
+      {
+       "bottom": 0.13709413162385575,
+       "top": 0.12516229802911927,
+       "x0": 0.1277083353279463,
+       "x1": 0.8720341102749694
+      },
+      {
+       "bottom": 0.15051138521444918,
+       "top": 0.14132389877781726,
+       "x0": 0.12772548899931066,
+       "x1": 0.17296813516055837
+      }
+     ]
+    },
+    "term": "Schedule 1"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 4,
+    "document": "credit_agreement",
+    "key": "restricted jurisdiction",
+    "quote": "\"Restricted Jurisdiction\" means each state, territory or other jurisdiction listed in Schedule 4.",
+    "refers_to": [
+     {
+      "key": "schedule 4",
+      "role": "input",
+      "status": "not_in_pack",
+      "target": "Schedule 4"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 12,
+     "rects": [
+      {
+       "bottom": 0.7716900218616832,
+       "top": 0.7596521473894216,
+       "x0": 0.12887499690834991,
+       "x1": 0.7809903512593188
+      }
+     ]
+    },
+    "term": "Restricted Jurisdiction"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 4,
+    "document": "credit_agreement",
+    "key": "vehicle identification number",
+    "quote": "\"Vehicle Identification Number\" means, for a Financed Vehicle, the unique seventeen-character identification number assigned to that vehicle by its manufacturer",
+    "refers_to": [
+     {
+      "key": "financed vehicle",
+      "role": "context",
+      "status": "traced",
+      "target": "Financed Vehicle"
+     },
+     {
+      "key": "certificate of title",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Certificate of Title"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 14,
+     "rects": [
+      {
+       "bottom": 0.28127273405441133,
+       "top": 0.2692481146918403,
+       "x0": 0.12887499690834991,
+       "x1": 0.872583326950572
+      },
+      {
+       "bottom": 0.2974476669773911,
+       "top": 0.2855158333826546,
+       "x0": 0.12772548899931066,
+       "x1": 0.5825249167049632
+      }
+     ]
+    },
+    "term": "Vehicle Identification Number"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "financed vehicle",
+    "quote": "\"Financed Vehicle\" means an automobile, light truck, sport utility vehicle, van or motorcycle, together with all accessions to it, that secures the payment obligations of an Obligor",
+    "refers_to": [
+     {
+      "key": "obligor",
+      "role": "context",
+      "status": "traced",
+      "target": "Obligor"
+     },
+     {
+      "key": "receivable",
+      "role": "context",
+      "status": "traced",
+      "target": "Receivable"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 10,
+     "rects": [
+      {
+       "bottom": 0.49694253940774935,
+       "top": 0.4849046649354877,
+       "x0": 0.12887499690834991,
+       "x1": 0.872583326950572
+      },
+      {
+       "bottom": 0.5131041786887429,
+       "top": 0.5011723450940064,
+       "x0": 0.1278112698224635,
+       "x1": 0.6426201614679075
+      }
+     ]
+    },
+    "term": "Financed Vehicle"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "obligor",
+    "quote": "\"Obligor\" means, with respect to any Receivable, each Person obligated to make payments under that Receivable, including any co-signer or guarantor of that Receivable.",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "context",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "person",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Person"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 11,
+     "rects": [
+      {
+       "bottom": 0.6509829434481533,
+       "top": 0.6389450689758918,
+       "x0": 0.12887499690834991,
+       "x1": 0.872566273009855
+      },
+      {
+       "bottom": 0.6671445827291469,
+       "top": 0.6552127491344105,
+       "x0": 0.12774264267067503,
+       "x1": 0.5951128192976409
+      }
+     ]
+    },
+    "term": "Obligor"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "dealer",
+    "quote": "\"Dealer\" means any motor vehicle dealer that originated a Receivable, or that sold the related Financed Vehicle to the related Obligor and assigned the related Receivable to",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "context",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "financed vehicle",
+      "role": "context",
+      "status": "traced",
+      "target": "Financed Vehicle"
+     },
+     {
+      "key": "obligor",
+      "role": "context",
+      "status": "traced",
+      "target": "Obligor"
+     },
+     {
+      "key": "originator",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Originator"
+     },
+     {
+      "key": "dealer agreement",
+      "role": "context",
+      "status": "not_in_pack",
+      "target": "Dealer Agreement"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 9,
+     "rects": [
+      {
+       "bottom": 0.36209406997218274,
+       "top": 0.35005619549992106,
+       "x0": 0.12887499690834991,
+       "x1": 0.8723945368349163
+      },
+      {
+       "bottom": 0.37825567072088073,
+       "top": 0.36632383712614425,
+       "x0": 0.12772548899931066,
+       "x1": 0.6137307360281352
+      }
+     ]
+    },
+    "term": "Dealer"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "collection period",
+    "quote": "\"Collection Period\" means each calendar month. \"Collections\" means, with respect to any Receivable, all cash collections",
+    "refers_to": [],
+    "resolved": {
+     "value": "April 2026",
+     "worked": "Calendar month to 30 April 2026"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 8,
+     "rects": [
+      {
+       "bottom": 0.6882436733053188,
+       "top": 0.6788440665813408,
+       "x0": 0.12887499690834991,
+       "x1": 0.47122302086524714
+      },
+      {
+       "bottom": 0.7146193186442058,
+       "top": 0.702581444171944,
+       "x0": 0.12887499690834991,
+       "x1": 0.6460540372561785
+      }
+     ]
+    },
+    "term": "Collection Period"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 0,
+    "document": "credit_agreement",
+    "key": "delinquency ratio",
+    "quote": "\"Delinquency Ratio\" means, for any Collection Period, the percentage equal to (a) the aggregate Outstanding Balance of Pool Receivables that are 60 or more days past due",
+    "refers_to": [
+     {
+      "key": "collection period",
+      "role": "input",
+      "status": "traced",
+      "target": "Collection Period"
+     },
+     {
+      "key": "outstanding balance",
+      "role": "input",
+      "status": "traced",
+      "target": "Outstanding Balance"
+     },
+     {
+      "key": "pool receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Pool Receivable"
+     },
+     {
+      "key": "defaulted receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Defaulted Receivable"
+     }
+    ],
+    "resolved": {
+     "alternative": "0.8%",
+     "rule": "Outstanding Balance 60 or more days past due / Outstanding Balance of all Pool Receivables, both excluding Defaulted Receivables that have been charged off",
+     "value": "0.79%",
+     "worked": "Repossessed included; 0.8% if excluded"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 9,
+     "rects": [
+      {
+       "bottom": 0.8848213426994554,
+       "top": 0.8727834585941199,
+       "x0": 0.12887499690834991,
+       "x1": 0.8722058464499081
+      },
+      {
+       "bottom": 0.9009829530812273,
+       "top": 0.8890511291195647,
+       "x0": 0.12803431741552415,
+       "x1": 0.6438227634803921
+      }
+     ]
+    },
+    "term": "Delinquency Ratio"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 1,
+    "document": "credit_agreement",
+    "key": "defaulted receivable",
+    "quote": "\"Defaulted Receivable\" means any Receivable (a) that has been charged off, or that should have been charged off in accordance with the Credit and Collection Policy,",
+    "refers_to": [
+     {
+      "key": "receivable",
+      "role": "input",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "credit and collection policy",
+      "role": "input",
+      "status": "traced",
+      "target": "Credit and Collection Policy"
+     },
+     {
+      "key": "obligor",
+      "role": "input",
+      "status": "traced",
+      "target": "Obligor"
+     },
+     {
+      "key": "financed vehicle",
+      "role": "input",
+      "status": "traced",
+      "target": "Financed Vehicle"
+     },
+     {
+      "key": "servicer",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Servicer"
+     }
+    ],
+    "resolved": {
+     "rule": "Charged off or due to be under the Credit and Collection Policy; obligor insolvent; vehicle repossessed; or otherwise uncollectible",
+     "value": "7 charged off, 7 repossessed",
+     "worked": "11 at 90+ days past due, not charged off; 0 past the 120-day charge-off period (Q-03)"
+    },
+    "source": {
+     "document": "credit_agreement",
+     "page": 9,
+     "rects": [
+      {
+       "bottom": 0.7479526635372278,
+       "top": 0.735914789064966,
+       "x0": 0.12887499690834991,
+       "x1": 0.87229161480673
+      },
+      {
+       "bottom": 0.7641142642859257,
+       "top": 0.7521824499573371,
+       "x0": 0.12787989697425195,
+       "x1": 0.5807497111800449
+      }
+     ]
+    },
+    "term": "Defaulted Receivable"
+   },
+   {
+    "amended_by": null,
+    "amendment_quote": null,
+    "amendment_source": null,
+    "clause": "Section 1.1",
+    "depth": 2,
+    "document": "credit_agreement",
+    "key": "credit and collection policy",
+    "quote": "\"Credit and Collection Policy\" means the written credit, underwriting, servicing, collection, charge-off and repossession policies and procedures of the Originator and the Servicer relating to Receivables,",
+    "refers_to": [
+     {
+      "key": "originator",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Originator"
+     },
+     {
+      "key": "servicer",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Servicer"
+     },
+     {
+      "key": "receivable",
+      "role": "context",
+      "status": "traced",
+      "target": "Receivable"
+     },
+     {
+      "key": "section 5.11",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Section 5.11"
+     },
+     {
+      "key": "section 6.11",
+      "role": "context",
+      "status": "mentioned",
+      "target": "Section 6.11"
+     }
+    ],
+    "resolved": null,
+    "source": {
+     "document": "credit_agreement",
+     "page": 9,
+     "rects": [
+      {
+       "bottom": 0.2898718323370423,
+       "top": 0.2778339578647806,
+       "x0": 0.12887499690834991,
+       "x1": 0.873406902637357
+      },
+      {
+       "bottom": 0.30603343308574027,
+       "top": 0.2941015994910038,
+       "x0": 0.1280857784296173,
+       "x1": 0.8204192616581137
+      }
+     ]
+    },
+    "term": "Credit and Collection Policy"
+   }
+  ],
+  "not_in_pack": [
+   "Schedule 4 - Restricted Jurisdictions (listed in the Schedules and Exhibits index but its content is not included; needed for Restricted Jurisdiction and Schedule 1 criterion 7)",
+   "Credit and Collection Policy (the written policies delivered to the Lender before the Closing Date; needed to determine charge-off status for Defaulted Receivable)",
+   "Security Agreement (referred to in the definition of Pool; not included)",
+   "Dealer Agreement (agreements between each Dealer and the Originator, referred to in the definition of Dealer; not included)"
+  ],
+  "roots": [
+   "Borrowing Base",
+   "Delinquency Ratio"
+  ]
+ },
+ "inputs": {
+  "client_model": "5033382fcbe8cdc1bc50d6cf3994a7eca994ee30e7aa3c8f6af5c749182e20ac",
+  "ruleset_digest": "2b5c6ff633ff425f5bdfbe90c0a6ec8d00d533bf6fb8d03360e90bba5c50188d"
+ },
+ "qc": {
+  "agrees": 5,
+  "file": "QC_Bramble_Onboarding_April_2026.xlsx",
+  "genuine": [
+   "Aggregate outstanding balance of pool receivables",
+   "Sub-600 FICO bucket balance"
+  ],
+  "lines": [
+   {
+    "cell": "QC!B5",
+    "class": "agrees",
+    "label": "Agrees",
+    "line": "Loans on the tape",
+    "platform": 2400,
+    "qc": 2400,
+    "unit": "count"
+   },
+   {
+    "cell": "QC!B6",
+    "class": "genuine",
+    "difference": 221624.4,
+    "explained_by": {
+     "amount": 221624.4,
+     "label": "charged-off receivables",
+     "loan_ids": [
+      "BAF100718",
+      "BAF101414",
+      "BAF101437",
+      "BAF101642",
+      "BAF101747",
+      "BAF101970",
+      "BAF102157"
+     ],
+     "loans": 7
+    },
+    "label": "Genuine variance",
+    "line": "Aggregate outstanding balance of pool receivables",
+    "platform": 63405236.89,
+    "qc": 63183612.49,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B7",
+    "class": "rounding",
+    "label": "Presentation: rounding",
+    "line": "Eligible pool balance",
+    "platform": 59592950.65,
+    "qc": 59592951,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B8",
+    "class": "sign",
+    "label": "Presentation: sign convention",
+    "line": "Excess concentration amount",
+    "platform": 454434.05,
+    "qc": -454434.05,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B9",
+    "class": "percent",
+    "label": "Presentation: per cent against decimal",
+    "line": "Advance rate",
+    "platform": 82.5,
+    "qc": 0.825,
+    "unit": "%"
+   },
+   {
+    "cell": "QC!B10",
+    "class": "agrees",
+    "label": "Agrees",
+    "line": "Reserve amount",
+    "platform": 595929.51,
+    "qc": 595929.51,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B11",
+    "class": "agrees",
+    "label": "Agrees",
+    "line": "Borrowing base",
+    "platform": 48193346.69,
+    "qc": 48193346.69,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B12",
+    "class": "agrees",
+    "label": "Agrees",
+    "line": "Availability",
+    "platform": 193346.69,
+    "qc": 193346.69,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B13",
+    "class": "blank",
+    "label": "Presentation: blank against dash",
+    "line": "Excluded under criterion 7 (Restricted Jurisdictions)",
+    "platform": null,
+    "qc": "-",
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B14",
+    "class": "genuine",
+    "difference": -563838.32,
+    "explained_by": {
+     "amount": 563838.32,
+     "label": "eligible receivables with a FICO score of exactly 600",
+     "loan_ids": [
+      "BAF100005",
+      "BAF100206",
+      "BAF100237",
+      "BAF100291",
+      "BAF100309",
+      "BAF100324",
+      "BAF100487",
+      "BAF100608",
+      "BAF100712",
+      "BAF100850",
+      "BAF101138",
+      "BAF101140"
+     ],
+     "loans": 20
+    },
+    "label": "Genuine variance",
+    "line": "Sub-600 FICO bucket balance",
+    "platform": 16275535.21,
+    "qc": 16839373.53,
+    "unit": "US$"
+   },
+   {
+    "cell": "QC!B15",
+    "class": "percent",
+    "label": "Presentation: per cent against decimal",
+    "line": "Largest single-state share",
+    "platform": 19.32,
+    "qc": 0.1932,
+    "unit": "%"
+   },
+   {
+    "cell": "QC!B16",
+    "class": "rounding",
+    "label": "Presentation: rounding",
+    "line": "Weighted average APR, eligible pool",
+    "platform": 21.47,
+    "qc": 21.468,
+    "unit": "%"
+   },
+   {
+    "cell": "QC!B17",
+    "class": "agrees",
+    "label": "Agrees",
+    "line": "60+ day delinquency ratio, April",
+    "platform": 0.79,
+    "qc": 0.79,
+    "unit": "%"
+   }
+  ],
+  "presentation": 6
+ },
+ "queries": [
+  {
+   "blocking": true,
+   "figures": {
+    "agreement_value": {
+     "means": "how the facility agreement treats it",
+     "value": "82.5% from 1 March 2026"
+    },
+    "cell": {
+     "means": "the cell in the lender's model",
+     "value": "Parameters!C2"
+    },
+    "clause": {
+     "means": "where the agreement says so",
+     "value": "Amendment No. 1, 2(a)"
+    },
+    "impact": {
+     "means": "what the difference does this month",
+     "value": "an April 2026 borrowing base US$1,478,462.91 higher than under the agreement"
+    },
+    "model_value": {
+     "means": "how the lender's model treats it",
+     "value": "85% throughout"
+    }
+   },
+   "id": "Q-04",
+   "numbers_in_text": [],
+   "subject": "Advance rate applied in the borrowing base model",
+   "template": "Your borrowing base model applies an advance rate of {{model_value}} at {{cell}}, whereas {{clause}} of the facility agreement provides for {{agreement_value}} for this period. The effect on this month's borrowing base is {{impact}}. Please confirm which advance rate governs the borrowing base for this period.",
+   "text": "Your borrowing base model applies an advance rate of 85% throughout at Parameters!C2, whereas Amendment No. 1, 2(a) of the facility agreement provides for 82.5% from 1 March 2026 for this period. The effect on this month's borrowing base is an April 2026 borrowing base US$1,478,462.91 higher than under the agreement. Please confirm which advance rate governs the borrowing base for this period.",
+   "to": "Calderwood warehouse desk",
+   "topic": "advance_rate",
+   "unknown_placeholders": []
+  },
+  {
+   "blocking": true,
+   "figures": {
+    "agreement_value": {
+     "means": "how the facility agreement treats it",
+     "value": "the Eligible Pool Balance before any excess is deducted"
+    },
+    "cell": {
+     "means": "the cell in the lender's model",
+     "value": "Parameters!C6"
+    },
+    "clause": {
+     "means": "where the agreement says so",
+     "value": "Section 1.1, Eligible Pool Balance"
+    },
+    "impact": {
+     "means": "what the difference does this month",
+     "value": "an April 2026 borrowing base US$157,256.80 higher than under the agreement"
+    },
+    "model_value": {
+     "means": "how the lender's model treats it",
+     "value": "the total pool balance, every receivable on the tape"
+    }
+   },
+   "id": "Q-05",
+   "numbers_in_text": [],
+   "subject": "Base used for concentration shares",
+   "template": "Your model measures each concentration share at {{cell}} against {{model_value}}, whereas {{clause}} of the facility agreement measures it against {{agreement_value}}. The effect on this month's concentration tests and borrowing base is {{impact}}. Please confirm which base governs the concentration calculations in the borrowing base.",
+   "text": "Your model measures each concentration share at Parameters!C6 against the total pool balance, every receivable on the tape, whereas Section 1.1, Eligible Pool Balance of the facility agreement measures it against the Eligible Pool Balance before any excess is deducted. The effect on this month's concentration tests and borrowing base is an April 2026 borrowing base US$157,256.80 higher than under the agreement. Please confirm which base governs the concentration calculations in the borrowing base.",
+   "to": "Calderwood warehouse desk",
+   "topic": "concentration_denominator",
+   "unknown_placeholders": []
+  },
+  {
+   "blocking": true,
+   "figures": {
+    "agreement_value": {
+     "means": "how the facility agreement treats it",
+     "value": "dealers under common ownership or trading under variations of one name counted as one dealer"
+    },
+    "cell": {
+     "means": "the cell in the lender's model",
+     "value": "Parameters!C7"
+    },
+    "clause": {
+     "means": "where the agreement says so",
+     "value": "Schedule 2, row 2"
+    },
+    "impact": {
+     "means": "what the difference does this month",
+     "value": "an April 2026 borrowing base US$374,908.09 higher than under the agreement"
+    },
+    "model_value": {
+     "means": "how the lender's model treats it",
+     "value": "each servicer dealer code as a separate dealer"
+    }
+   },
+   "id": "Q-06",
+   "numbers_in_text": [],
+   "subject": "Treatment of affiliated dealers",
+   "template": "Your model at {{cell}} treats affiliated dealers as {{model_value}}, whereas {{clause}} of the facility agreement provides {{agreement_value}}. The effect on this month's dealer concentration figures is {{impact}}. Please confirm which treatment of affiliated dealers governs the borrowing base.",
+   "text": "Your model at Parameters!C7 treats affiliated dealers as each servicer dealer code as a separate dealer, whereas Schedule 2, row 2 of the facility agreement provides dealers under common ownership or trading under variations of one name counted as one dealer. The effect on this month's dealer concentration figures is an April 2026 borrowing base US$374,908.09 higher than under the agreement. Please confirm which treatment of affiliated dealers governs the borrowing base.",
+   "to": "Calderwood warehouse desk",
+   "topic": "dealer_grouping",
+   "unknown_placeholders": []
+  },
+  {
+   "blocking": false,
+   "figures": {
+    "agreement_value": {
+     "means": "how the facility agreement treats it",
+     "value": "a FICO score below 600"
+    },
+    "cell": {
+     "means": "the cell in the lender's model",
+     "value": "Parameters!C8"
+    },
+    "clause": {
+     "means": "where the agreement says so",
+     "value": "Schedule 2, row 5 (added by Amendment No. 1, Section 2(b))"
+    },
+    "impact": {
+     "means": "what the difference does this month",
+     "value": "no change to the April 2026 borrowing base, though the sub-600 bucket would hold US$563,838.32 more"
+    },
+    "model_value": {
+     "means": "how the lender's model treats it",
+     "value": "a FICO score of 600 and below"
+    }
+   },
+   "id": "Q-07",
+   "numbers_in_text": [],
+   "subject": "Boundary of the lowest FICO band",
+   "template": "Your model defines the lowest FICO band at {{cell}} as {{model_value}}, which includes the boundary score, whereas {{clause}} of the facility agreement defines it as {{agreement_value}}, which leaves the boundary score out. The effect on this month's figures is {{impact}}. Please confirm which definition of the band governs the borrowing base.",
+   "text": "Your model defines the lowest FICO band at Parameters!C8 as a FICO score of 600 and below, which includes the boundary score, whereas Schedule 2, row 5 (added by Amendment No. 1, Section 2(b)) of the facility agreement defines it as a FICO score below 600, which leaves the boundary score out. The effect on this month's figures is no change to the April 2026 borrowing base, though the sub-600 bucket would hold US$563,838.32 more. Please confirm which definition of the band governs the borrowing base.",
+   "to": "Calderwood warehouse desk",
+   "topic": "fico_bucket",
+   "unknown_placeholders": []
+  },
+  {
+   "blocking": false,
+   "figures": {
+    "agreement_value": {
+     "means": "how the facility agreement treats it",
+     "value": "excluded when more than 30 days past due"
+    },
+    "cell": {
+     "means": "the cell in the lender's model",
+     "value": "Parameters!C4"
+    },
+    "clause": {
+     "means": "where the agreement says so",
+     "value": "Schedule 1, paragraph 1"
+    },
+    "impact": {
+     "means": "what the difference does this month",
+     "value": "no change for April 2026, as no receivable sits on the boundary"
+    },
+    "model_value": {
+     "means": "how the lender's model treats it",
+     "value": "excluded at 30 or more days past due"
+    }
+   },
+   "id": "Q-08",
+   "numbers_in_text": [],
+   "subject": "Past-due exclusion cut-off",
+   "template": "Your model sets the past-due cut-off at {{cell}} as {{model_value}}, while {{clause}} of the facility agreement provides {{agreement_value}}, so receivables falling on the boundary day are treated differently. The effect on this month's figures is {{impact}}. Please confirm which reading of the past-due exclusion governs the borrowing base.",
+   "text": "Your model sets the past-due cut-off at Parameters!C4 as excluded at 30 or more days past due, while Schedule 1, paragraph 1 of the facility agreement provides excluded when more than 30 days past due, so receivables falling on the boundary day are treated differently. The effect on this month's figures is no change for April 2026, as no receivable sits on the boundary. Please confirm which reading of the past-due exclusion governs the borrowing base.",
+   "to": "Calderwood warehouse desk",
+   "topic": "past_due_exclusion",
+   "unknown_placeholders": []
+  },
+  {
+   "blocking": false,
+   "figures": {
+    "agreement_value": {
+     "means": "how the facility agreement treats it",
+     "value": "not addressed"
+    },
+    "cell": {
+     "means": "the cell in the lender's model",
+     "value": "Parameters!C9"
+    },
+    "clause": {
+     "means": "where the agreement says so",
+     "value": "Schedule 1 and Schedule 2"
+    },
+    "impact": {
+     "means": "what the difference does this month",
+     "value": "no change for April 2026, as every receivable has a score"
+    },
+    "model_value": {
+     "means": "how the lender's model treats it",
+     "value": "placing them in the sub-600 bucket"
+    }
+   },
+   "id": "Q-09",
+   "numbers_in_text": [],
+   "subject": "Obligors with no credit score",
+   "template": "Your model at {{cell}} treats obligors with no credit score as {{model_value}}. We have not found any provision in the facility agreement that addresses obligors with no score. The effect on this month's figures is {{impact}}; please confirm how you want these obligors treated in the borrowing base.",
+   "text": "Your model at Parameters!C9 treats obligors with no credit score as placing them in the sub-600 bucket. We have not found any provision in the facility agreement that addresses obligors with no score. The effect on this month's figures is no change for April 2026, as every receivable has a score; please confirm how you want these obligors treated in the borrowing base.",
+   "to": "Calderwood warehouse desk",
+   "topic": "missing_fico",
+   "unknown_placeholders": []
+  }
+ ],
+ "usage": {
+  "calls": 4,
+  "cost_usd": 0.7909,
+  "input_tokens": 5671,
+  "model": "claude-opus-5-5",
+  "model_seconds": 149,
+  "output_tokens": 19406
+ }
+}

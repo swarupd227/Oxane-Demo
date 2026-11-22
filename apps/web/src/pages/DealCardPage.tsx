@@ -1,96 +1,166 @@
-import { ArrowRight, Info, RotateCw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { RotateCw } from "lucide-react";
+import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { Avatar } from "../components/ui/Avatar";
 import { Button } from "../components/ui/Button";
-import { Card, Money, SectionLabel, Skeleton } from "../components/ui/layout";
+import { Card, SectionLabel, Skeleton } from "../components/ui/layout";
+import { NextStep, PageHeader } from "../components/ui/PageHeader";
+import { Timeline } from "../components/ui/Timeline";
 import { useCase, type Deal } from "../lib/api";
-import { formatCount, formatDate, formatUsd, formatUsdShort } from "../lib/format";
+import { useCases } from "../lib/cases";
+import { formatCount, formatDate, formatUsd } from "../lib/format";
+import { useSession } from "../lib/session";
+import { StagePill } from "./CasesPage";
 
-function Fact({ label, value, detail }: { label: string; value: string; detail?: string }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div>
-      <SectionLabel>{label}</SectionLabel>
-      <p className="mt-1.5 text-[0.9375rem] font-medium">{value}</p>
-      {detail && <p className="mt-0.5 text-[0.8125rem] leading-snug text-muted">{detail}</p>}
+    <div className="py-1.5">
+      <dt className="text-[0.6875rem] text-muted">{label}</dt>
+      <dd className="text-[0.8125rem] font-medium">{children}</dd>
     </div>
   );
 }
 
-function DateLine({ dates }: { dates: Deal["dates"] }) {
+function Progress() {
+  const { data } = useCases();
+  const item = data?.cases.find((entry) => entry.active);
+  if (!item) {
+    return <Skeleton className="h-40 w-full" />;
+  }
+  const rows: [string, string, number, number][] = [
+    ["Documents received", "/intake", item.documents.received, item.documents.expected],
+    ["Terms approved", "/terms", item.terms.approved, item.terms.total],
+    ["Exceptions worked", "/exceptions", item.exceptions.total - item.exceptions.open, item.exceptions.total],
+    ["Queries closed or answered", "/queries", item.queries.total - item.queries.with_client, item.queries.total],
+  ];
   return (
-    <ol className="grid grid-cols-4">
-      {dates.map((item, index) => (
-        <li key={item.label} className="relative pt-6 pr-4">
-          <span
-            aria-hidden
-            className="absolute top-[0.3125rem] left-0 size-2.5 rounded-full border-2 border-ink bg-surface"
-          />
-          {index < dates.length - 1 && (
-            <span aria-hidden className="absolute top-[0.5625rem] right-0 left-2.5 h-0.5 bg-line" />
-          )}
-          <p className="numeric text-sm font-semibold">{formatDate(item.date)}</p>
-          <p className="mt-0.5 text-[0.8125rem] leading-snug text-muted">{item.label}</p>
-        </li>
-      ))}
-    </ol>
+    <table className="w-full text-left text-[0.8125rem]">
+      <tbody>
+        {rows.map(([label, to, done, total]) => (
+          <tr key={label} className="border-b border-sand last:border-0">
+            <td className="py-1.5 pr-3">
+              <Link to={to} className="hover:underline">
+                {label}
+              </Link>
+            </td>
+            <td className="numeric w-16 py-1.5 pr-3 text-right font-medium">
+              {done}/{total}
+            </td>
+            <td className="w-1/3 py-1.5">
+              <div className="h-1.5 rounded bg-sand" aria-hidden>
+                <div className="h-full rounded bg-ink" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
+              </div>
+            </td>
+          </tr>
+        ))}
+        <tr>
+          <td className="py-1.5 pr-3">
+            <Link to="/qc" className="hover:underline">
+              QC variances open
+            </Link>
+          </td>
+          <td className="numeric py-1.5 pr-3 text-right font-medium">{item.qc_variances_open}</td>
+          <td />
+        </tr>
+      </tbody>
+    </table>
   );
 }
 
-function DealCard({ deal }: { deal: Deal }) {
-  const { facility, lender, borrower, pricing, oxane_role: role, analysts } = deal;
+function Overview({ deal, number }: { deal: Deal; number: string }) {
+  const { facility, lender, borrower, pricing, analysts } = deal;
+  const { state } = useSession();
+  const { data: pipeline } = useCases();
+  const stage = pipeline?.cases.find((entry) => entry.active)?.stage;
   const goLive = deal.case.target_go_live;
-  const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_24rem] gap-6">
-      <Card className="p-10">
-        <SectionLabel>{facility.type}</SectionLabel>
-        <h1 className="mt-4 text-[2.75rem] leading-[1.1] font-semibold tracking-tight">
-          {lender.short_name}
-          <span className="text-subtle"> / </span>
-          {borrower.short_name}
-        </h1>
-        <p className="mt-6 text-[3.5rem] leading-none font-semibold tracking-tight">
-          <Money value={formatUsdShort(facility.limit_usd)} />
-        </p>
-        <p className="numeric mt-2 text-[0.9375rem] text-muted">
-          {formatUsd(facility.limit_usd)} facility limit
-        </p>
-
-        <div className="mt-10 grid grid-cols-4 gap-x-8 gap-y-6 border-t border-line pt-8">
-          <Fact label="Lender" value={lender.name} detail={lender.desk} />
-          <Fact label="Borrower" value={borrower.name} detail={borrower.description} />
-          <Fact
-            label="Collateral"
-            value={facility.collateral}
-            detail={`About ${formatCount(facility.first_tape_loans)} loans in the first tape`}
-          />
-          <Fact label="Pricing" value={pricing.margin} detail={`${pricing.unused_fee} unused fee`} />
-        </div>
-
-        <div className="mt-10 border-t border-line pt-8">
-          <DateLine dates={deal.dates} />
-        </div>
-      </Card>
-
-      <div className="flex flex-col gap-6">
-        <Card tone="inverse" className="flex-1 p-8">
-          <p className="text-[0.6875rem] font-semibold tracking-[0.08em] text-stone uppercase">
-            Mandate
-          </p>
-          <p className="mt-4 text-2xl leading-snug font-semibold">{role.title}</p>
-          <p className="mt-3 text-[0.9375rem] leading-relaxed text-sand">{role.summary}</p>
+    <div className="space-y-4">
+      <PageHeader
+        title={`${number} · ${borrower.name}`}
+        summary={`${lender.name} · ${facility.type} · ${formatUsd(facility.limit_usd)}`}
+        actions={
+          <>
+            {stage && <StagePill stage={stage} />}
+            <NextStep to="/intake" label="Start onboarding" />
+          </>
+        }
+      />
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_22rem] items-start gap-4">
+        <Card className="p-4">
+          <SectionLabel>Facility</SectionLabel>
+          <dl className="mt-1 grid grid-cols-2 gap-x-4">
+            <Field label="Lender">{lender.name}</Field>
+            <Field label="Desk">{lender.desk}</Field>
+            <Field label="Borrower">{borrower.name}</Field>
+            <Field label="Parent">{borrower.parent}</Field>
+            <Field label="Facility">{facility.type}</Field>
+            <Field label="Limit">
+              <span className="numeric">{formatUsd(facility.limit_usd)}</span>
+            </Field>
+            <Field label="Collateral">{facility.collateral}</Field>
+            <Field label="First tape">
+              <span className="numeric">{formatCount(facility.first_tape_loans)} loans</span>
+            </Field>
+            <Field label="Margin">{pricing.margin}</Field>
+            <Field label="Unused fee">{pricing.unused_fee}</Field>
+          </dl>
         </Card>
-
-        <Card className="space-y-5 p-6">
-          <Fact label="Preparer" value={analysts.preparer} />
-          <Fact label="Second analyst" value={analysts.approver} />
-          <Fact label="Target go-live" value={goLive ? formatDate(goLive) : "To be confirmed"} />
-        </Card>
-
-        <Button size="lg" className="w-full justify-between" onClick={() => navigate("/intake")}>
-          Start onboarding
-          <ArrowRight aria-hidden className="size-4" />
-        </Button>
+        <div className="space-y-4">
+          <Card className="p-4">
+            <SectionLabel>Key dates</SectionLabel>
+            <table className="mt-1 w-full text-[0.8125rem]">
+              <tbody>
+                {deal.dates.map((item) => (
+                  <tr key={item.label} className="border-b border-sand last:border-0">
+                    <td className="py-1.5 pr-3 text-muted">{item.label}</td>
+                    <td className="numeric py-1.5 text-right font-medium">{formatDate(item.date)}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="py-1.5 pr-3 text-muted">Target go-live</td>
+                  <td className="numeric py-1.5 text-right font-medium">{goLive ? formatDate(goLive) : "Not set"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </Card>
+          <Card className="p-4">
+            <SectionLabel>Progress</SectionLabel>
+            <div className="mt-1">
+              <Progress />
+            </div>
+          </Card>
+        </div>
+        <div className="space-y-4">
+          <Card className="p-4">
+            <SectionLabel>Team</SectionLabel>
+            <ul className="mt-2 space-y-2 text-[0.8125rem]">
+              <li className="flex items-center gap-2">
+                <Avatar name="Onboarding analyst" />
+                <span>
+                  <span className="block font-medium">{analysts.preparer}</span>
+                  <span className="block text-[0.6875rem] text-muted">Preparer</span>
+                </span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Avatar name="Second analyst" />
+                <span>
+                  <span className="block font-medium">Second analyst</span>
+                  <span className="block text-[0.6875rem] text-muted">Reviewer, four-eyes</span>
+                </span>
+              </li>
+            </ul>
+          </Card>
+          <Card className="p-4">
+            <SectionLabel>Activity</SectionLabel>
+            <Timeline className="mt-2" entries={[...state.audit].reverse().slice(0, 6)} empty="No activity yet" />
+            {state.audit.length > 6 && (
+              <Link to="/approve#audit" className="mt-2 block text-xs font-medium text-info hover:underline">
+                Full audit log ({state.audit.length})
+              </Link>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );
@@ -100,28 +170,19 @@ export function DealCardPage() {
   const { data, isPending, isError, refetch } = useCase();
 
   return (
-    <div className="space-y-5">
-      <p className="flex items-center gap-2 text-sm text-muted">
-        <Info aria-hidden className="size-4 shrink-0" />
-        Sandbox environment. All names, documents and data are synthetic. Not connected to Panorama.
-        Contains no Oxane or client data.
-      </p>
-      {data && <DealCard deal={data.deal} />}
+    <div>
+      {data && <Overview deal={data.deal} number={data.number} />}
       {isPending && (
-        <Card className="space-y-4 p-8" role="status" aria-label="Loading deal">
-          <Skeleton className="h-4 w-64" />
-          <Skeleton className="h-10 w-[32rem]" />
-          <Skeleton className="h-10 w-40" />
-          <Skeleton className="h-32 w-full" />
+        <Card className="space-y-3 p-6" role="status" aria-label="Loading case">
+          <Skeleton className="h-5 w-80" />
+          <Skeleton className="h-4 w-56" />
+          <Skeleton className="h-40 w-full" />
         </Card>
       )}
       {isError && !data && (
-        <Card role="alert" className="p-8">
-          <p className="font-medium">The deal could not be loaded.</p>
-          <p className="mt-1 text-sm text-muted">
-            The case service is not responding. Try again in a moment.
-          </p>
-          <Button variant="secondary" className="mt-4" onClick={() => void refetch()}>
+        <Card role="alert" className="p-5">
+          <p className="font-medium">The case could not be loaded.</p>
+          <Button variant="secondary" className="mt-3" onClick={() => void refetch()}>
             <RotateCw aria-hidden className="size-4" />
             Try again
           </Button>

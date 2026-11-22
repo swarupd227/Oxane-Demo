@@ -114,7 +114,7 @@ test.describe("spec behaviour", () => {
     });
     await expect(page.getByRole("alert")).toContainText("0 of 8 files matched");
     await expect(page.getByRole("alert")).toContainText("holiday-photos.zip");
-    await expect(page.getByRole("button", { name: "Load sandbox pack" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Load received pack" })).toBeVisible();
   });
 
   test("a second analyst can approve a rule change, and the bridge shows its effect", async ({ page, request }) => {
@@ -144,19 +144,23 @@ test.describe("keyboard control", () => {
     await expect(page.getByText("3 open of 10")).toBeVisible();
     await page.keyboard.press("Alt+r");
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByText("Awaiting pack")).toBeVisible();
+    await expect(page.getByText("Awaiting pack").first()).toBeVisible();
   });
 
-  test("Alt+P turns large text on and off", async ({ page }) => {
+  test("Alt+P turns presenter mode on and off", async ({ page }) => {
     await page.goto("/");
     await page.keyboard.press("Alt+p");
-    await expect(page.locator("html")).toHaveAttribute("data-presenter", "true");
+    await expect(page.locator("html")).toHaveAttribute("data-walkthrough", "true");
+    await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toBeVisible();
     await page.keyboard.press("Alt+p");
-    await expect(page.locator("html")).toHaveAttribute("data-presenter", "false");
+    await expect(page.locator("html")).toHaveAttribute("data-walkthrough", "false");
   });
 
-  test("square brackets move between steps", async ({ page }) => {
+  test("square brackets move between steps in walkthrough mode, and only then", async ({ page }) => {
     await page.goto("/intake");
+    await page.keyboard.press("]");
+    await expect(page).toHaveURL(/intake/);
+    await page.goto("/intake?presenter=1");
     await page.keyboard.press("]");
     await expect(page).toHaveURL(/terms/);
     await page.keyboard.press("[");
@@ -166,9 +170,52 @@ test.describe("keyboard control", () => {
   test("the command menu finds exactly what was typed", async ({ page }) => {
     await page.goto("/");
     await page.keyboard.press("Control+k");
-    await page.getByPlaceholder("Go to a step or run a command").fill("reset");
+    await page.getByPlaceholder("Search terms, exceptions, queries, cases").fill("reset");
     await expect(page.getByRole("option")).toHaveCount(1);
-    await expect(page.getByRole("option")).toContainText("Reset sandbox case");
+    await expect(page.getByRole("option")).toContainText("Reset case");
+  });
+});
+
+test.describe("workbench chrome", () => {
+  test("presenter mode is off by default and the header toggle keeps it on", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Presenter mode" }).click();
+    await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("oxane.presenter"))).toBe("1");
+    await page.getByRole("button", { name: "Presenter mode" }).click();
+    await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toHaveCount(0);
+  });
+
+  test("global search finds terms, exceptions and queries", async ({ page, request }) => {
+    await prepare(request, "run");
+    await page.goto("/");
+    await page.getByRole("button", { name: "Search" }).click();
+    const input = page.getByPlaceholder("Search terms, exceptions, queries, cases");
+    await input.fill("advance rate");
+    await expect(page.getByRole("option", { name: /Advance rate/ }).first()).toBeVisible();
+    await input.fill("X4");
+    await page.getByRole("option", { name: /X4/ }).first().click();
+    await expect(page).toHaveURL(/exceptions\?id=X4/);
+    await page.getByRole("button", { name: "Search" }).click();
+    await input.fill("Q-03");
+    await expect(page.getByRole("option", { name: /Q-03/ })).toBeVisible();
+  });
+
+  test("the case list opens another case's summary", async ({ page }) => {
+    await page.goto("/cases");
+    await expect(page.getByRole("row")).toHaveCount(16);
+    await page.getByRole("link", { name: "0403" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Granite Peak");
+  });
+
+  test("the acting user switches from the user menu", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Acting as Onboarding analyst/ }).click();
+    await page.getByRole("menuitemradio", { name: /Second analyst/ }).click();
+    await expect(page.getByRole("button", { name: /Acting as Second analyst/ })).toBeVisible();
   });
 });
 

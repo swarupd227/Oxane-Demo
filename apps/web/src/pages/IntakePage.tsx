@@ -1,11 +1,10 @@
 import clsx from "clsx";
-import { ArrowRight, CheckCircle2, FileQuestion, Link2, Loader2, UploadCloud } from "lucide-react";
+import { CheckCircle2, FileQuestion, Link2, Loader2, UploadCloud } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Card, Skeleton } from "../components/ui/layout";
-import { PageHeader, SeedNotice } from "../components/ui/PageHeader";
+import { NextStep, PageHeader, SeedNotice } from "../components/ui/PageHeader";
 import { formatDate } from "../lib/format";
 import { useSession } from "../lib/session";
 import { useWorkbench, type DocumentInfo } from "../lib/workbench";
@@ -39,25 +38,25 @@ function FileRow({ doc, done, links }: { doc: DocumentInfo; done: boolean; links
       transition={{ duration: 0.2, ease: "easeOut" }}
       className="border-b border-sand last:border-0"
     >
-      <td className="w-10 py-3 pl-5">
+      <td className="w-10 py-2 pl-5">
         {done ? (
           <CheckCircle2 aria-label="Classified" className="size-[1.125rem] text-ok" />
         ) : (
           <Loader2 aria-label="Classifying" className="size-[1.125rem] animate-spin text-muted" />
         )}
       </td>
-      <td className="py-3 pr-4">
-        <p className="text-sm font-medium">{doc.title}</p>
+      <td className="py-2 pr-4">
+        <p className="text-[0.8125rem] font-medium">{doc.title}</p>
         <p className="mt-0.5 text-xs text-muted">{doc.file}</p>
       </td>
-      <td className="py-3 pr-4 text-sm text-muted">{done ? doc.kind : ""}</td>
-      <td className="numeric py-3 pr-4 text-sm text-muted">{done ? doc.version : ""}</td>
-      <td className="numeric py-3 pr-4 text-sm text-muted">{done ? shownDate(doc.dated) : ""}</td>
-      <td className="numeric py-3 pr-4 text-sm font-medium">
+      <td className="py-2 pr-4 text-sm text-muted">{done ? doc.kind : ""}</td>
+      <td className="numeric py-2 pr-4 text-sm text-muted">{done ? doc.version : ""}</td>
+      <td className="numeric py-2 pr-4 text-sm text-muted">{done ? shownDate(doc.dated) : ""}</td>
+      <td className="numeric py-2 pr-4 text-sm font-medium">
         {done ? shownDate(doc.effective) : ""}
       </td>
-      <td className="numeric py-3 pr-4 text-sm text-muted">{done ? doc.size : ""}</td>
-      <td className="py-3 pr-5 text-xs text-muted">
+      <td className="numeric py-2 pr-4 text-sm text-muted">{done ? doc.size : ""}</td>
+      <td className="py-2 pr-5 text-xs text-muted">
         {done && links && (
           <span className="inline-flex items-center gap-1 font-medium text-ink">
             <Link2 aria-hidden className="size-3.5" />
@@ -73,7 +72,6 @@ function FileRow({ doc, done, links }: { doc: DocumentInfo; done: boolean; links
 export function IntakePage() {
   const { data } = useWorkbench();
   const { state, dispatch } = useSession();
-  const navigate = useNavigate();
   const [revealed, setRevealed] = useState(state.intakeDone ? 99 : 0);
   const [running, setRunning] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -130,16 +128,13 @@ export function IntakePage() {
   return (
     <div>
       <PageHeader
-        title="Document intake"
-        summary="Documents received, classified by type, version and effective date."
-        actions={
-          classified && (
-            <Button size="lg" onClick={() => navigate("/terms")}>
-              Review facility terms
-              <ArrowRight aria-hidden className="size-4" />
-            </Button>
-          )
+        title="Documents"
+        summary={
+          state.intakeDone
+            ? `${data.documents.length} received · ${data.missing_documents.length} outstanding · matched by content`
+            : `${data.documents.length} expected · case 0412`
         }
+        actions={classified && <NextStep to="/terms" label="Review facility terms" />}
       />
       {data?.seed && (
         <SeedNotice>
@@ -160,20 +155,18 @@ export function IntakePage() {
             void check([...event.dataTransfer.files]);
           }}
           className={clsx(
-            "flex h-80 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
+            "flex h-56 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
             dragging ? "border-ink bg-sand" : "border-stone bg-surface",
           )}
         >
-          <UploadCloud aria-hidden className="size-8 text-muted" />
-          <p className="mt-3 text-lg font-medium">Drop the document pack here</p>
-          <p className="mt-1 text-sm text-muted">
-            8 files for onboarding case 0412. Each file is matched by its content.
-          </p>
-          <div className="mt-5 flex items-center gap-3">
-            <Button size="lg" onClick={() => setRunning(true)} disabled={checking}>
-              Load sandbox pack
+          <UploadCloud aria-hidden className="size-6 text-muted" />
+          <p className="mt-2 text-sm font-medium">Drop files here</p>
+          <p className="mt-0.5 text-xs text-muted">{data.documents.length} files expected</p>
+          <div className="mt-4 flex items-center gap-2">
+            <Button onClick={() => setRunning(true)} disabled={checking}>
+              Load received pack
             </Button>
-            <label className="flex h-12 cursor-pointer items-center rounded-lg border border-line bg-surface px-5 text-[0.9375rem] font-medium hover:border-stone hover:bg-canvas">
+            <label className="flex h-10 cursor-pointer items-center rounded-lg border border-line bg-surface px-4 text-sm font-medium hover:border-stone hover:bg-canvas">
               Choose files
               <input
                 type="file"
@@ -240,11 +233,11 @@ export function IntakePage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="mt-4 flex items-center gap-4 rounded-xl border-2 border-dashed border-danger/50 bg-danger-tint/50 p-5"
+          className="mt-3 flex items-start gap-3 rounded-lg border border-danger/30 bg-danger-tint/50 px-4 py-3"
         >
-          <FileQuestion aria-hidden className="size-6 shrink-0 text-danger" />
+          <FileQuestion aria-hidden className="mt-0.5 size-4 shrink-0 text-danger" />
           <div>
-            <p className="font-semibold">Expected but not received</p>
+            <p className="text-sm font-semibold">Expected but not received</p>
             {data.missing_documents.map((item) => (
               <p key={item.name} className="mt-0.5 text-sm text-muted">
                 <span className="font-medium text-ink">{item.name}.</span> {item.reason}.

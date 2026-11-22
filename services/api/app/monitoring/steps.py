@@ -361,3 +361,135 @@ def draft_pack(
         PackDraft,
         max_tokens=8000,
     )
+
+
+# Change against the prior period
+
+
+class ChangeExplanation(BaseModel):
+    explained: bool
+    cause: str
+    document: str
+    quote: str
+
+
+CHANGE_GUIDE = (
+    "A validation rule found that a pool moved more than usual against the prior month. Code "
+    "found the change and measured it. Read the documents and say what most likely caused it. "
+    "`cause` is at most two plain sentences in UK spelling for a monitoring analyst. Refer to "
+    "the measured change only by its placeholders, such as {{pool_balance_change}}, and write "
+    "no other number unless it appears in your quote. `quote` is copied word for word from one "
+    "document and states the cause; `document` is that document's id. If the documents do not "
+    "explain the change, set `explained` to false and say what to ask the sender."
+)
+
+
+def explain_change(
+    gateway: Gateway, facility: str, changes: list[dict[str, object]],
+    documents: list[PdfDocument],
+) -> ChangeExplanation:
+    return gateway.parse(
+        "explain_change",
+        GROUND_RULES,
+        [
+            *[_doc(document) for document in documents],
+            {
+                "type": "text",
+                "text": CHANGE_GUIDE + f"\n\nFacility: {facility}\nChanges found by code:\n"
+                + json.dumps(changes, indent=1),
+            },
+        ],
+        ChangeExplanation,
+        max_tokens=4000,
+    )
+
+
+# Client self-service alerts
+
+
+class AlertDraft(BaseModel):
+    understood: bool
+    metric: str
+    operator: Literal[">", ">=", "<", "<="]
+    threshold: str
+    summary: str
+    concepts: list[str]
+    question: str
+
+
+ALERT_GUIDE = (
+    "A client has asked, in their own words, to be alerted when something happens on one of "
+    "their facilities. Turn the request into one rule on one metric from the catalogue. "
+    "`metric` is the catalogue key exactly, such as northmoor.delinquency_60_plus. `threshold` "
+    "is the number from the client's words, written in the metric's unit as plain digits, "
+    "such as 5.5 or 5000000; never compute or invent it. `summary` restates the rule in one "
+    "plain sentence in UK spelling. `concepts` lists the ontology concept ids you relied on. If "
+    "the request does not fit any metric, set `understood` to false and put the question to "
+    "ask the client in `question`; otherwise `question` is empty."
+)
+
+
+def draft_alert(
+    gateway: Gateway, request: str, catalogue: dict[str, dict[str, object]],
+    concept_ids: set[str],
+) -> AlertDraft:
+    return gateway.parse(
+        "draft_alert",
+        GROUND_RULES,
+        [
+            {
+                "type": "text",
+                "text": ALERT_GUIDE
+                + f"\n\nCatalogue: {json.dumps(catalogue, indent=1)}\n\n"
+                + ontology.block(concept_ids)
+                + f"\n\nThe client's request: {json.dumps(request)}",
+            }
+        ],
+        AlertDraft,
+        max_tokens=4000,
+    )
+
+
+# Weekly status call
+
+
+class BriefSection(BaseModel):
+    heading: str
+    points: list[str]
+
+
+class StatusBrief(BaseModel):
+    opening: str
+    sections: list[BriefSection]
+
+
+BRIEF_GUIDE = (
+    "Draft the brief the named contact at Oxane uses for this week's status call with the "
+    "client. The call is short, so be brief: a one-sentence opening, then short points under "
+    "each heading given, in order, in UK spelling. Say what is missing, what we are asking, "
+    "what was excluded and why, and what the client may need to decide. Never write a number, "
+    "date or percentage yourself: wherever a figure belongs, write its placeholder exactly as "
+    "listed, such as {{gap}}, and code will insert the checked value. Do not call anything a "
+    "breach unless a test failed. If a heading has nothing to report, write one point saying "
+    "so. Never mention facts, placeholders or this brief."
+)
+
+
+def draft_status_brief(
+    gateway: Gateway, client: str, contact: str, headings: list[str], facts: dict[str, object]
+) -> StatusBrief:
+    return gateway.parse(
+        "draft_status_brief",
+        GROUND_RULES,
+        [
+            {
+                "type": "text",
+                "text": BRIEF_GUIDE
+                + f"\n\nClient: {client}\nNamed contact: {contact}\n"
+                + f"Headings: {json.dumps(headings)}\n\nFacts, with the placeholder for each "
+                "figure:\n" + json.dumps(facts, indent=1),
+            }
+        ],
+        StatusBrief,
+        max_tokens=6000,
+    )

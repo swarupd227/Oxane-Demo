@@ -159,3 +159,17 @@ def test_a_bad_rule_set_is_rejected_on_load(change, message):
     assert change(text) != text
     with pytest.raises(ValidationError, match=message):
         load_ruleset(change(text))
+
+
+def test_a_gross_concentration_base_measures_limits_against_every_receivable(rules):
+    """A client model that divides by the whole tape sees less excess than the agreement."""
+    loans = [clean_loan(n, dealer_name="Big Dealer" if n <= 2 else f"Dealer {n}")
+             for n in range(1, 31)]
+    loans += [clean_loan(n, status="CHARGED_OFF") for n in range(31, 41)]
+    agreed = run(loans, rules, PERIOD_END, 0)
+    gross = run(loans, rules, PERIOD_END, 0, concentration_base="gross")
+    assert agreed.eligible_pool_cents == gross.eligible_pool_cents
+    assert gross.concentrations["C2"].limit_cents > agreed.concentrations["C2"].limit_cents
+    assert gross.excess_cents < agreed.excess_cents
+    with pytest.raises(ValueError):
+        run(loans, rules, PERIOD_END, 0, concentration_base="net")

@@ -32,8 +32,13 @@ EARLIER_EXCEPTIONS = {"X2": "queried", "X7": "queried", "X8": "accepted", "X9": 
 
 # What only the person who prepared the case may do, and what only a reviewer may do.
 PREPARER_EVENTS = {"intake-done", "approve-term", "bulk-approve", "queue-term", "edit-term",
-                   "accept-mapping", "accept-column", "run", "work-exception", "propose-rule"}
-REVIEWER_EVENTS = {"decline-rule", "approve-rule", "approve-load"}
+                   "accept-mapping", "accept-column", "run", "work-exception", "propose-rule",
+                   "send-query", "record-answer", "resolve-variance", "accept-backbook"}
+REVIEWER_EVENTS = {"decline-rule", "approve-rule", "approve-load", "release-report"}
+# Casework that carries on after the load file is approved: client queries, the QC comparison
+# and the release of the first report, and the backbook.
+AFTER_APPROVAL = {"send-query", "record-answer", "resolve-variance", "release-report",
+                  "accept-backbook"}
 
 
 class Refused(Exception):
@@ -52,7 +57,29 @@ def _initial() -> dict[str, Any]:
         "mappingAccepted": False, "ran": False, "dealerMatched": False, "exceptions": {},
         "ruleEdit": None, "approvedAt": None, "approvedBy": None, "approvedByName": None,
         "preparedBy": ACTOR_NAMES[ANALYST], "audit": [],
+        "queries": {}, "variances": {}, "reportReleasedAt": None, "reportReleasedBy": None,
+        "backbookAccepted": [],
     }
+
+
+def _ids(payload: dict[str, Any]) -> list[str]:
+    """A query event names one query, or several sent or answered together."""
+    return [str(ident) for ident in (payload.get("ids") or [payload.get("id")]) if ident]
+
+
+def _refs(payload: dict[str, Any]) -> list[str]:
+    """The records an event touched, so each record can show its own history."""
+    refs = _ids(payload)
+    if payload.get("name"):
+        refs.append(f"term:{payload['name']}")
+    refs += [f"term:{name}" for name in payload.get("names", [])]
+    if payload.get("term"):
+        refs.append(f"term:{payload['term']}")
+    for key, prefix in (("rule_id", "rule"), ("line", "qc"), ("deal", "backbook"),
+                        ("column", "column")):
+        if payload.get(key):
+            refs.append(f"{prefix}:{payload[key]}")
+    return refs
 
 
 def _describe(event: CaseEvent) -> tuple[str, str | None]:
@@ -74,6 +101,13 @@ def _describe(event: CaseEvent) -> tuple[str, str | None]:
                          p.get("reason")),
         "decline-rule": (f"Declined rule change to {p.get('rule_id')}", p.get("reason")),
         "approve-load": (f"Approved load file with {p.get('open_items', 0)} open items", None),
+        "send-query": (f"Sent {', '.join(_ids(p))} to the client", None),
+        "record-answer": (f"Recorded the client's answer to {', '.join(_ids(p))}", None),
+        "resolve-variance": (f"Resolved QC variance on {p.get('line')}: {p.get('resolution')}",
+                             p.get("reason")),
+        "release-report": ("Released the first report after independent QC", None),
+        "accept-backbook": (f"Loaded backbook deal {p.get('deal')} with the stored mapping",
+                            None),
     }[event.type]
 
 
@@ -127,10 +161,26 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
             state["approvedAt"] = at
             state["approvedBy"] = event.actor
             state["approvedByName"] = p.get("user") or ACTOR_NAMES.get(event.actor)
+        elif kind == "send-query":
+            for ident in _ids(p):
+                state["queries"][ident] = {"sent": at, "answered": None}
+        elif kind == "record-answer":
+            for ident in _ids(p):
+                state["queries"][ident]["answered"] = at
+        elif kind == "resolve-variance":
+            state["variances"][p["line"]] = {
+                "resolution": p["resolution"], "reason": p["reason"], "at": at,
+                "by": p.get("user") or ACTOR_NAMES.get(event.actor)}
+        elif kind == "release-report":
+            state["reportReleasedAt"] = at
+            state["reportReleasedBy"] = p.get("user") or ACTOR_NAMES.get(event.actor)
+        elif kind == "accept-backbook":
+            state["backbookAccepted"].append(p["deal"])
         action, reason = _describe(event)
         shown = p.get("user") or ACTOR_NAMES.get(event.actor, event.actor)
         state["audit"].append({"at": at, "actor": shown, "action": action, "reason": reason,
-                               "earlier": event.earlier})
+                               "earlier": event.earlier, "seq": event.seq, "type": kind,
+                               "refs": _refs(p), "hash": event.hash})
     return state
 
 
@@ -247,7 +297,7 @@ def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, 
            kind: str, payload: dict[str, Any]) -> None:
     if actor not in ACTOR_NAMES:
         raise Refused("User not recognised")
-    if state["approvedAt"]:
+    if state["approvedAt"] and kind not in AFTER_APPROVAL:
         raise Refused("This case is approved and can no longer be changed")
     if kind in PREPARER_EVENTS and actor != ANALYST:
         raise Refused("The second analyst cannot change a case under review")
@@ -279,6 +329,10 @@ def _check(state: dict[str, Any], events: list[CaseEvent], workbench: dict[str, 
         state["ruleEdit"] and state["ruleEdit"]["status"] == "pending"
     ):
         raise Refused("No rule change is pending")
+    if kind in AFTER_APPROVAL:
+        from app.casework.view import check_event
+
+        check_event(state, kind, payload)
     if kind == "approve-load":
         unmet = [READINESS_TEXT[name] for name, done in readiness(state, workbench).items()
                  if not done]

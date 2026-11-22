@@ -1,5 +1,6 @@
 """The borrower's certificate and the lender requirements sheet, as Excel workbooks."""
 
+import io
 import re
 import zipfile
 from pathlib import Path
@@ -18,7 +19,9 @@ FIXED_TIME = (2026, 5, 20, 9, 0, 0)
 def _save_stable(workbook: Workbook, path: Path) -> None:
     """openpyxl stamps the save time into the file, so fix it to keep builds identical."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(".tmp")
+    # Saved in memory, not to a temporary file: on a Windows bind mount a temporary file that
+    # was just deleted can briefly refuse to be created again, which made rebuilds flaky.
+    temporary = io.BytesIO()
     workbook.save(temporary)
     with zipfile.ZipFile(temporary) as source, zipfile.ZipFile(
         path, "w", compression=zipfile.ZIP_DEFLATED
@@ -31,7 +34,6 @@ def _save_stable(workbook: Workbook, path: Path) -> None:
             info = zipfile.ZipInfo(name, date_time=FIXED_TIME)
             info.compress_type = zipfile.ZIP_DEFLATED
             target.writestr(info, data)
-    temporary.unlink()
 
 
 def _header(sheet: Any, row: int, values: list[str]) -> None:

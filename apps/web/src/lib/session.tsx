@@ -19,6 +19,10 @@ export interface AuditEntry {
   action: string;
   reason?: string | null;
   earlier?: boolean;
+  seq?: number;
+  type?: string;
+  refs?: string[];
+  hash?: string;
 }
 
 export interface RuleEdit {
@@ -64,6 +68,11 @@ export interface SessionState {
   openItems: string[];
   chainIntact: boolean;
   chainHead: string;
+  queries: Record<string, { sent: string; answered: string | null }>;
+  variances: Record<string, { resolution: string; reason: string; at: string; by: string }>;
+  reportReleasedAt: string | null;
+  reportReleasedBy: string | null;
+  backbookAccepted: string[];
 }
 
 export const ANALYST = "Onboarding analyst";
@@ -97,6 +106,11 @@ const initial: SessionState = {
   openItems: [],
   chainIntact: true,
   chainHead: "",
+  queries: {},
+  variances: {},
+  reportReleasedAt: null,
+  reportReleasedBy: null,
+  backbookAccepted: [],
 };
 
 type Action =
@@ -114,6 +128,11 @@ type Action =
   | { type: "approve-rule"; reason: string }
   | { type: "set-actor"; actor: Actor }
   | { type: "approve-load" }
+  | { type: "send-query"; ids: string[] }
+  | { type: "record-answer"; ids: string[] }
+  | { type: "resolve-variance"; line: string; resolution: string; reason: string }
+  | { type: "release-report" }
+  | { type: "accept-backbook"; deal: string }
   | { type: "reset" };
 
 function payloadOf(action: Action): Record<string, unknown> {

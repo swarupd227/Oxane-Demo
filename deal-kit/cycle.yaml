@@ -121,3 +121,79 @@ kestrel:
     nav_report: 2026-05-27
     valuation_report: 2026-05-27
     compliance_certificate: 2026-05-28
+
+# Thornbury Bank's CLO warehouse, a second client of the desk. Thornbury does not permit AI on its
+# data, so this facility runs on code checks only. Files arrive as structured data: the
+# collateral administrator's positions workbook by SFTP and the pricing service's file by API.
+larkspur:
+  name: Larkspur CLO 2026-1 Warehouse
+  borrower: Larkspur CLO 2026-1 Warehouse Ltd
+  manager: Larkspur Credit Management LLC
+  administrator: Halden Trust Company N.A.
+  pricing_service: Meridian Loan Pricing
+  lender: Thornbury Bank N.A.
+  type: CLO warehouse facility
+  signed: 2026-02-10
+  commitment_usd: 400000000
+  drawn_usd: 290000000
+  advance_rate_pct: 70
+  ccc_limit_pct: 7.5
+  price_move_alert_pts: 10
+  positions: 60
+  april_date: 2026-04-30
+  may_date: 2026-05-29
+  # Positions with set ratings and prices. Every other position is generated from the seed.
+  # [issuer, Moody's, S&P, par, April bid, May bid]
+  ccc_in_april:
+    - [Muker Telecom, Caa1, CCC+, 8000000, 84.00, 83.75]
+    - [Embsay Fitness, Caa2, CCC, 7000000, 72.50, 71.25]
+    - [Stainforth Specialty Retail, Caa1, B-, 9000000, 86.25, 86.00]
+    # CCC under the lower-of rule only: S&P rates it CCC+.
+    - [Gunnerside Media, B3, CCC+, 7000000, 87.75, 88.00]
+  planted:
+    # M11: downgraded in May; the CCC bucket goes over its limit and the excess is haircut.
+    downgrade: {issuer: Kettlewell Auto Parts, par: 7500000, april: [B3, B-], may: [Caa2, CCC], bid: [88.00, 79.50]}
+    # M12: the price falls more than 10 points in the month with no rating change.
+    price_drop: {issuer: Denholme Chemicals, par: 8500000, rating: [B2, B], bid: [96.25, 81.50]}
+    # N5: the agent consolidated an incremental term loan into this tranche, so it has new
+    # identifiers. Issuer, facility, maturity and spread are unchanged.
+    identifier_change: {issuer: Langdale Education, par: 9500000, old: [LX301245, 51475HAB3], new: [LX318806, 51475HAD9]}
+    # No S&P rating: a reference-data warning, not an error.
+    not_rated: Wensley Security Services
+    sold: Hawes Hotels
+    bought: [[Oxenhope Pet Care, 7000000, 99.25], [Reeth Payments, 7000000, 99.50]]
+  received:
+    positions_april: 2026-05-12
+    prices_april: 2026-04-30
+    positions_may: 2026-06-12
+    prices_may: 2026-05-29
+
+# The rest of the desk's book: facilities with nothing planted, so the four above sit among
+# ordinary ones. Each reports summary figures only. Their numbers come from the seed; the
+# workbench works out every ratio, test and status from them. Nothing here is in the answer key.
+book:
+  seed: 20260601
+  analysts: [Priya Raman, Daniel Okafor, Hannah Lowe, Sam Adeyemi, Wei Chen, Marta Kowalski]
+  reviewers: [Marcus Hale, Elena Varga]
+  # [id, name, client, kind, commitment US$m, role]
+  facilities:
+    - [ashcombe, Ashcombe Auto Funding II, calderwood, auto, 220, Verification agent]
+    - [harrowgate, Harrowgate Consumer Receivables, calderwood, consumer, 150, Verification agent]
+    - [penwick, Penwick Equipment Finance Trust, calderwood, equipment, 275, Verification agent]
+    - [corbel, Corbel Trade Receivables, calderwood, trade, 120, Calculation agent]
+    - [saltmarsh, Saltmarsh Point-of-Sale Funding, calderwood, consumer, 90, Verification agent]
+    - [wyvern, Wyvern Auto Lease Trust, calderwood, auto, 310, Verification agent]
+    - [halcyon, Halcyon Card Receivables, calderwood, consumer, 200, Calculation agent]
+    - [ravensworth, Ravensworth Fleet Receivables, calderwood, equipment, 140, Verification agent]
+    - [fenwick, Fenwick Student Loan Warehouse, calderwood, consumer, 160, Verification agent]
+    - [ormsby, Ormsby Capital Partners IV, calderwood, subscription, 350, Reporting agent]
+    - [lindqvist, Lindqvist Secondaries Fund II, calderwood, nav, 180, Reporting agent]
+    - [morland, Morland Infrastructure Fund, calderwood, nav, 240, Reporting agent]
+    - [tilbury, Tilbury SME Lending Warehouse, calderwood, trade, 130, Verification agent]
+    - [kingfold, Kingfold Solar Receivables, calderwood, equipment, 170, Verification agent]
+    - [ambleside, Ambleside CLO 2025-2 Warehouse, thornbury, clo, 350, Collateral monitoring agent]
+    - [grasmere, Grasmere CLO 2026-2 Warehouse, thornbury, clo, 300, Collateral monitoring agent]
+    - [buttermere, Buttermere CLO 2025-1 Warehouse, thornbury, clo, 325, Collateral monitoring agent]
+    - [coniston, Coniston Loan Funding, thornbury, clo, 250, Collateral monitoring agent]
+    - [ullswater, Ullswater Auto Receivables III, thornbury, auto, 200, Verification agent]
+    - [derwent, Derwent Equipment Funding, thornbury, equipment, 180, Verification agent]

@@ -1,10 +1,46 @@
-# The platform's facility record for Calderwood Bank's warehouse and fund finance desk: what was
-# set up when each facility was onboarded, and the inbox log of what arrived this cycle.
+# The platform's facility record for the monitoring desk: its clients, what was set up when each
+# facility was onboarded, and the inbox log of what arrived this cycle.
 # Bramble's terms, rules and tape mapping come from its onboarding run, so they are not repeated.
 # The monitoring pipeline reads this file. It never reads the cycle answer key.
 
 lender: Calderwood Bank plc
-desk: Warehouse and fund finance desk
+desk: Monitoring desk
+# Each client's own policy. Data, mapping memory and model use never cross from one client to
+# another. A client that does not permit AI stays on the existing process: code checks only.
+clients:
+  - id: calderwood
+    name: Calderwood Bank plc
+    ai_permitted: true
+    contact: {name: Priya Raman, role: Named contact, Oxane monitoring}
+    client_contact: {name: James Whitcombe, role: Director, warehouse and fund finance}
+    status_call: Tuesdays 10:00, 20 minutes
+    approval_levels:
+      - {level: 1, actor: analyst, title: Preparer}
+      - {level: 2, actor: approver, title: Second analyst}
+    # Where Calderwood agreed, last period's data is reused if a routine file is not resent.
+    reuse_consent: "Calderwood Bank, email of 12 Feb 2026: reuse last month's dealer list if it is not resent"
+  - id: thornbury
+    name: Thornbury Bank N.A.
+    ai_permitted: false
+    ai_note: Thornbury's data agreement does not permit AI processing, so its facility stays on the existing process.
+    contact: {name: Daniel Okafor, role: Named contact, Oxane monitoring}
+    client_contact: {name: Laura Haskett, role: Head of leveraged finance portfolio}
+    status_call: Thursdays 15:00, 15 minutes
+    approval_levels:
+      - {level: 1, actor: analyst, title: Preparer}
+      - {level: 2, actor: approver, title: Second analyst}
+      - {level: 3, actor: senior, title: Head of monitoring}
+    # Thornbury's master field for ratings: the lower of Moody's and S&P. The platform default
+    # is Moody's alone.
+    master_field_overrides:
+      - {field: rating_for_tests, default: moodys, override: lower_of,
+         reason: "Thornbury reads ratings as the lower of Moody's and S&P, as its agreements do"}
+# The desk's people, by the role each acts as. The workbench shows the acting user.
+team:
+  analyst: {name: Priya Raman, title: Monitoring analyst}
+  approver: {name: Marcus Hale, title: Second analyst}
+  senior: {name: Elena Varga, title: Head of monitoring}
+  client: {name: James Whitcombe, title: "Director, Calderwood Bank"}
 cycle:
   id: "M-2026-05"
   label: May 2026
@@ -19,6 +55,7 @@ tolerances:
 
 facilities:
   - id: bramble
+    client: calderwood
     name: Bramble Auto Receivables I
     borrower: Bramble Auto Receivables I LLC
     type: Auto loan warehouse
@@ -37,6 +74,7 @@ facilities:
     outstanding_advances_usd: 50500000
     dealer_aliases: {Sunrise Motors: Sunrise Motors LLC}
   - id: northmoor
+    client: calderwood
     name: Northmoor Motor Credit Trust
     borrower: Northmoor Motor Credit Trust
     type: Auto loan warehouse
@@ -67,6 +105,7 @@ facilities:
       excess_spread_clause: Section 7.1(b)
       excess_spread_quote: "is less than 3.0%"
   - id: kestrel
+    client: calderwood
     name: Kestrel Credit Fund III
     borrower: Kestrel Credit Fund III LP
     type: NAV facility
@@ -89,21 +128,149 @@ facilities:
       max_top_five_pct: 55
       concentration_clause: Section 6.3
       nav_clause: Section 1.1
+  - id: larkspur
+    client: thornbury
+    name: Larkspur CLO 2026-1 Warehouse
+    borrower: Larkspur CLO 2026-1 Warehouse Ltd
+    type: CLO warehouse
+    asset_class: CLO / BSL
+    role: Collateral monitoring agent
+    size: US$400m
+    reporting: Monthly collateral report by SFTP; bid prices by API
+    folder: larkspur
+    agreement: Larkspur_Warehouse_Credit_Agreement.pdf
+    positions: {April: Larkspur_Collateral_Report_2026-04-30.xlsx, May: Larkspur_Collateral_Report_2026-05-29.xlsx}
+    prices: {April: Meridian_Prices_2026-04-30.csv, May: Meridian_Prices_2026-05-29.csv}
+    determination_date: 2026-05-29
+    # Set when Larkspur was onboarded: the collateral administrator's columns.
+    mapping: {"LoanX ID": loanx, CUSIP: cusip, Issuer: issuer, Facility: facility,
+              "Par Amount": par, "Spread (bps)": spread_bps, "Floor (%)": floor_pct,
+              "Maturity Date": maturity, "Moody's Rating": moodys, "S&P Rating": sp,
+              Industry: industry}
+    price_mapping: {LoanX_ID: loanx, Bid: bid, Ask: ask, Quotes: quotes, Price_Date: price_date}
+    terms:
+      commitment_usd: 400000000
+      drawn_usd: 290000000
+      advance_rate_pct: 70
+      ccc_limit_pct: 7.5
+      price_move_alert_pts: 10
+      ccc_clause: Section 1.1
+      ccc_quote: '"CCC Excess" means'
+      adjustment_quote: '"CCC Excess Adjustment" means'
+      base_quote: '"Borrowing Base" means'
+      warning_clause: Section 6.5
+      warning_quote: Early warning
 
 # Due dates follow each agreement's reporting clause. Received dates are the inbox log.
 submissions:
-  - {facility: bramble, label: "Loan tape, May", file: BAF_Loan_Tape_2026-05.csv, due: 2026-06-22, received: 2026-06-19}
-  - {facility: bramble, label: "Servicer report, May", file: BAF_Servicer_Report_May_2026.pdf, due: 2026-06-22, received: 2026-06-19}
-  - {facility: bramble, label: "Borrowing base certificate, May", file: Bramble_BBC_May_2026.xlsx, due: 2026-06-22, received: 2026-06-19}
-  - {facility: bramble, label: Q1 financial statements, file: BAF_Financial_Statements_Q1_2026.pdf, due: 2026-05-15, received: 2026-05-14}
-  - {facility: bramble, label: Q1 compliance certificate, file: BAF_Compliance_Certificate_Q1_2026.pdf, due: 2026-05-15, received: 2026-05-14}
-  - {facility: bramble, label: Amendment No. 2, file: Bramble_Amendment_No_2.pdf, due: 2026-05-25, received: 2026-05-25}
-  - {facility: northmoor, label: "Loan tape, May", file: NMC_Tape_2026-05.csv, due: 2026-06-22, received: 2026-06-18}
-  - {facility: northmoor, label: "Borrowing base certificate, May", file: NMC_BBC_May_2026.xlsx, due: 2026-06-22, received: 2026-06-18}
-  - {facility: northmoor, label: "Servicer report, May", file: null, due: 2026-06-22, received: null,
+  - {facility: bramble, label: "Loan tape, May", file: BAF_Loan_Tape_2026-05.csv, due: 2026-06-22, received: 2026-06-19, channel: SFTP}
+  - {facility: bramble, label: "Servicer report, May", file: BAF_Servicer_Report_May_2026.pdf, due: 2026-06-22, received: 2026-06-19, channel: Email}
+  - {facility: bramble, label: "Borrowing base certificate, May", file: Bramble_BBC_May_2026.xlsx, due: 2026-06-22, received: 2026-06-19, channel: Upload}
+  - {facility: bramble, label: "Dealer list, May", file: null, due: 2026-06-22, received: null, channel: Upload,
+     reused: {from: "Dealer list, April 2026", note: "Not resent. April's list reused: no dealer was added or closed in May"}}
+  - {facility: bramble, label: Q1 financial statements, file: BAF_Financial_Statements_Q1_2026.pdf, due: 2026-05-15, received: 2026-05-14, channel: Data room}
+  - {facility: bramble, label: Q1 compliance certificate, file: BAF_Compliance_Certificate_Q1_2026.pdf, due: 2026-05-15, received: 2026-05-14, channel: Email}
+  - {facility: bramble, label: Amendment No. 2, file: Bramble_Amendment_No_2.pdf, due: 2026-05-25, received: 2026-05-25, channel: Email}
+  - {facility: northmoor, label: "Loan tape, May", file: NMC_Tape_2026-05.csv, due: 2026-06-22, received: 2026-06-18, channel: SFTP}
+  - {facility: northmoor, label: "Borrowing base certificate, May", file: NMC_BBC_May_2026.xlsx, due: 2026-06-22, received: 2026-06-18, channel: Upload}
+  - {facility: northmoor, label: "Servicer report, May", file: null, due: 2026-06-22, received: null, channel: Email,
      sender: Northmoor Auto Finance Inc., contact: Servicer reporting team}
-  - {facility: kestrel, label: Q1 NAV report, file: Kestrel_Q1_2026_NAV_Report.pdf, due: 2026-05-30, received: 2026-05-27}
-  - {facility: kestrel, label: Q1 valuation report, file: Kestrel_Q1_2026_Valuation_Report.pdf, due: 2026-05-30, received: 2026-05-27}
-  - {facility: kestrel, label: Q1 compliance certificate, file: Kestrel_Q1_2026_Compliance_Certificate.pdf, due: 2026-05-30, received: 2026-05-28}
+  - {facility: kestrel, label: Q1 NAV report, file: Kestrel_Q1_2026_NAV_Report.pdf, due: 2026-05-30, received: 2026-05-27, channel: Data room}
+  - {facility: kestrel, label: Q1 valuation report, file: Kestrel_Q1_2026_Valuation_Report.pdf, due: 2026-05-30, received: 2026-05-27, channel: Data room}
+  - {facility: kestrel, label: Q1 compliance certificate, file: Kestrel_Q1_2026_Compliance_Certificate.pdf, due: 2026-05-30, received: 2026-05-28, channel: Email}
+  - {facility: larkspur, label: "Collateral report, May", file: Larkspur_Collateral_Report_2026-05-29.xlsx, due: 2026-06-12, received: 2026-06-12, channel: SFTP}
+  - {facility: larkspur, label: "Bid prices, 29 May", file: Meridian_Prices_2026-05-29.csv, due: 2026-05-29, received: 2026-05-29, channel: API}
+# Oxane's own deadline to have each file loaded and checked, in business days after it is due.
+internal_deadline_days: 2
 # Chasing runs itself: a reminder the morning after a due date, escalation a business day later.
 chase_policy: {first: 1, escalate: 2}
+
+# Validation sets, configured per client when each facility was onboarded. Blocking holds the
+# facility's load until an analyst resolves it; a warning is logged with the row.
+US_STATES: &states [AL, AK, AZ, AR, CA, CO, CT, DE, DC, FL, GA, HI, ID, IL, IN, IA, KS, KY, LA, ME,
+  MD, MA, MI, MN, MS, MO, MT, NE, NV, NH, NJ, NM, NY, NC, ND, OH, OK, OR, PA, RI, SC, SD, TN, TX,
+  UT, VT, VA, WA, WV, WI, WY, PR]
+validation:
+  auto_tape:
+    key: loan_id
+    rules:
+      - {id: V01, family: missing_data, severity: blocking, field: loan_id, text: Every row has a loan number}
+      - {id: V02, family: missing_data, severity: blocking, field: current_balance, text: Every row has a current balance}
+      - {id: V03, family: missing_data, severity: warning, field: employment_type, text: Employment type is filled in}
+      - {id: V04, family: duplicates, severity: blocking, field: loan_id, text: Each loan number appears once}
+      - {id: V05, family: duplicates, severity: warning, field: vin, kind: live, text: Each VIN appears once among loans in the pool}
+      - {id: V06, family: reference_data, severity: blocking, field: status, text: Status is a known code,
+         allowed: [ACTIVE, DELINQUENT, CHARGED_OFF, PAID_OFF, REPO, REPURCHASED]}
+      - {id: V07, family: reference_data, severity: warning, field: obligor_state, text: Obligor state is a US state code, allowed: *states}
+      - {id: V08, family: data_types, severity: blocking, field: current_balance, kind: number, text: Current balance is a number}
+      - {id: V09, family: data_types, severity: warning, field: stated_monthly_income, kind: number, text: Stated income is a number}
+      - {id: V10, family: data_types, severity: blocking, field: origination_date, kind: date, text: Origination date is a date}
+      - {id: V11, family: logical, severity: warning, kind: balance_not_above_original, text: Current balance is not above the original balance}
+      - {id: V12, family: logical, severity: warning, kind: matures_after_origination, text: Maturity is after origination}
+      - {id: V13, family: logical, severity: blocking, kind: charge_off_has_amount, text: A charged-off loan has a charge-off amount}
+    # Change against the prior period: per cent for amounts and counts, points or units otherwise.
+    prior_period:
+      - {id: V14, metric: pool_balance, basis: pct, limit: 5, text: Pool balance moves 5% or less on the prior month}
+      - {id: V15, metric: live_loans, basis: pct, limit: 5, text: Loan count moves 5% or less}
+      - {id: V16, metric: weighted_apr, basis: abs, limit: 0.5, text: Weighted APR moves 0.5 points or less}
+      - {id: V17, metric: weighted_fico, basis: abs, limit: 10, text: Weighted FICO moves 10 points or less}
+      - {id: V18, metric: weighted_remaining_term, basis: abs, limit: 3, text: Weighted remaining term moves 3 months or less}
+  clo_positions:
+    key: loanx
+    rules:
+      - {id: C01, family: missing_data, severity: blocking, field: loanx, text: Every position has a LoanX ID}
+      - {id: C02, family: missing_data, severity: blocking, field: bid, text: Every position has a bid price}
+      - {id: C03, family: duplicates, severity: blocking, field: loanx, text: Each LoanX ID appears once}
+      - {id: C04, family: reference_data, severity: warning, field: moodys, text: "Moody's rating is on Moody's scale",
+         allowed: [Ba1, Ba2, Ba3, B1, B2, B3, Caa1, Caa2, Caa3, Ca, C]}
+      - {id: C05, family: reference_data, severity: warning, field: sp, text: "S&P rating is on S&P's scale",
+         allowed: [BB+, BB, BB-, B+, B, B-, CCC+, CCC, CCC-, CC, C]}
+      - {id: C06, family: data_types, severity: blocking, field: par, kind: number, text: Par amount is a number}
+      - {id: C07, family: data_types, severity: blocking, field: maturity, kind: date, text: Maturity is a date}
+      - {id: C08, family: logical, severity: warning, kind: price_in_range, text: Bid is above 0 and at most 110}
+    prior_period: []
+
+# The platform's standard data model. Each master field feeds one entity; the fields that
+# stratify a pool are listed apart.
+standard_model:
+  entities:
+    loan: Loan-level record, one row per receivable or position
+    facility: Facility record and its terms
+    portfolio: Pool and portfolio totals
+    test: Test inputs and results
+    stratification: Buckets that split the pool
+  stratification: [obligor_state, dealer_name, dealer_state, vehicle_make, vehicle_condition, days_past_due,
+                   industry, moodys, sp, employment_type]
+  portfolio: [cutoff_date, servicer_code]
+  test: [current_balance, charge_off_amount, status, par, bid]
+
+# Results from earlier cycles on the platform, for alert back-tests and headroom trends.
+history:
+  bramble.availability_usd: [[Feb 2026, 6910000], [Mar 2026, 6240000], [Apr 2026, 5380000]]
+  bramble.leverage_ratio: [[Q3 2025, 5.06], [Q4 2025, 5.19]]
+  kestrel.loan_to_value: [[Q3 2025, 27.9], [Q4 2025, 29.1]]
+  larkspur.ccc_share: [[Feb 2026, 6.1], [Mar 2026, 6.6]]
+
+# What a client may ask to be alerted on, by facility. Thornbury's facility is not here: its
+# data never goes to a model.
+alert_metrics:
+  bramble.delinquency_60_plus: {label: "Bramble 60+ day delinquency", unit: "%", range: [0, 100], concept: delinquency_trigger}
+  bramble.availability_usd: {label: Bramble availability, unit: US$, range: [-1000000000, 1000000000], concept: availability}
+  bramble.leverage_ratio: {label: Bramble leverage ratio, unit: x, range: [0, 50], concept: leverage_ratio}
+  northmoor.delinquency_60_plus: {label: "Northmoor 60+ day delinquency", unit: "%", range: [0, 100], concept: delinquency_trigger}
+  northmoor.excess_spread: {label: Northmoor excess spread, unit: "%", range: [-50, 50], concept: trigger}
+  kestrel.loan_to_value: {label: Kestrel loan-to-value, unit: "%", range: [0, 100], concept: loan_to_value}
+  kestrel.ltv_headroom_pts: {label: Kestrel loan-to-value headroom, unit: points, range: [-100, 100], concept: loan_to_value}
+alert_presets:
+  - "Tell me if Northmoor's 60+ day delinquency goes above 5.5%."
+  - "Warn me when Kestrel's loan-to-value comes within 5 points of its limit."
+  - "Alert me if Bramble's availability drops below US$5 million."
+
+# Stated assumptions for the scorecard, to be replaced by measured baselines in discovery.
+assumptions:
+  baseline_hours_per_cycle: {bramble: 7.5, northmoor: 6.0, kestrel: 4.0, larkspur: 5.0}
+  baseline_turnaround_business_days: 3
+  analyst_hours_per_month: 140
+  review_hours_per_finding: 0.5
+  review_hours_per_facility: 2.0
+  source: "Assumed for illustration. Oxane has not shared a baseline; discovery measures it per mandate."

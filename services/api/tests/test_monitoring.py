@@ -64,15 +64,17 @@ def test_every_number_in_the_lender_packs_comes_from_code():
 
 def test_scorecard_finds_every_planted_issue_and_raises_no_noise():
     measures = {m["name"]: m for m in client.get("/api/monitoring/scorecard").json()["measures"]}
-    accuracy = measures["Accuracy and completeness"]["value"].split(" of ")
-    assert accuracy[0] == accuracy[1]
-    assert measures["Material issues missed"]["value"] == "0"
-    assert measures["False alerts"]["value"] == "0"
+    accuracy = measures["Accuracy and completeness of loaded updates and reconciliations"]
+    found, _, total = accuracy["measured"]["value"].split()[:3]
+    assert found == total
+    assert measures["Material issues missed"]["measured"]["value"] == "0"
+    assert measures["False alerts per cycle"]["measured"]["value"] == "0"
 
 
 def test_noise_is_logged_by_rule_with_a_reason():
     logged = [i for i in cycle()["findings"] if i["rule_outcome"] == "logged"]
-    assert {i["id"].split("-")[1] for i in logged} >= {"layout", "northmoor", "certificate"}
+    assert {i["id"].split("-")[1] for i in logged} >= {
+        "layout", "northmoor", "certificate", "larkspur", "warnings"}
     assert all(i["suggested"]["by"] == "Rule" and i["suggested"]["reason"] for i in logged)
 
 

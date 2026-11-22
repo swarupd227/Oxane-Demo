@@ -1,0 +1,14 @@
+{
+ "task": "suggest_backbook",
+ "model": "claude-opus-5-5",
+ "text": "{\"suggestions\":[{\"deal\":\"kingsbury\",\"column\":\"FICO\",\"kind\":\"renamed_column\",\"field\":\"fico\",\"treat_blank_as\":null,\"code_map\":[],\"reason\":\"This column replaces the absent CreditScore column, and its samples are credit scores.\"},{\"deal\":\"redfern\",\"column\":\"ExtCount\",\"kind\":\"new_column\",\"field\":null,\"treat_blank_as\":null,\"code_map\":[],\"reason\":\"This looks like a count of extensions, which no platform field holds exactly, so it should be kept as raw data.\"},{\"deal\":\"redfern\",\"column\":\"DPD\",\"kind\":\"blank_values\",\"field\":\"days_past_due\",\"treat_blank_as\":\"0\",\"code_map\":[],\"reason\":\"All 75 blank rows are ACTIVE, which the mapping keeps apart from DELINQUENT, so a blank most likely means no days past due; please confirm this with the servicer.\"},{\"deal\":\"whitcombe\",\"column\":\"LoanStatus\",\"kind\":\"code_values\",\"field\":\"status\",\"treat_blank_as\":null,\"code_map\":[[\"CO\",\"CHARGED_OFF\"],[\"CUR\",\"ACTIVE\"],[\"DQ\",\"DELINQUENT\"],[\"RP\",\"REPO\"]],\"reason\":\"Each short code lines up clearly with one of the stored status values.\"}]}",
+ "usage": {
+  "task": "suggest_backbook",
+  "input_tokens": 1856,
+  "output_tokens": 769,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 703,
+  "from_replay": false,
+  "seconds": 8.4
+ }
+}

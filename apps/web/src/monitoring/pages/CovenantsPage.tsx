@@ -1,13 +1,12 @@
 import clsx from "clsx";
-import { ArrowRight, CheckCircle2, CircleAlert, FileText, FlaskConical, Scale, TriangleAlert } from "lucide-react";
+import { CheckCircle2, CircleAlert, FileText, FlaskConical, Scale, TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../ui";
 import { formatDate } from "../../lib/format";
 import { useCycle, useWhatIf, type Cycle, type FacilityId, type Source } from "../cycle";
-import { FacilityTag, SourcePanel, Stat, TrendBars, usd2 } from "../parts";
+import { FacilityTag, NoAiBadge, SourcePanel, Stat, TrendBars, usd2 } from "../parts";
 
 type Status = "pass" | "warning" | "stale" | "expert" | "fail" | "pending";
 
@@ -15,8 +14,8 @@ const statuses: Record<Status, { label: string; className: string; icon: typeof 
   pass: { label: "Pass", className: "bg-ok-tint text-ok", icon: CheckCircle2 },
   stale: { label: "Out of date", className: "bg-warn-tint text-warn", icon: TriangleAlert },
   warning: { label: "Early warning", className: "bg-warn-tint text-warn", icon: TriangleAlert },
-  expert: { label: "Needs an expert view", className: "bg-warn-tint text-warn", icon: Scale },
-  fail: { label: "Fails", className: "bg-danger-tint text-danger", icon: CircleAlert },
+  expert: { label: "Expert review", className: "bg-warn-tint text-warn", icon: Scale },
+  fail: { label: "Over limit", className: "bg-danger-tint text-danger", icon: CircleAlert },
   pending: { label: "Pending", className: "bg-sand text-muted", icon: FlaskConical },
 };
 
@@ -24,10 +23,10 @@ function Test({ title, clause, status, children, onSource, source }: { title: st
   const view = statuses[status];
   const Icon = view.icon;
   return (
-    <Card className="p-5">
+    <Card className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold">{title}</p>
+          <p className="text-[0.8125rem] font-semibold">{title}</p>
           <p className="text-xs text-muted">
             {source ? (
               <button type="button" onClick={() => onSource(source)} className="cursor-pointer text-left font-medium text-info hover:underline">
@@ -44,7 +43,7 @@ function Test({ title, clause, status, children, onSource, source }: { title: st
           {view.label}
         </span>
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-3">{children}</div>
     </Card>
   );
 }
@@ -57,17 +56,17 @@ function Northmoor({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | n
   const whatIf = useWhatIf();
   const result = whatIf.data;
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <Test title="60+ day delinquency trigger" clause={`${d.clause}: three-month average above ${d.limit}% is an amortisation event`} status={d.breached ? "fail" : d.early_warning ? "warning" : "pass"} source={d.source} onSource={onSource}>
         <div className="grid grid-cols-[minmax(0,1fr)_14rem] gap-6">
           <TrendBars values={d.monthly} limit={d.limit} extra={result ? { month: "June 2026", value: result.value, breached: result.breached } : null} />
           <div className="space-y-3">
-            <Stat label="Three-month average" value={`${d.average.toFixed(2)}%`} note={`${d.headroom.toFixed(2)} points below the trigger`} tone="warn" />
-            <Stat label="June breaches above" value={`${d.next_month_breaches_beyond?.toFixed(2)}%`} note="Recomputed from the tapes" />
+            <Stat label="Three-month average" value={`${d.average.toFixed(2)}%`} note={`Headroom ${d.headroom.toFixed(2)} pts`} tone="warn" />
+            <Stat label="June breaches above" value={`${d.next_month_breaches_beyond?.toFixed(2)}%`} note="From tapes" />
           </div>
         </div>
-        <div className="mt-5 rounded-lg bg-canvas p-4">
-          <p className="text-sm font-semibold">What-if: June 60+ day delinquency</p>
+        <div className="mt-3 rounded-md bg-canvas p-3">
+          <p className="text-xs font-semibold">What-if: June 60+ day delinquency</p>
           <div className="mt-3 flex items-center gap-4">
             <input
               type="range"
@@ -81,18 +80,18 @@ function Northmoor({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | n
             />
             <span className="numeric w-14 text-right font-semibold">{june.toFixed(1)}%</span>
             <Button size="sm" onClick={() => whatIf.mutate(june)} disabled={whatIf.isPending}>
-              Run what-if for June
+              Run what-if
             </Button>
           </div>
           {result && (
             <p role="status" className={clsx("mt-3 text-sm font-medium", result.breached ? "text-danger" : "text-ok")}>
-              With June at {result.value.toFixed(1)}%, the average of {result.window.map((m) => m.split(" ")[0]).join(", ")} is {result.average.toFixed(2)}%:{" "}
-              {result.breached ? "the trigger is breached and new advances stop." : "the trigger holds."}
+              June {result.value.toFixed(1)}% · average {result.window.map((m) => m.split(" ")[0].slice(0, 3)).join("–")} {result.average.toFixed(2)}% ·{" "}
+              {result.breached ? "breach: amortisation event" : "within trigger"}
             </p>
           )}
         </div>
       </Test>
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-3">
         <Test title="Excess spread trigger" clause={`${n.excess_spread.clause}: three-month average below ${n.excess_spread.limit}%`} status="pending" source={n.excess_spread.source} onSource={onSource}>
           <div className="flex gap-6">
             {n.excess_spread_months.map((m) => (
@@ -101,12 +100,13 @@ function Northmoor({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | n
               </button>
             ))}
           </div>
-          <p className="mt-3 text-xs text-muted">Recomputed from its parts in each servicer report. May waits for the servicer report, so the three-month test cannot run yet.</p>
+          <p className="mt-2 text-xs text-muted">May pending servicer report · 2 of 3 months</p>
         </Test>
         <Test title="Borrowing base" clause="Section 2.3" status="pending" onSource={onSource}>
-          <p className="text-sm">{n.borrowing_base.reason}. The May tape and certificate are in, so the test runs as soon as the report arrives.</p>
-          <p className="mt-2 text-xs text-muted">
-            Collections from the tapes: May {n.collections.change < 0 ? "down" : "up"} {Math.abs(n.collections.change * 100).toFixed(1)}% on April, against {Math.abs(n.collections.last_year_change * 100).toFixed(1)}% last May.
+          <p className="text-[0.8125rem]">{n.borrowing_base.reason}</p>
+          <p className="numeric mt-2 text-xs text-muted">
+            Collections (tapes): May {n.collections.change < 0 ? "−" : "+"}
+            {Math.abs(n.collections.change * 100).toFixed(1)}% on Apr · last May −{Math.abs(n.collections.last_year_change * 100).toFixed(1)}%
           </p>
         </Test>
       </div>
@@ -119,23 +119,20 @@ function Bramble({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
   const lev = b.leverage;
   const bb = b.borrowing_base;
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <Test title="Financial covenant: maximum leverage" clause={`Section 6.12(b): ${lev.maximum.toFixed(2)} to 1.00`} status={lev.with_guarantees > lev.maximum ? "expert" : "pass"} source={lev.clauses[0]} onSource={onSource}>
         <div className="grid grid-cols-3 gap-4">
           <button type="button" onClick={() => onSource(lev.reported_source)} className="cursor-pointer rounded-lg border border-line p-3 text-left hover:border-stone">
             <Stat label="Borrower reports" value={`${lev.reported.toFixed(2)}x`} note="Compliance certificate, Q1" />
           </button>
           <div className="rounded-lg border border-line p-3">
-            <Stat label="Recomputed, balance sheet" value={`${lev.recomputed.toFixed(2)}x`} note="Spread from the Q1 statements" tone="ok" />
+            <Stat label="Recomputed, balance sheet" value={`${lev.recomputed.toFixed(2)}x`} note="Q1 statements" tone="ok" />
           </div>
           <button type="button" onClick={() => onSource(lev.guarantees[0]?.source ?? null)} className="cursor-pointer rounded-lg border-2 border-warn p-3 text-left">
-            <Stat label="If the guarantee counts" value={`${lev.with_guarantees.toFixed(2)}x`} note={`Adds US$${(lev.guarantees_k / 1000).toFixed(1)}m kept off the balance sheet`} tone="danger" />
+            <Stat label="If the guarantee counts" value={`${lev.with_guarantees.toFixed(2)}x`} note={`+US$${(lev.guarantees_k / 1000).toFixed(1)}m off-balance-sheet guarantee`} tone="danger" />
           </button>
         </div>
-        <p className="mt-4 text-sm">
-          The certificate discloses a guarantee of an affiliate's floor plan facility and leaves it out of Total Liabilities, which the agreement defines as liabilities that would appear on a GAAP balance sheet.
-          Whether a guarantee counts is a reading of that clause, so it goes to an expert, not to the system.
-        </p>
+        <p className="mt-3 text-xs text-muted">Affiliate floor plan guarantee excluded from Total Liabilities by borrower. Definition: GAAP balance-sheet liabilities. Interpretation with credit expert.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {lev.clauses.map((clause) => (
             <Button key={clause.label} size="sm" variant="secondary" onClick={() => onSource(clause)}>
@@ -145,7 +142,7 @@ function Bramble({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
           ))}
         </div>
       </Test>
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-3">
         <Test title="Borrowing base against the certificate" clause={`Tolerance US$${bb.tolerance}`} status={bb.within_tolerance ? "pass" : "fail"} onSource={onSource}>
           <table className="w-full text-sm">
             <thead>
@@ -165,7 +162,7 @@ function Bramble({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
               ))}
             </tbody>
           </table>
-          <p className="mt-2 text-xs text-muted">Recomputed by the rules engine at the {bb.system.advance_rate_pct}% advance rate in force for May. Certificate differences are within tolerance and logged.</p>
+          <p className="mt-2 text-xs text-muted">Advance rate {bb.system.advance_rate_pct}% (May terms) · differences within tolerance, logged</p>
         </Test>
         <Test title="60+ day delinquency trigger" clause={`${b.delinquency.clause}: three-month average above ${b.delinquency.limit}%`} status="pass" onSource={onSource}>
           <Stat label="Three-month average" value={`${b.delinquency.average.toFixed(2)}%`} note={b.delinquency.monthly.map((m) => `${m.month.split(" ")[0]} ${m.value.toFixed(2)}%`).join(", ")} tone="ok" />
@@ -180,7 +177,7 @@ function Kestrel({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
   const event = k.ltv.events[0];
   const bar = (value: number) => `${(value / 40) * 100}%`;
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <Test title="Loan-to-value" clause={`${k.ltv.clause}: no more than ${k.ltv.limit}%`} status="expert" source={k.ltv.clauses[0]} onSource={onSource}>
         <div className="space-y-3">
           {[
@@ -200,10 +197,7 @@ function Kestrel({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
             </button>
           ))}
         </div>
-        <p className="mt-4 text-sm">
-          Both pass the {k.ltv.limit}% limit. The question is which NAV the test uses: the agreement adjusts NAV only for a Valuation Event the Manager has declared, and none was. That is a reading of the
-          definition, so it goes to an expert.
-        </p>
+        <p className="mt-3 text-xs text-muted">Both within {k.ltv.limit}%. No Valuation Event declared by the Manager. NAV basis with credit expert.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {k.ltv.clauses.map((clause) => (
             <Button key={clause.label} size="sm" variant="secondary" onClick={() => onSource(clause)}>
@@ -213,18 +207,18 @@ function Kestrel({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
           ))}
         </div>
       </Test>
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-3">
         <Test title="Valuation freshness" clause={`${k.valuations.clause}: valued within ${k.valuations.max_age_days} days`} status={k.valuations.stale.length ? "stale" : "pass"} onSource={onSource}>
           {k.valuations.stale.map((s) => (
             <button key={s.name} type="button" onClick={() => onSource(s.source)} className="block w-full cursor-pointer rounded-lg border border-line p-3 text-left hover:border-stone">
               <p className="text-sm font-semibold">{s.name}</p>
               <p className="numeric text-sm">
-                Valued {formatDate(s.valued)}: <strong className="text-warn">{s.age_days} days</strong> before the calculation date
+                Valued {formatDate(s.valued)} · <strong className="text-warn">{s.age_days} days</strong> at calculation date
               </p>
             </button>
           ))}
           <p className="mt-2 text-xs text-muted">
-            {k.valuations.positions - k.valuations.stale.length} of {k.valuations.positions} positions valued within the limit.
+            {k.valuations.positions - k.valuations.stale.length}/{k.valuations.positions} positions within limit
           </p>
         </Test>
         <Test title="Concentration" clause={k.concentration.clause} status={k.concentration.passed ? "pass" : "fail"} onSource={onSource}>
@@ -238,9 +232,91 @@ function Kestrel({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
   );
 }
 
+function Larkspur({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | null) => void }) {
+  const l = cycle.tests.larkspur;
+  const bb = l.borrowing_base;
+  const ccc = l.positions.filter((p) => p.ccc).sort((a, b) => a.bid - b.bid);
+  const m = (v: number) => `US$${(v / 1e6).toFixed(2)}m`;
+  return (
+    <div className="space-y-3">
+      <Test title="CCC bucket and its excess" clause={`Section 1.1: CCC at most ${bb.ccc_limit_pct}% of par; any excess carried at market value`} status={bb.passed ? "pass" : "fail"} source={l.ccc_source} onSource={onSource}>
+        <div className="grid grid-cols-4 gap-4">
+          <Stat label="CCC share, May" value={`${bb.ccc_pct.toFixed(2)}%`} note={`April ${l.april.ccc_pct.toFixed(2)}%`} tone="danger" />
+          <Stat label="CCC excess" value={m(bb.ccc_excess)} note={`Allowed ${m(bb.ccc_limit)}`} />
+          <Stat label="Haircut" value={usd2(bb.haircut)} note="Excess carried at market value" tone="warn" />
+          <Stat label="Borrowing base" value={m(bb.borrowing_base)} note={`${bb.advance_rate_pct}% of ${m(bb.adjusted)}`} />
+        </div>
+        <table className="mt-4 w-full text-sm">
+          <thead>
+            <tr className="text-left text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+              <th className="pb-1">CCC loan, lowest bid first</th>
+              <th className="pb-1">Moody's / S&amp;P</th>
+              <th className="pb-1 text-right">Par</th>
+              <th className="pb-1 text-right">Bid</th>
+              <th className="pb-1 text-right">In excess</th>
+              <th className="pb-1 text-right">Haircut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ccc.map((p) => {
+              const part = bb.excess.find((e) => e.loanx === p.loanx);
+              const newly = l.downgrades.some((d) => d.loanx === p.loanx);
+              return (
+                <tr key={p.loanx} className={clsx("border-t border-sand", part && "bg-warn-tint/50")}>
+                  <td className="py-1.5">
+                    {p.issuer}
+                    {newly && <span className="ml-2 text-xs font-semibold text-danger">downgraded in May</span>}
+                  </td>
+                  <td className="py-1.5 font-mono text-xs">
+                    {p.moodys} / {p.sp}
+                  </td>
+                  <td className="numeric py-1.5 text-right">{m(p.par)}</td>
+                  <td className="numeric py-1.5 text-right">{p.bid.toFixed(2)}</td>
+                  <td className="numeric py-1.5 text-right">{part ? m(part.par_in_excess) : "–"}</td>
+                  <td className="numeric py-1.5 text-right">{part ? usd2(part.haircut) : "–"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p className="mt-2 text-xs text-muted">
+          Rating basis: lower of Moody's and S&amp;P (client override) · Moody's only: {l.moodys_only.ccc_pct.toFixed(2)}%{l.moodys_only.passed ? ", within limit" : ""}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {l.clauses.map((clause) => (
+            <Button key={clause.label} size="sm" variant="secondary" onClick={() => onSource(clause)}>
+              <FileText aria-hidden className="size-3.5" />
+              {clause.label?.split(", ")[1]}
+            </Button>
+          ))}
+        </div>
+      </Test>
+      <div className="grid grid-cols-2 gap-3">
+        <Test title="Early warning: ratings and prices" clause="Section 6.5: downgrades, and bid falls over 10 points in a month" status="warning" source={l.warning_source} onSource={onSource}>
+          <ul className="space-y-2 text-sm">
+            {l.downgrades.map((d) => (
+              <li key={d.loanx}>
+                <strong>{d.issuer}</strong> downgraded {d.before.join("/")} to {d.after.join("/")}
+                {d.into_ccc ? ", into the CCC bucket" : ""}.
+              </li>
+            ))}
+            {l.price_moves.map((p) => (
+              <li key={p.loanx}>
+                <strong>{p.issuer}</strong> bid {p.before.toFixed(2)} to {p.after.toFixed(2)} (−{Math.abs(p.change).toFixed(2)} pts), rating unchanged
+              </li>
+            ))}
+          </ul>
+        </Test>
+        <Test title="Availability" clause="Section 2.3: loans within the lesser of commitment and borrowing base" status={bb.availability >= 0 ? "pass" : "fail"} onSource={onSource}>
+          <Stat label="Availability" value={m(bb.availability)} note={`${m(bb.drawn)} drawn on ${m(bb.commitment)} committed; April ${m(l.april.availability)}`} tone="ok" />
+        </Test>
+      </div>
+    </div>
+  );
+}
+
 export function CovenantsPage() {
   const { data: cycle } = useCycle();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<FacilityId>("northmoor");
   const [source, setSource] = useState<Source | null | undefined>(undefined);
   if (!cycle) {
@@ -250,21 +326,19 @@ export function CovenantsPage() {
     setTab(id);
     setSource(undefined);
   };
-  const fallback = tab === "northmoor" ? cycle.tests.northmoor.delinquency.source : tab === "bramble" ? cycle.tests.bramble.leverage.guarantees[0]?.source : cycle.tests.kestrel.ltv.events[0]?.source;
+  const fallback =
+    tab === "northmoor"
+      ? cycle.tests.northmoor.delinquency.source
+      : tab === "bramble"
+        ? cycle.tests.bramble.leverage.guarantees[0]?.source
+        : tab === "kestrel"
+          ? cycle.tests.kestrel.ltv.events[0]?.source
+          : cycle.tests.larkspur.ccc_source;
   return (
     <>
-      <PageHeader
-        title="Covenants and triggers"
-        summary="Recomputed by code from the tapes and the statements, against the terms in force for the period. The system flags; experts and the lender decide."
-        actions={
-          <Button onClick={() => navigate("/monitoring/collateral")}>
-            Collateral
-            <ArrowRight aria-hidden className="size-4" />
-          </Button>
-        }
-      />
-      <div role="tablist" aria-label="Facility" className="mb-5 flex gap-1 border-b border-line">
-        {(["northmoor", "bramble", "kestrel"] as FacilityId[]).map((id) => {
+      <PageTitle title="Covenants" meta={`${cycle.cycle.label} · terms in force for the period`} />
+      <div role="tablist" aria-label="Facility" className="mb-3 flex gap-1 border-b border-line">
+        {(["northmoor", "bramble", "kestrel", "larkspur"] as FacilityId[]).map((id) => {
           const facility = cycle.facilities.find((f) => f.id === id)!;
           return (
             <button
@@ -273,19 +347,21 @@ export function CovenantsPage() {
               role="tab"
               aria-selected={tab === id}
               onClick={() => pick(id)}
-              className={clsx("-mb-px flex h-11 cursor-pointer items-center gap-2 border-b-2 px-3 text-sm font-medium", tab === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
+              className={clsx("-mb-px flex h-9 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium", tab === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
             >
               {facility.name}
               <FacilityTag id={id} name={facility.asset_class} />
+              {!facility.ai_permitted && <NoAiBadge compact />}
             </button>
           );
         })}
       </div>
-      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-5">
+      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-3">
         <div>
           {tab === "northmoor" && <Northmoor cycle={cycle} onSource={setSource} />}
           {tab === "bramble" && <Bramble cycle={cycle} onSource={setSource} />}
           {tab === "kestrel" && <Kestrel cycle={cycle} onSource={setSource} />}
+          {tab === "larkspur" && <Larkspur cycle={cycle} onSource={setSource} />}
         </div>
         <div className="space-y-2">
           <SectionLabel>Source</SectionLabel>

@@ -12,5 +12,13 @@
   "answer-key/fields.json": "d8250dce5cda08c3b8dc592ad23f611d2aa8e0ff91caf8b4435f4516c1ba5538",
   "answer-key/mapping.json": "1a5f9b35d3a47cd856de99d798fbd0c1a776f4de410e1eb167c1a63e9f65aadb",
   "answer-key/pack.json": "a7a28e8addd30bae756342ab137815d029a1428a7d2719f761c709f844585e54",
-  "answer-key/rules.json": "1807a222256e209e24efdfa454b64aeb58c197b896e9cc44d27e8a389120a49e"
+  "answer-key/rules.json": "1807a222256e209e24efdfa454b64aeb58c197b896e9cc44d27e8a389120a49e",
+  "casework/client/Calderwood_BB_Model_Template_v3.2.xlsx": "5033382fcbe8cdc1bc50d6cf3994a7eca994ee30e7aa3c8f6af5c749182e20ac",
+  "casework/qc/QC_Bramble_Onboarding_April_2026.xlsx": "7ff1763a0547cdcdf819fb54679da9227a39f679a745dc462e094708aea64325",
+  "casework/backbook/Ashdown_Tape_2026-04.csv": "81d4a009670959076cf07d2a0c3836f7a8f0d5e67b3906dddd077961201c358f",
+  "casework/backbook/Kingsbury_Tape_2026-04.csv": "e94f01309d246181f64027255223db2c7a01946072e326f0cb7c7a78a7e892e9",
+  "casework/backbook/Redfern_Tape_2026-04.csv": "729d49c6a18c0901083c08f5fe310ae50b9ff4872e3b3588af8619ccdd2b416b",
+  "casework/backbook/Whitcombe_Tape_2026-04.csv": "2f49f06287467fbbd82c2cc196ec328bc623fdc416b5d48104ed86db362d97f7",
+  "casework/pipeline/cases.json": "e05d01f201bff32bc67bbec6dee6acaf3b7529706585a00fe20aae461677e575",
+  "casework-key/key.json": "5f3f96855a8bab7f31fc40daf09e7590b30464b20737437944efd18a69b04ecf"
 }

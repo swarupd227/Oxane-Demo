@@ -12,6 +12,7 @@ import numpy as np
 
 from dealkit.agreement import build_agreement
 from dealkit.calc import borrower_view
+from dealkit.casework.build import build_casework
 from dealkit.config import KEY_DIR, OUTPUT_DIR, PACK_DIR, ROOT, load_deal
 from dealkit.key import PACK_FILES, build_key
 from dealkit.legal_docs import build_amendment, build_fee_letter
@@ -47,8 +48,11 @@ def build_all() -> dict[str, str]:
     build_bbc(deal, borrower_view(tape.rows, deal), pack["borrowing_base_certificate"])
     build_requirements(deal, pack["lender_requirements"])
     build_key(deal, tape, PACK_DIR, KEY_DIR)
+    # The casework sits around the pack: the client's own model, the independent QC
+    # calculation and the backbook tapes, with their own key.
+    casework = build_casework(deal, tape, PACK_DIR, PACK_FILES)
     shutil.rmtree(OUTPUT_DIR / "work", ignore_errors=True)
-    return digests(PACK_DIR, KEY_DIR)
+    return digests(PACK_DIR, KEY_DIR, *casework)
 
 
 def main() -> None:

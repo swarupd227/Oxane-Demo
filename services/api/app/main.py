@@ -9,12 +9,17 @@ from typing import Annotated, Any, Literal
 from engine.monitoring import rolling_trigger, what_if
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import Response as RawResponse
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app import cases as onboarding_cases
 from app import session as case_session
+from app.casework import config as casework_config
+from app.casework import view as casework
+from app.casework.run import record as casework_record
 from app.config import settings
 from app.db import get_session
 from app.deal import Deal, load_deal
@@ -27,10 +32,15 @@ from app.engine_service import (
 )
 from app.load_file import build_load_file
 from app.models import OnboardingCase
+from app.monitoring import alerts as client_alerts
+from app.monitoring import clients as client_policy
 from app.monitoring import session as cycle_session
+from app.monitoring import workbook as cycle_workbook
 from app.monitoring.cycle import cycle_path, served_files
+from app.monitoring.cycle import record as portfolio_record
 from app.monitoring.scoring import scorecard as cycle_scorecard
 from app.pipeline import ontology
+from app.pipeline.gateway import AnthropicClient, Gateway, ReplayMiss
 from app.scoring import scorecard
 from app.seed import workbench
 
@@ -103,10 +113,19 @@ def get_case(session: SessionDep) -> CaseView:
     )
 
 
+_recorded_text: dict[tuple[str, int, int], str] = {}
+
+
 def current_workbench() -> dict[str, Any]:
     recorded = settings.pipeline_dir / "workbench.json"
     if recorded.exists():
-        return json.loads(recorded.read_text(encoding="utf-8"))
+        # The file is large and read on every request; keep its text until it changes.
+        stat = recorded.stat()
+        key = (str(recorded), stat.st_mtime_ns, stat.st_size)
+        if key not in _recorded_text:
+            _recorded_text.clear()
+            _recorded_text[key] = recorded.read_text(encoding="utf-8")
+        return json.loads(_recorded_text[key])
     return workbench()
 
 
@@ -224,6 +243,72 @@ def post_preview(request: PreviewRequest) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
+# Onboarding casework: definitions, the client's model and queries, QC, configuration, backbook.
+
+
+def _casework_view(session: Session) -> dict[str, Any]:
+    state = case_session.view(session, current_workbench())
+    try:
+        return casework.view(state)
+    except FileNotFoundError as missing:
+        raise HTTPException(status_code=503, detail="No casework run. Run python -m "
+                            "app.casework.run --mode replay") from missing
+
+
+@app.get("/api/casework")
+def get_casework(session: SessionDep) -> dict[str, Any]:
+    return _casework_view(session)
+
+
+@app.get("/api/cases")
+def get_cases(session: SessionDep) -> dict[str, Any]:
+    """The onboarding pipeline: the generated cases, with case 0412 and its backbook live."""
+    run = current_workbench()
+    state = case_session.view(session, run)
+    try:
+        shown = casework.view(state)
+    except FileNotFoundError:
+        shown = None
+    try:
+        return onboarding_cases.pipeline(run, state, shown)
+    except FileNotFoundError as missing:
+        raise HTTPException(status_code=503, detail=str(missing)) from missing
+
+
+def _casework_files() -> dict[str, str]:
+    """Served name -> path under the deal kit output. Nothing else is ever served."""
+    meta = casework_record()
+    files = {name.split("/")[-1]: name for key, name in meta["files"].items()
+             if key != "backbook"}
+    files |= {deal["file"]: f"{meta['files']['backbook']}/{deal['file']}"
+              for deal in meta["backbook"]}
+    return files
+
+
+@app.get("/api/casework/files/{name}")
+def get_casework_file(name: str) -> FileResponse:
+    files = _casework_files()
+    if name not in files:
+        raise HTTPException(status_code=404, detail="File not in the casework")
+    return FileResponse(settings.deal_kit_output / files[name], filename=name)
+
+
+@app.get("/api/casework/config-workbook.xlsx")
+def get_config_workbook(session: SessionDep) -> RawResponse:
+    shown = _casework_view(session)
+    pack = {doc: name for doc, name in json.loads(
+        (settings.pipeline_dir / "pack.json").read_text(encoding="utf-8")).items()}
+    pack["client_model"] = shown["client_model"]["file"]
+    content = casework_config.build(casework.current(), shown["config"], pack)
+    word = "final" if shown["config"]["status"]["final"] else "provisional"
+    return RawResponse(
+        content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition":
+                 f'attachment; filename="case-0412-configuration-{word}.xlsx"'},
+    )
+
+
 # Monitoring: the monthly cycle across the lender's facilities.
 
 
@@ -251,7 +336,9 @@ def post_cycle_event(event: SessionEvent, request: Request, session: SessionDep)
     actor, payload = event.actor, dict(event.payload)
     if settings.auth_required:
         user = signed_in_user(request) or ""
-        actor = settings.role_of(user) or "unassigned"
+        # A client's alert request is recorded as the client's, whoever relays it.
+        actor = "client" if event.type == "request-alert" else (
+            settings.role_of(user) or "unassigned")
         payload["user"] = user
     try:
         cycle_session.record(session, cycle, actor, event.type, payload)
@@ -290,6 +377,56 @@ def post_what_if(request: WhatIfRequest) -> dict[str, Any]:
     return {"value": float(request.value), "average": float(after.average),
             "breached": after.breached, "limit": float(after.limit),
             "window": [m for m, _ in after.monthly[-3:]]}
+
+
+@app.get("/api/monitoring/workbook/{facility}.xlsx")
+def get_cycle_workbook(facility: str, session: SessionDep) -> RawResponse:
+    """The lender-facing workbook, with live formulas. Provisional until released."""
+    cycle = current_cycle()
+    if facility not in {f["id"] for f in cycle["facilities"]}:
+        raise HTTPException(status_code=404, detail="Unknown facility")
+    state = cycle_session.view(session, cycle)
+    content, _ = cycle_workbook.build(cycle, state, facility)
+    status_word = "provisional" if state["provisional"][facility] else "released"
+    name = f"{facility}-{cycle['cycle']['id'].lower()}-{status_word}.xlsx"
+    return RawResponse(
+        content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{name}"'},
+    )
+
+
+class AlertRequest(BaseModel):
+    client: str
+    request: str
+
+
+@app.post("/api/monitoring/alerts/draft")
+def post_alert_draft(body: AlertRequest) -> dict[str, Any]:
+    """Turn a client's words into a rule, check it and back-test it. Recorded requests replay
+    without a model; anything else needs live mode."""
+    cycle = current_cycle()
+    alerts = cycle["alerts"].get(body.client)
+    if alerts is None:
+        raise HTTPException(status_code=404, detail="Unknown client")
+    if not alerts["ai_permitted"]:
+        raise HTTPException(status_code=409, detail="This client does not permit AI, so its "
+                            "alerts are set up by the analyst")
+    wanted = client_alerts.normalise_request(body.request).lower()
+    for preset in alerts["presets"]:
+        if preset["request"].lower() == wanted:
+            return preset
+    meta = portfolio_record()
+    gateway = Gateway(mode=settings.llm_mode, fixtures=settings.cycle_llm_fixtures,
+                      client_factory=lambda: AnthropicClient(settings.llm_provider))
+    guarded = client_policy.guarded(gateway, meta)[body.client]
+    try:
+        return client_alerts.draft(guarded, meta, cycle, body.client, body.request)
+    except ReplayMiss as miss:
+        raise HTTPException(status_code=422, detail="This recorded demo understands the example "
+                            "requests only. Pick one of them.") from miss
+    except client_policy.ModelNotPermitted as refused:
+        raise HTTPException(status_code=409, detail=str(refused)) from refused
 
 
 @app.get("/api/monitoring/files/{path:path}")

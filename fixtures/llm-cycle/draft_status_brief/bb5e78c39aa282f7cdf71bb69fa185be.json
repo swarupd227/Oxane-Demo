@@ -1,0 +1,14 @@
+{
+ "task": "draft_status_brief",
+ "model": "claude-opus-5-5",
+ "text": "{\"opening\":\"For this week's call with Calderwood Bank plc, Priya, the main items are Northmoor's late servicer report and held tape load, Bramble's tape gaps and exclusions, and two Kestrel and Bramble tests awaiting an expert's view.\",\"sections\":[{\"heading\":\"Missing data\",\"points\":[\"Northmoor's May servicer report, due {{northmoor_due}}, has not arrived; we have chased and escalated it.\",\"Bramble did not resend its dealer list; with the client's consent, we reused the April list.\",\"Northmoor's May tape repeats the row for loan {{duplicate_loan}}, so we are holding the load until the servicer confirms it.\"]},{\"heading\":\"Open questions\",\"points\":[\"Northmoor: we have sent a reminder and an escalation for the May servicer report.\",\"Bramble: the roll-forward found a gap of {{gap}}, with {{missing_loans}} loans missing from the May tape; we are asking the servicer to explain them.\",\"Bramble: the servicer report shows charge-offs {{charge_off_difference}} higher than the tape, with {{charge_off_loans}} loans charged off in the report but still live on the tape.\",\"Kestrel: one investment's valuation is {{stale_days}} days old, which is older than the agreement allows.\",\"Northmoor: we are asking the servicer to confirm the repeated row for loan {{duplicate_loan}} before we load the tape.\"]},{\"heading\":\"Exclusions\",\"points\":[\"Bramble: we excluded {{ineligible_loans}} receivables worth {{ineligible}} as not eligible, and deducted {{concentration_excess}} of dealer concentration excess.\",\"Bramble: the {{missing_loans}} loans missing from the tape stay out of the pool until the servicer explains them.\"]},{\"heading\":\"Identifier changes\",\"points\":[\"There were no identifier changes on the client's facilities this month.\"]},{\"heading\":\"Missing financials\",\"points\":[\"Nothing is outstanding: Bramble's Q1 statements and compliance certificate arrived before the due date.\"]},{\"heading\":\"Waiting on an expert\",\"points\":[\"Bramble: leverage is over its maximum only if the affiliate guarantee counts, giving {{leverage_with_guarantee}}; once the expert's view arrives, the client may need to decide how to treat the guarantee.\",\"Kestrel: loan-to-value is being assessed both with and without the post-quarter markdown, giving {{ltv_with_markdown}} if the markdown counts; the client may need to decide which basis applies.\"]}]}",
+ "usage": {
+  "task": "draft_status_brief",
+  "input_tokens": 1759,
+  "output_tokens": 2029,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 19.5
+ }
+}

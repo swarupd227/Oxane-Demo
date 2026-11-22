@@ -1,4 +1,6 @@
 import clsx from "clsx";
+import type { ReactNode } from "react";
+import { Tooltip } from "./Tooltip";
 import {
   Bot,
   Calculator,
@@ -51,24 +53,32 @@ export function StatusPill({ status, label }: { status: ReviewStatus; label?: st
   return <Pill tone={config.tone} icon={config.icon} label={label ?? config.label} />;
 }
 
-export type Provenance = "ai" | "calculated" | "derived" | "edited" | "approved";
+export type Provenance = "ai" | "suggested" | "extracted" | "calculated" | "derived" | "edited" | "approved";
 
 const provenances: Record<Provenance, { icon: LucideIcon; label: string }> = {
   ai: { icon: Bot, label: "AI drafted" },
+  suggested: { icon: Bot, label: "Suggested" },
+  extracted: { icon: Bot, label: "AI extracted" },
   calculated: { icon: Calculator, label: "Calculated" },
   derived: { icon: FunctionSquare, label: "Derived" },
   edited: { icon: UserPen, label: "Analyst edited" },
   approved: { icon: ShieldCheck, label: "Approved" },
 };
 
-export function ProvenanceChip({ kind }: { kind: Provenance }) {
+/** Where a value came from. `tip` carries the source and its quote, on hover or focus. */
+export function ProvenanceChip({ kind, tip, detail }: { kind: Provenance; tip?: ReactNode; detail?: string }) {
   const { icon: Icon, label } = provenances[kind];
-  return (
-    <span className="inline-flex h-6 items-center gap-1.5 rounded-md border border-line bg-surface px-2 text-xs font-medium whitespace-nowrap text-muted">
-      <Icon aria-hidden className="size-3.5" />
+  const chip = (
+    <span
+      tabIndex={tip ? 0 : undefined}
+      className="inline-flex h-5 items-center gap-1 rounded border border-line bg-surface px-1.5 text-[0.6875rem] font-medium whitespace-nowrap text-muted"
+    >
+      <Icon aria-hidden className="size-3" />
       {label}
+      {detail && <span className="font-normal text-muted">· {detail}</span>}
     </span>
   );
+  return tip ? <Tooltip content={tip}>{chip}</Tooltip> : chip;
 }
 
 export type ConfidenceLevel = "high" | "medium" | "low";

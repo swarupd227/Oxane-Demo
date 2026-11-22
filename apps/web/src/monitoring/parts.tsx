@@ -1,9 +1,10 @@
 /* Small pieces every monitoring screen shares. */
 import clsx from "clsx";
-import { FileText, ZoomIn, ZoomOut } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { BotOff, FileText, Link2, ZoomIn, ZoomOut } from "lucide-react";
+import { Fragment, useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { PdfPage } from "../components/evidence/PdfPage";
+import { Tooltip } from "../components/ui/Tooltip";
 import { fileUrl, OUTCOMES, type Outcome, type Source } from "./cycle";
 
 export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitoring" }) {
@@ -51,7 +52,93 @@ const facilityTones: Record<string, string> = {
   bramble: "bg-[#efe3d3] text-[#6b4a1f]",
   northmoor: "bg-[#dfe8ef] text-[#2f4b63]",
   kestrel: "bg-[#e6e2ef] text-[#4a3f6b]",
+  larkspur: "bg-[#dcebe3] text-[#2f5a44]",
 };
+
+/** A client that does not permit AI runs on code checks only. Said plainly wherever it shows. */
+export function NoAiBadge({ compact }: { compact?: boolean }) {
+  return (
+    <span
+      title="Client policy: no AI processing"
+      className="inline-flex h-5 shrink-0 items-center gap-1 rounded border border-ink/25 bg-surface px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-ink"
+    >
+      <BotOff aria-hidden className="size-3" />
+      {compact ? "No AI" : "No AI"}
+    </span>
+  );
+}
+
+/** Draft text with each {{placeholder}} replaced by the code's figure, linked to its source. */
+export function Filled({
+  text,
+  figures,
+  onSource,
+}: {
+  text: string;
+  figures: Record<string, { value: string; means: string; source: Source | null }>;
+  onSource: (s: Source | null) => void;
+}) {
+  const parts = text.split(/(\{\{\w+\}\})/);
+  return (
+    <>
+      {parts.map((part, index) => {
+        const key = part.match(/^\{\{(\w+)\}\}$/)?.[1];
+        const figure = key ? figures[key] : undefined;
+        if (!figure) {
+          return <Fragment key={index}>{part}</Fragment>;
+        }
+        return (
+          <Tooltip key={index} content={`${figure.means[0].toUpperCase()}${figure.means.slice(1)}${figure.source ? ` · ${figure.source.label ?? "source"}, p. ${figure.source.page}` : " · calculated"}`}>
+            <button
+              type="button"
+              onClick={() => onSource(figure.source)}
+              className="numeric inline-flex cursor-pointer items-center gap-0.5 rounded bg-accent/30 px-1 font-semibold underline decoration-ink/40 decoration-dotted underline-offset-2 hover:bg-accent/60"
+            >
+              {figure.value}
+              {figure.source && <Link2 aria-hidden className="size-3" />}
+            </button>
+          </Tooltip>
+        );
+      })}
+    </>
+  );
+}
+
+/** Tabs across facilities, shared by every per-facility screen. */
+export function FacilityTabs({
+  facilities,
+  value,
+  onChange,
+  extra,
+}: {
+  facilities: { id: string; name: string; asset_class: string; ai_permitted: boolean }[];
+  value: string;
+  onChange: (id: string) => void;
+  extra?: (id: string) => ReactNode;
+}) {
+  return (
+    <div role="tablist" aria-label="Facility" className="mb-3 flex items-center gap-1 overflow-x-auto border-b border-line">
+      {facilities.map((f) => (
+        <button
+          key={f.id}
+          type="button"
+          role="tab"
+          aria-selected={value === f.id}
+          onClick={() => onChange(f.id)}
+          className={clsx(
+            "-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap",
+            value === f.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink",
+          )}
+        >
+          {f.name}
+          <FacilityTag id={f.id} name={f.asset_class} />
+          {!f.ai_permitted && <NoAiBadge compact />}
+          {extra?.(f.id)}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function FacilityTag({ id, name }: { id: string; name: string }) {
   return (
@@ -72,7 +159,7 @@ export function Stat({ label, value, note, tone }: { label: string; value: React
       <p className="text-xs font-medium text-muted">{label}</p>
       <p
         className={clsx(
-          "numeric mt-0.5 text-xl font-semibold tracking-tight",
+          "numeric mt-0.5 text-base font-semibold tracking-tight",
           tone === "danger" && "text-danger",
           tone === "warn" && "text-warn",
           tone === "ok" && "text-ok",
@@ -100,7 +187,7 @@ export function SourcePanel({ source, emptyText, tall }: { source: Source | null
       <div className="grid min-h-40 place-items-center rounded-lg border border-dashed border-line p-6 text-center text-sm text-muted">
         <span>
           <FileText aria-hidden className="mx-auto mb-2 size-5" />
-          {emptyText ?? "Select an item to see its source."}
+          {emptyText ?? "No source selected."}
         </span>
       </div>
     );

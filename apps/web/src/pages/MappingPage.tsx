@@ -1,9 +1,8 @@
-import { ArrowRight, CalendarClock, Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { CalendarClock, Check } from "lucide-react";
 import { Confidence, ProvenanceChip, StatusPill } from "../components/ui/badges";
 import { Button } from "../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../components/ui/layout";
-import { NeedsIntake, PageHeader, SeedNotice } from "../components/ui/PageHeader";
+import { NeedsIntake, NextStep, PageHeader, SeedNotice } from "../components/ui/PageHeader";
 import { useSession } from "../lib/session";
 import { useWorkbench, type Requirement } from "../lib/workbench";
 
@@ -24,7 +23,6 @@ function RequirementRow({ item }: { item: Requirement }) {
 export function MappingPage() {
   const { data } = useWorkbench();
   const { state, dispatch } = useSession();
-  const navigate = useNavigate();
 
   if (!state.intakeDone) {
     return <NeedsIntake />;
@@ -42,16 +40,13 @@ export function MappingPage() {
   return (
     <div>
       <PageHeader
-        title="Data mapping"
-        summary={`${rows.length} tape columns mapped to platform fields. ${review} are below high confidence. ${rows.length - remaining} accepted.`}
+        title="Tape mapping"
+        summary={`${rows.length} tape columns mapped · ${review} below high confidence · ${rows.length - remaining} accepted`}
         actions={
           state.mappingAccepted ? (
-            <Button size="lg" onClick={() => navigate("/validation")}>
-              View validation
-              <ArrowRight aria-hidden className="size-4" />
-            </Button>
+            <NextStep to="/validation" label="View validation" />
           ) : (
-            <Button size="lg" onClick={() => dispatch({ type: "accept-mapping" })}>
+            <Button onClick={() => dispatch({ type: "accept-mapping" })}>
               <Check aria-hidden className="size-4" />
               Accept remaining ({remaining})
             </Button>
@@ -101,7 +96,12 @@ export function MappingPage() {
                       {row.sample || "Empty"}
                     </td>
                     <td className="py-2 pr-4">
-                      <Confidence level={row.confidence} />
+                      <span className="flex items-center gap-2">
+                        <Confidence level={row.confidence} />
+                        {row.confidence !== "high" && (
+                          <ProvenanceChip kind="suggested" tip={row.note ?? `Sample: ${row.sample || "empty"}`} />
+                        )}
+                      </span>
                     </td>
                     <td className="py-1.5 pr-5 text-right">
                       {isAccepted(row.column) ? (
@@ -124,22 +124,21 @@ export function MappingPage() {
           </div>
         </Card>
 
-        <div className="sticky top-32 space-y-4">
-          <Card className="p-5">
-            <h2 className="font-semibold">Lender requirements</h2>
-            <p className="text-[0.8125rem] text-muted">Reporting fields required by Calderwood Bank plc.</p>
+        <div className="sticky top-14 space-y-4">
+          <Card className="p-4">
+            <h2 className="text-sm font-semibold">Lender requirements <span className="font-normal text-muted">· Calderwood_Requirements.xlsx</span></h2>
             <ul className="mt-2">
               {requirements.map((item) => (
                 <RequirementRow key={item.name} item={item} />
               ))}
             </ul>
           </Card>
-          <Card className="p-5">
+          <Card className="p-4">
             <div className="flex items-center gap-2">
               <CalendarClock aria-hidden className="size-4 text-muted" />
               <SectionLabel>Date formats resolved</SectionLabel>
             </div>
-            <p className="numeric mt-2 text-2xl font-semibold tracking-tight">{dates.mixed_rows} rows</p>
+            <p className="numeric mt-1 text-lg font-semibold tracking-tight">{dates.mixed_rows} rows</p>
             <p className="mt-1 text-[0.8125rem] leading-snug text-muted">
               Mixed MM/DD and DD/MM. {dates.method}. {dates.uncertain} {dates.uncertain === 1 ? "row remains" : "rows remain"}{" "}
               unresolved.

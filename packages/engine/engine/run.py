@@ -160,7 +160,10 @@ def _group_key(rule: ConcentrationRule, loan: Loan, aliases: dict[str, str]) -> 
 
 def _concentrations(eligible: list[Loan], pool: int, rules: RuleSet, as_of: date,
                     aliases: dict[str, str]) -> dict[str, ConcentrationOutcome]:
-    """Apply limits in schedule order. Each excess dollar leaves one loan and is not recut."""
+    """Apply limits in schedule order. Each excess dollar leaves one loan and is not recut.
+
+    `pool` is the base the limits are measured against: the Eligible Pool Balance under the
+    agreement, or another base when a client's own model is being compared with it."""
     remaining = {loan["loan_id"]: loan["current_balance"] for loan in eligible}
     results = {}
     for rule in rules.concentration:
@@ -206,7 +209,12 @@ def _concentrations(eligible: list[Loan], pool: int, rules: RuleSet, as_of: date
 
 
 def run(loans: list[Loan], rules: RuleSet, as_of: date, outstanding_advances_cents: int,
-        dealer_aliases: dict[str, str] | None = None) -> RunResult:
+        dealer_aliases: dict[str, str] | None = None,
+        concentration_base: str = "eligible") -> RunResult:
+    """`concentration_base` is "eligible" (the agreement) or "gross", every receivable on the
+    tape, which some lenders' own models use. It only ever changes the base of the limits."""
+    if concentration_base not in ("eligible", "gross"):
+        raise ValueError(f"Unknown concentration base: {concentration_base}")
     aliases = dealer_aliases or {}
     ordered = sorted(loans, key=lambda loan: loan["loan_id"])
 
@@ -244,7 +252,8 @@ def run(loans: list[Loan], rules: RuleSet, as_of: date, outstanding_advances_cen
                                         sum(balances[loan_id] for loan_id in ids))
 
     pool = sum(loan["current_balance"] for loan in eligible)
-    concentrations = _concentrations(eligible, pool, rules, as_of, aliases)
+    limit_base = pool if concentration_base == "eligible" else sum(balances.values())
+    concentrations = _concentrations(eligible, limit_base, rules, as_of, aliases)
     excess = sum(item.excess_cents for item in concentrations.values())
 
     rate = rules.advance_rate_on(as_of)

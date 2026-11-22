@@ -120,6 +120,7 @@ def build_cycle_key(
     kestrel: dict[str, Any],
     files: dict[str, dict[str, str]],
     folder: Path,
+    larkspur: dict[str, Any],
 ) -> dict[str, Any]:
     may = copy.deepcopy(deal)
     may["bbc"]["outstanding_advances_usd"] = cycle["bramble"]["outstanding_advances_usd"]
@@ -205,6 +206,33 @@ def build_cycle_key(
             "kestrel": kestrel,
             "duplicate_collateral": {"within": {"bramble": 0, "northmoor": 0}, "across": [shared]},
             "northmoor_collections": northmoor["collections"],
+            "larkspur": {
+                **larkspur["months"],
+                "downgrades": larkspur["downgrades"],
+                "price_moves": larkspur["price_moves"],
+                "identifier_change": larkspur["identifier_change"],
+                "par_roll": larkspur["par_roll"],
+                "trades": larkspur["trades"],
+            },
+            "validation": {
+                "northmoor": {"blocking": [{"rule": "duplicates", **northmoor["duplicate_line"]}]},
+                "bramble": {"warnings": bramble["warnings"]},
+                "larkspur": {"warnings": {"not_rated": larkspur["not_rated"]}},
+            },
+            "prior_period": {
+                "bramble": {
+                    "pool_balance_change_pct": round(
+                        (
+                            bramble["roll_forward"]["tape_closing"]
+                            / bramble["roll_forward"]["opening"]
+                            - 1
+                        )
+                        * 100,
+                        2,
+                    ),
+                    "new_loans": bramble["roll_forward"]["new_loans"],
+                },
+            },
         },
         "issues": {
             "M1": {
@@ -271,6 +299,29 @@ def build_cycle_key(
                 "summary": "One position last valued in December 2025",
                 "position": kestrel["stale"][0]["name"],
             },
+            "M10": {
+                "facility": "northmoor",
+                "check": "validation",
+                "outcome": "query",
+                "summary": "May tape repeats one loan's row: a blocking duplicate holds the load",
+                "loan": northmoor["duplicate_line"]["loan_id"],
+            },
+            "M11": {
+                "facility": "larkspur",
+                "check": "ccc_bucket",
+                "outcome": "confirmed",
+                "summary": "A May downgrade takes the CCC bucket over 7.5%; the excess is haircut",
+                "issuer": larkspur["downgrades"][0]["issuer"],
+                "ccc_pct": larkspur["months"]["may"]["ccc_pct"],
+                "haircut": larkspur["months"]["may"]["haircut"],
+            },
+            "M12": {
+                "facility": "larkspur",
+                "check": "price_move",
+                "outcome": "confirmed",
+                "summary": "One loan's bid falls more than 10 points in the month",
+                "issuer": larkspur["price_moves"][0]["issuer"],
+            },
         },
         "noise": {
             "N1": {
@@ -288,6 +339,19 @@ def build_cycle_key(
                 "facility": "bramble",
                 "check": "borrowing_base",
                 "summary": "US$3.20 rounding difference in the certificate",
+            },
+            "N4": {
+                "facility": "bramble",
+                "check": "prior_period",
+                "summary": "Pool up on April because April and May purchases came together; "
+                "explained by the servicer report",
+            },
+            "N5": {
+                "facility": "larkspur",
+                "check": "identifiers",
+                "summary": "One loan's LoanX ID and CUSIP changed; linked, not sold and bought",
+                "old": larkspur["identifier_change"]["old_loanx"],
+                "new": larkspur["identifier_change"]["new_loanx"],
             },
         },
     }
@@ -324,5 +388,12 @@ def _verify(key: dict[str, Any], cycle: dict[str, Any]) -> None:
     assert collections["last_may_vs_april"] <= collections["may_vs_april"] < 1, collections
     spread = checks["northmoor_excess_spread"]
     assert (spread["march"]["pct"], spread["april"]["pct"]) == (4.30, 4.10), spread
+    lark = checks["larkspur"]
+    assert lark["april"]["ccc_pct"] < 7.5 < lark["may"]["ccc_pct"], lark["may"]["ccc_pct"]
+    assert lark["april"]["haircut"] == 0 < lark["may"]["haircut"], lark["may"]
+    assert [d["issuer"] for d in lark["downgrades"]] == ["Kettlewell Auto Parts"]
+    assert [m["issuer"] for m in lark["price_moves"]] == ["Denholme Chemicals"]
+    roll_par = lark["par_roll"]
+    assert roll_par["april"] - roll_par["sold"] + roll_par["bought"] == roll_par["may"]
     late = [s for s in key["submissions"] if s["status"] == "late"]
     assert [(s["facility"], s["document"]) for s in late] == [("northmoor", "servicer_report_may")]

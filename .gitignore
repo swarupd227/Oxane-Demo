@@ -29,3 +29,4 @@ demo-video/*.log
 demo-video/voice/build/
 demo-video/voice/check/
 demo-video/voice/*.log
+.env.azure

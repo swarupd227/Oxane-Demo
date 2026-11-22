@@ -2,8 +2,8 @@
 
 One workbench for two of Oxane's RFP use cases. All documents and data are synthetic. It is not connected to Panorama.
 
-- **Onboarding** (use case 1) takes a fictional asset-based finance facility from a raw document pack to approved, platform-ready data. Build plan: [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
-- **Monitoring** (use case 2, at `/monitoring`) runs one lender's May 2026 cycle across three facilities: submissions, reconciliation, effective terms, covenants and triggers, duplicate collateral, triage and lender packs. Build plan: [docs/MONITORING_PLAN.md](docs/MONITORING_PLAN.md).
+- **Onboarding** (use case 1) takes a fictional asset-based finance facility from a raw document pack to approved, platform-ready data, with the pitch brief's harder cases worked beside each step: nested definitions, the client's own model and the query cycle, the configuration workbook, a backbook load and independent QC before release. Build plan: [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
+- **Monitoring** (use case 2, at `/monitoring`) runs the May 2026 cycle for two clients and four facilities, along the pitch brief's seven steps: expect and receive, map and ingest, validate, review and resolve, calculate and report (with a lender Excel workbook and an independent QC comparison), monitor and alert (headroom, early warnings, client self-service alerts), and the weekly status call. One client, Thornbury Bank, does not permit AI, so its CLO warehouse runs on code checks only. Build plan: [docs/MONITORING_PLAN.md](docs/MONITORING_PLAN.md).
 
 The two share one facility record, rules engine, event log and workbench; the switch in the top bar moves between them.
 
@@ -88,15 +88,37 @@ docker compose exec api python -m app.pipeline.run --mode record
 docker compose exec api python -m app.pipeline.run --mode replay
 ```
 
+## Run the onboarding casework
+
+The casework sits around the onboarding pack, on screens beside the steps they belong to. `python -m dealkit.build` also generates its inputs into `deal-kit/output/casework/` (Calderwood's own borrowing base model, the domain team's independent QC workbook, four backbook tapes) and their key into `deal-kit/output/casework-key/`, all in `pack.manifest.json`. The run reads the recorded onboarding run and `services/api/app/casework/casework.yaml` (query log and timeline, QC resolutions, backbook batch, the scorecard's stated assumptions), never a key. A recording cost US$0.79; responses go to `fixtures/llm-casework`, output to `fixtures/casework`.
+
+```bash
+docker compose exec api python -m app.casework.run --mode replay
+```
+
+| Screen | Scenario | Brief step or measure |
+|---|---|---|
+| Terms › Definitions | Borrowing Base and Delinquency Ratio traced through 23 defined terms, sections and schedules, two amended by Amendment No. 1; every quote found on its page; each term's value worked out by the engine and the borrowing base reconciled to the cent; the Credit and Collection Policy flagged as not in the pack | 2 Interpret: nested definitions |
+| Exceptions › Client model | Calderwood's template v3.2 against the agreement: stale advance rate (+US$1.48m borrowing base), concentration limits on total pool (+US$157k), dealer codes not combined (+US$375k), sub-600 band at 600 and below, "30+ days" boundary, no-score obligors (agreement silent) | 1 Receive (client model and reporting requirements), 3 Clarify |
+| Exceptions › Query tracker | Nine queries with raised, sent, answered and closed times; answers flow into the configuration | 3 Clarify; elapsed time split from client waiting |
+| Rules › Configuration | Field map, rules and thresholds (each checked against the figure in its verified source), report lines in the client's format, client conventions; `.xlsx` export with source notes, provisional until approval, QC and release | 4 Codify, 6 Configure |
+| Mapping › Backbook | Four existing deals on Bramble's stored mapping: one clean, a renamed column, an extra column with blank days past due, servicer status codes; each suggestion checked against the tape | 5 Map and load |
+| Approve › QC and release | Independent QC workbook: rounding, sign, per cent as decimal, blank against dash, and two genuine variances traced to the loans that explain them; report provisional until each is resolved and a second analyst releases it | 7 QC and release |
+| Scorecard | Field-level accuracy against expert-verified records, material errors and omissions, exception rate, hours per onboarding by deal type, elapsed time split from client waiting, cost per onboarding, share of values linked to source, capacity released; measured and assumed in separate columns | Measures (5b) |
+
+Endpoints: `GET /api/casework`, `GET /api/casework/config-workbook.xlsx`, `GET /api/casework/files/{name}`. Session events `send-query`, `record-answer`, `resolve-variance`, `accept-backbook` (preparer) and `release-report` (reviewer, four-eyes) continue after the load file is approved.
+
+The onboarding cases list (`/cases`, `GET /api/cases`) holds case 0412, its four backbook deals and ten other cases across five clients and deal types. The other cases are generated at summary level by `deal-kit/dealkit/casework/pipeline.py` from the `pipeline` section of `deal-kit/casework.yaml` into `output/casework/pipeline/cases.json`; case 0412 and the backbook deals take their stage and counts from the live session. Walkthrough mode (numbered steps, `[` and `]`, next-step buttons) is off by default; turn it on from the header or with `?presenter=1`.
+
 ## Run the monitoring cycle
 
-The cycle kit generates the three facilities' May submissions, three months of tapes and the cycle answer key from `deal-kit/cycle.yaml`, building on Bramble's April tape from `deal.yaml`. `deal-kit/cycle.manifest.json` records the hashes, and `docker compose up` builds it if missing.
+The cycle kit generates the four facilities' May submissions (Bramble, Northmoor and Kestrel for Calderwood Bank; the Larkspur CLO warehouse for Thornbury Bank), three months of Northmoor tapes, Larkspur's April and May collateral reports and bid files, the domain team's independent QC workbooks and the cycle answer key from `deal-kit/cycle.yaml`, building on Bramble's April tape from `deal.yaml`. `deal-kit/cycle.manifest.json` records the hashes, and `docker compose up` builds it if missing. Running the deal-kit tests rebuilds `deal-kit/output`, so build the cycle again afterwards.
 
 ```bash
 docker compose run --rm deal-kit python -m dealkit.cycle.build
 ```
 
-The cycle reads `services/api/app/monitoring/portfolio.yaml` (the facility record and inbox log) and the onboarding run, never the answer key. Code computes every number; the model reads documents, maps new tape columns, suggests triage outcomes and drafts the lender packs' words, and every figure it reads must be found, quoted, in its document. Recording costs about US$0.35; responses go to `fixtures/llm-cycle` and the output to `fixtures/cycle`.
+The cycle reads `services/api/app/monitoring/portfolio.yaml` (clients and their policies, the facility record, validation rule sets, the inbox log and the scorecard's stated assumptions) and the onboarding run, never the answer key. Code computes every number; the model reads documents, maps new tape columns, explains a prior-period change from the documents, suggests triage outcomes, turns a client's alert request into a rule and drafts the packs' and status brief's words. Every figure it reads must be found, quoted, in its document, and every figure in drafted text is a `{{placeholder}}` filled by code. Every model call goes through its client's guarded gateway, which refuses any call for, or carrying data of, a client that does not permit AI. A full recording costs about US$0.47; responses go to `fixtures/llm-cycle` and the output to `fixtures/cycle`.
 
 ```bash
 docker compose exec api python -m app.monitoring.cycle --mode record
@@ -112,7 +134,11 @@ A captioned walkthrough video of the cycle is recorded the same way as the onboa
 node demo-video/record-monitoring.mjs && node demo-video/assemble.mjs Monitoring_Workbench_Demo.mp4
 ```
 
-The scorecard (`GET /api/monitoring/scorecard`) is the only code that reads the cycle key. It checks 20 extracted and reconciled values, the nine planted issues (M1 to M9) and their outcomes, and the three noise items that must stay logged.
+The scorecard (`GET /api/monitoring/scorecard`) is the only code that reads the cycle key. It reports the brief's section 5b measures by name, with measured results apart from stated assumptions: 29 loaded and reconciled values, the twelve planted issues (M1 to M12) and their outcomes, and the five noise items that must stay logged.
+
+Other monitoring endpoints: `GET /api/monitoring/workbook/{facility}.xlsx` (the lender workbook with live formulas, marked provisional until released) and `POST /api/monitoring/alerts/draft` (a client's alert request turned into a checked, back-tested rule; in replay only the three example requests are recorded). With sign-in on, `SENIOR_USERS` names the third approval level.
+
+The walkthrough video scripts in `demo-video/` predate the brief work (new steps, approval levels) and need updating before the next recording.
 
 ## Private Credit Ontology
 

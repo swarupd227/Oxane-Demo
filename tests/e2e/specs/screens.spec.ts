@@ -3,15 +3,16 @@ import { expect, test } from "@playwright/test";
 import { prepare, resetCase } from "./helpers";
 
 const SCREENS = [
-  { path: "/", name: "deal", stage: "loaded", heading: /Calderwood Bank/ },
-  { path: "/intake", name: "intake", stage: "loaded", heading: "Document intake" },
+  { path: "/cases", name: "cases", stage: "loaded", heading: "Onboarding cases" },
+  { path: "/", name: "overview", stage: "loaded", heading: /Bramble Auto Receivables/ },
+  { path: "/intake", name: "intake", stage: "loaded", heading: "Documents" },
   { path: "/terms", name: "terms", stage: "loaded", heading: "Facility terms" },
   { path: "/rules", name: "rules", stage: "loaded", heading: "Eligibility and concentration rules" },
-  { path: "/mapping", name: "mapping", stage: "loaded", heading: "Data mapping" },
+  { path: "/mapping", name: "mapping", stage: "loaded", heading: "Tape mapping" },
   { path: "/validation", name: "validation", stage: "run", heading: "First validation run" },
   { path: "/exceptions", name: "exceptions", stage: "run", heading: "Exception queue" },
   { path: "/approve", name: "approve", stage: "worked", heading: "Approve and load" },
-  { path: "/results", name: "scorecard", stage: "approved", heading: "Scorecard" },
+  { path: "/results", name: "scorecard", stage: "approved", heading: "Metrics" },
 ] as const;
 
 const FORBIDDEN = /\b(demo|mock-?up|prototype|seed data|answer key|planted|presenter|rehears\w*|scene \d|phase \d)\b/i;

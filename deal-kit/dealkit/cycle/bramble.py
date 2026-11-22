@@ -132,7 +132,14 @@ def build_bramble(
         ]
         for k, name in enumerate(spec["new_columns"])
     }
-    write_tape(rows, COLUMNS, folder / FILES["loan_tape"], extra)
+    # Warning-level gaps in fields no test uses: three loans with no employment type and one
+    # stated income typed as text. They are logged, never alerted.
+    written = [dict(row) for row in rows]
+    active = [row for row in written if row["status"] == "ACTIVE"]
+    for row in active[101:401:100]:
+        row["employment_type"] = None
+    active[777]["stated_monthly_income"] = "n/a"
+    write_tape(written, COLUMNS, folder / FILES["loan_tape"], extra)
 
     opening = pool_balance(april)
     additions = round(
@@ -177,6 +184,10 @@ def build_bramble(
             "average": round((history["march"] + history["april"] + may_ratio) / 3, 2),
         },
         "interest_collected": roll.interest_collected,
+        "warnings": {
+            "missing_employment_type": [row["loan_id"] for row in active[101:401:100]],
+            "income_not_a_number": [active[777]["loan_id"]],
+        },
     }
     _servicer_report(deal, cycle, rows, unreported, facts, folder / FILES["servicer_report"])
     facts["certificate"] = _certificate(
@@ -316,6 +327,15 @@ def _servicer_report(
             ],
             widths=[4.3, 2.0],
             total_row=True,
+        ),
+        Spacer(1, 0.25 * inch),
+        text("6. Servicer commentary", REPORT_HEAD),
+        text(
+            "The transfer of new receivables due in April was deferred while Amendment No. 2 "
+            f"was agreed. The {roll['new_loans']} receivables purchased in this period, "
+            f"totalling US${_usd(roll['additions'])}, cover contracts originated in both April "
+            "and May.",
+            REPORT_BODY,
         ),
     ]
     build(path, story, head, head, SANS)

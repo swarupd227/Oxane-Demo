@@ -1,10 +1,8 @@
 import clsx from "clsx";
-import { ArrowRight, CalendarRange } from "lucide-react";
+import { CalendarRange } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { PageTitle } from "../ui";
 import { formatDate } from "../../lib/format";
 import { useCycle, type Source } from "../cycle";
 import { SourcePanel } from "../parts";
@@ -23,7 +21,6 @@ function at(date: string): number {
 
 export function TermsTimelinePage() {
   const { data: cycle } = useCycle();
-  const navigate = useNavigate();
   const [period, setPeriod] = useState(PERIODS[0]);
   const [source, setSource] = useState<Source | null | undefined>(undefined);
   if (!cycle) {
@@ -38,21 +35,12 @@ export function TermsTimelinePage() {
   const shown = source === undefined ? terms[0].versions.at(-1)?.source : source;
   return (
     <>
-      <PageHeader
-        title="Effective terms: Bramble"
-        summary="Each term with its versions and effective dates. Every test uses the version in force for the reporting period, not the latest one signed."
-        actions={
-          <Button onClick={() => navigate("/monitoring/covenants")}>
-            Covenants and triggers
-            <ArrowRight aria-hidden className="size-4" />
-          </Button>
-        }
-      />
-      <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-5">
-        <div className="space-y-5">
-          <Card className="p-5">
+      <PageTitle title="Terms" meta="Bramble Auto Receivables I · effective-dated versions" />
+      <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-3">
+        <div className="space-y-3">
+          <Card className="p-3">
             <div className="flex items-center justify-between gap-4">
-              <p className="flex items-center gap-2 font-semibold">
+              <p className="flex items-center gap-2 text-[0.8125rem] font-semibold">
                 <CalendarRange aria-hidden className="size-4 text-muted" />
                 Reporting period
               </p>
@@ -126,8 +114,8 @@ export function TermsTimelinePage() {
             </div>
           </Card>
 
-          <Card className="p-5">
-            <SectionLabel>What changes and when</SectionLabel>
+          <Card className="p-3">
+            <SectionLabel>Versions</SectionLabel>
             <table className="mt-3 w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
@@ -155,13 +143,9 @@ export function TermsTimelinePage() {
                 })}
               </tbody>
             </table>
-            <p className="mt-3 rounded-lg bg-canvas px-3 py-2 text-sm">
-              Sunrise Motors holds <strong className="numeric">{sunrise.share_pct.toFixed(2)}%</strong> of the eligible pool. Against the {dealerLimit}% limit in force for {period.label},{" "}
-              {sunrise.share_pct > dealerLimit ? (
-                <>the excess of <strong className="numeric">US${Math.round(sunrise.excess).toLocaleString("en-US")}</strong> comes off the borrowing base.</>
-              ) : (
-                <>there is no excess: the April finding falls away.</>
-              )}
+            <p className="numeric mt-2 rounded-md bg-canvas px-3 py-1.5 text-xs">
+              Sunrise Motors {sunrise.share_pct.toFixed(2)}% of eligible pool · limit {dealerLimit}% ({period.label}) ·{" "}
+              {sunrise.share_pct > dealerLimit ? <strong>excess US${Math.round(sunrise.excess).toLocaleString("en-US")} deducted</strong> : <strong>no excess</strong>}
             </p>
           </Card>
         </div>
@@ -170,7 +154,7 @@ export function TermsTimelinePage() {
           <SourcePanel source={shown} tall emptyText="Select a version to see its clause." />
           {cycle.terms.periods_note && (
             <p className="rounded-lg bg-canvas px-3 py-2 text-xs text-muted">
-              Amendment No. 2 on earlier periods: <span className="text-ink">"{cycle.terms.periods_note}"</span>{" "}
+              Amendment No. 2, earlier periods: <span className="text-ink">"{cycle.terms.periods_note}"</span>{" "}
               {cycle.terms.periods_source && (
                 <button type="button" className="cursor-pointer font-medium text-info hover:underline" onClick={() => setSource(cycle.terms.periods_source)}>
                   Show

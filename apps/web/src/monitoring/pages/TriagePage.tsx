@@ -1,47 +1,58 @@
 import clsx from "clsx";
-import { ArrowRight, Bot, CheckCircle2, FileText, Gavel, ListChecks, Scale } from "lucide-react";
+import { FileText, Quote } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
-import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
-import { PageHeader } from "../../components/ui/PageHeader";
-import { OUTCOMES, Refusal, useCycle, useCycleAction, useCycleSession, type Finding, type Outcome, type Source } from "../cycle";
-import { FacilityTag, OutcomePill, SourcePanel } from "../parts";
+import { Skeleton } from "../../components/ui/layout";
+import { OUTCOMES, Refusal, useActor, useCycle, useCycleAction, useCycleSession, type Finding, type Outcome, type Source } from "../cycle";
+import { useScope } from "../desk";
+import { NoAiBadge, OutcomePill, SourcePanel } from "../parts";
+import { Activity, Avatar, Badge, DataTable, FilterSelect, Kpis, PageTitle, Person, RecordId, SuggestedChip, useWide, when, type Column } from "../ui";
 
-const COLUMNS: Outcome[] = ["query", "confirmed", "expert", "logged"];
-const ICONS = { query: FileText, confirmed: CheckCircle2, expert: Scale, logged: ListChecks };
+type View = "open" | "decided" | "logged" | "all";
 
 export function TriagePage() {
   const { data: cycle } = useCycle();
   const { data: session } = useCycleSession();
+  const { actor } = useActor();
+  const { client } = useScope();
   const action = useCycleAction();
-  const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const [view, setView] = useState<View>("open");
+  const [check, setCheck] = useState("all");
   const [change, setChange] = useState<Outcome | null>(null);
   const [note, setNote] = useState("");
   const [source, setSource] = useState<Source | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
-  const byColumn = useMemo(() => {
-    const groups: Record<Outcome, Finding[]> = { query: [], confirmed: [], expert: [], logged: [] };
-    for (const finding of cycle?.findings ?? []) {
-      groups[session?.decisions[finding.id] ?? finding.suggested.outcome].push(finding);
-    }
-    return groups;
-  }, [cycle, session]);
-
-  const selected = cycle?.findings.find((f) => f.id === selectedId) ?? null;
+  const ref = params.get("ref");
+  const wide = useWide();
+  const selected = cycle?.findings.find((f) => f.ref === ref) ?? null;
   useEffect(() => {
-    if (!selectedId && cycle) {
-      setSelectedId(cycle.findings.find((f) => !f.rule_outcome)?.id ?? null);
+    if (!ref && cycle) {
+      const first = cycle.findings.find((f) => !f.rule_outcome && !session?.decisions[f.id]) ?? cycle.findings[0];
+      setParams({ ref: first.ref }, { replace: true });
     }
-  }, [cycle, selectedId]);
+  }, [cycle, ref, session, setParams]);
 
+  const state = (f: Finding): View => (f.rule_outcome ? "logged" : session?.decisions[f.id] ? "decided" : "open");
+  const scoped = useMemo(
+    () => (cycle?.findings ?? []).filter((f) => client === "all" || f.facility.split(",").some((id) => cycle?.facilities.find((x) => x.id === id)?.client === client)),
+    [cycle, client],
+  );
   if (!cycle) {
     return <Skeleton className="h-96 w-full" />;
   }
   const names = Object.fromEntries(cycle.facilities.map((f) => [f.id, f.name.split(" ")[0]]));
-  const open = cycle.findings.filter((f) => !session?.decisions[f.id]);
+  const clientOf = (f: Finding) => cycle.clients.find((c) => c.id === cycle.facilities.find((x) => x.id === f.facility.split(",")[0])?.client)!;
+  const rows = scoped.filter((f) => (view === "all" || state(f) === view) && (check === "all" || f.check === check));
+  const pick = (f: Finding) => {
+    setParams({ ref: f.ref }, { replace: true });
+    setSource(undefined);
+    setChange(null);
+    setNote("");
+    setError(null);
+  };
   const decide = (finding: Finding, outcome: Outcome, reason?: string) => {
     setError(null);
     action.mutate(
@@ -52,175 +63,230 @@ export function TriagePage() {
           setNote("");
           const next = cycle.findings.find((f) => f.id !== finding.id && !f.rule_outcome && !session?.decisions[f.id]);
           if (next) {
-            setSelectedId(next.id);
-            setSource(undefined);
+            pick(next);
           }
         },
         onError: (e) => setError(e instanceof Refusal ? e.message : "The decision could not be saved."),
       },
     );
   };
+  const allColumns: Column<Finding>[] = [
+    { key: "ref", header: "Ref", sort: (f) => f.ref, render: (f) => <RecordId>{f.ref}</RecordId> },
+    {
+      key: "facility",
+      header: "Facility",
+      sort: (f) => f.facility,
+      render: (f) => <span className="whitespace-nowrap">{f.facility.split(",").map((id) => names[id]).join(", ")}</span>,
+    },
+    {
+      key: "title",
+      header: "Exception",
+      sort: (f) => f.title,
+      render: (f) => (
+        <span className="block min-w-44">
+          <span className="line-clamp-1" title={f.title}>
+            {f.title}
+          </span>
+          <span className="block text-[0.6875rem] text-muted">{f.check}</span>
+        </span>
+      ),
+    },
+    { key: "raised", header: "Raised", sort: (f) => f.raised, render: (f) => <span className="numeric whitespace-nowrap text-muted">{when(f.raised)}</span> },
+    {
+      key: "suggested",
+      header: "Suggested",
+      sort: (f) => f.suggested.outcome,
+      render: (f) => (
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <SuggestedChip by={f.suggested.by} detail={f.suggested.reason} />
+          <span className="text-xs">{OUTCOMES[f.suggested.outcome].short}</span>
+        </span>
+      ),
+    },
+    {
+      key: "outcome",
+      header: "Outcome",
+      sort: (f) => session?.decisions[f.id] ?? "~",
+      render: (f) => <OutcomePill outcome={session?.decisions[f.id] ?? null} pending="Open" />,
+    },
+    {
+      key: "owner",
+      header: "Assignee",
+      sort: (f) => clientOf(f).contact.name,
+      render: (f) => (
+        <span title={clientOf(f).contact.name}>
+          <Avatar name={clientOf(f).contact.name} size="md" />
+        </span>
+      ),
+    },
+  ];
+  const columns = allColumns.filter((c) => (view !== "open" || c.key !== "outcome") && (wide || c.key !== "raised"));
   const decided = selected ? session?.decisions[selected.id] : null;
   const evidence = selected ? [...selected.sources.filter(Boolean), ...selected.clauses] : [];
   const shown = source === undefined ? (evidence[0] as Source | undefined) : source;
-
+  const count = (v: View) => scoped.filter((f) => state(f) === v).length;
+  const audit = (session?.audit ?? []).filter((a) => a.subject === selected?.id);
+  const quote = selected?.explanation?.quote;
   return (
     <>
-      <PageHeader
-        title="Triage"
-        summary="Every finding goes to one of four outcomes, with its reason. Rules log what is within tolerance; the AI suggests the rest; the analyst decides."
-        actions={
-          <>
-            <span className="numeric text-sm text-muted">{open.length ? `${open.length} to decide` : "All decided"}</span>
-            <Button onClick={() => navigate("/monitoring/pack")}>
-              Lender pack
-              <ArrowRight aria-hidden className="size-4" />
-            </Button>
-          </>
-        }
+      <PageTitle title="Exceptions" meta={`${cycle.cycle.label} · ${scoped.length} raised`} />
+      <Kpis
+        items={[
+          { label: "Open", value: count("open"), tone: count("open") ? "warn" : "ok", onClick: () => setView("open") },
+          { label: "Decided", value: count("decided"), onClick: () => setView("decided") },
+          { label: "Logged by rule", value: count("logged"), onClick: () => setView("logged") },
+          { label: "Expert review", value: scoped.filter((f) => session?.decisions[f.id] === "expert").length },
+          { label: "Queries to sender", value: scoped.filter((f) => session?.decisions[f.id] === "query").length },
+          { label: "Confirmed", value: scoped.filter((f) => session?.decisions[f.id] === "confirmed").length },
+        ]}
       />
-      <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-5">
-        <div className="grid grid-cols-2 gap-4">
-          {COLUMNS.map((column) => {
-            const Icon = ICONS[column];
-            return (
-              <section key={column} aria-label={OUTCOMES[column].label} className={clsx("rounded-xl border border-line p-3", column === "logged" ? "bg-canvas" : "bg-surface")}>
-                <header className="mb-2 flex items-center justify-between px-1">
-                  <p className="flex items-center gap-1.5 text-sm font-semibold">
-                    <Icon aria-hidden className="size-4 text-muted" />
-                    {column === "logged" ? "Held back: logged, no alert" : OUTCOMES[column].label}
-                  </p>
-                  <span className="numeric text-xs font-medium text-muted">{byColumn[column].length}</span>
-                </header>
-                <p className="mb-2 px-1 text-[0.6875rem] text-muted">{OUTCOMES[column].who}</p>
-                <ul className="space-y-1.5">
-                  {byColumn[column].map((finding) => {
-                    const done = !!session?.decisions[finding.id];
-                    return (
-                      <li key={finding.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedId(finding.id);
-                            setSource(undefined);
-                            setChange(null);
-                            setError(null);
-                          }}
-                          aria-current={finding.id === selectedId ? "true" : undefined}
-                          className={clsx(
-                            "w-full cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-colors",
-                            finding.id === selectedId ? "border-ink bg-canvas ring-1 ring-ink" : "border-line bg-surface hover:border-stone",
-                          )}
-                        >
-                          <span className="flex items-center justify-between gap-2">
-                            <span className="flex items-center gap-1">
-                              {finding.facility.split(",").map((id) => (
-                                <FacilityTag key={id} id={id} name={names[id]} />
-                              ))}
-                            </span>
-                            {done ? (
-                              <CheckCircle2 aria-label="Decided" className="size-3.5 text-ok" />
-                            ) : (
-                              <span className="text-[0.6875rem] font-medium text-muted">{finding.suggested.by === "AI" ? "Suggested" : "By rule"}</span>
-                            )}
-                          </span>
-                          <span className="mt-1 line-clamp-2 block text-[0.8125rem] leading-snug font-medium">{finding.title}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
+      <div className={clsx("grid gap-3", wide ? "grid-cols-[minmax(0,1fr)_26rem]" : "grid-cols-[minmax(0,1fr)_22rem]")}>
+        <DataTable
+          rows={rows}
+          columns={columns}
+          rowKey={(f) => f.ref}
+          selected={selected?.ref}
+          onRowClick={pick}
+          search={(f) => `${f.ref} ${f.title} ${f.check} ${f.facility} ${f.detail}`}
+          searchPlaceholder="Filter exceptions"
+          initialSort={{ key: "ref", dir: "asc" }}
+          empty="No exceptions in this view."
+          toolbar={
+            <>
+              <div role="tablist" aria-label="View" className="flex rounded-md border border-line p-0.5">
+                {(["open", "decided", "logged", "all"] as View[]).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === v}
+                    onClick={() => setView(v)}
+                    className={clsx("h-6 cursor-pointer rounded px-2 text-xs capitalize", view === v ? "bg-ink text-white" : "text-muted hover:text-ink")}
+                  >
+                    {v === "logged" ? "Logged" : v}
+                  </button>
+                ))}
+              </div>
+              <FilterSelect label="Check" value={check} onChange={setCheck} options={[{ value: "all", label: "All checks" }, ...[...new Set(scoped.map((f) => f.check))].sort().map((c) => ({ value: c, label: c }))]} />
+            </>
+          }
+        />
 
-        <div className="space-y-3">
+        <div className="space-y-3 self-start">
           {selected ? (
-            <Card className="p-5">
-              <div className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-xs text-muted">
-                  {selected.facility.split(",").map((id) => (
-                    <FacilityTag key={id} id={id} name={names[id]} />
-                  ))}
-                  {selected.check}
-                </span>
-                <OutcomePill outcome={decided ?? null} />
+            <section aria-label={`Exception ${selected.ref}`} className="rounded-lg border border-line bg-surface">
+              <div className="border-b border-line px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <RecordId>{selected.ref}</RecordId>
+                    <Badge tone="neutral">{selected.check}</Badge>
+                    {selected.blocking && <Badge tone="danger">Blocking</Badge>}
+                    {!clientOf(selected).ai_permitted && <NoAiBadge compact />}
+                  </span>
+                  <OutcomePill outcome={decided ?? null} pending="Open" />
+                </div>
+                <h2 className="mt-1.5 text-sm leading-snug font-semibold">{selected.title}</h2>
+                <dl className="mt-1.5 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-0.5 text-xs">
+                  <dt className="text-muted">Facility</dt>
+                  <dd>{selected.facility.split(",").map((id) => cycle.facilities.find((f) => f.id === id)?.name).join("; ")}</dd>
+                  <dt className="text-muted">Raised</dt>
+                  <dd className="numeric">{when(selected.raised)}</dd>
+                  <dt className="text-muted">Assignee</dt>
+                  <dd>
+                    <Person name={clientOf(selected).contact.name} />
+                  </dd>
+                  {selected.owner && (
+                    <>
+                      <dt className="text-muted">Party</dt>
+                      <dd>{selected.owner}</dd>
+                    </>
+                  )}
+                </dl>
               </div>
-              <h2 className="mt-2 text-lg leading-snug font-semibold">{selected.title}</h2>
-              <p className="mt-1 text-sm text-muted">{selected.detail}</p>
-              <div className="mt-3 rounded-lg bg-canvas p-3">
-                <p className="flex items-center gap-1.5 text-xs font-semibold">
-                  {selected.suggested.by === "AI" ? <Bot aria-hidden className="size-3.5" /> : <Gavel aria-hidden className="size-3.5" />}
-                  {selected.suggested.by === "AI" ? "AI suggests" : "Tolerance rule"}: {OUTCOMES[selected.suggested.outcome].label}
-                </p>
-                <p className="mt-1 text-sm">{selected.suggested.reason}</p>
-              </div>
-              {selected.clauses.length > 0 && (
-                <div className="mt-3">
-                  <SectionLabel>Clauses involved</SectionLabel>
-                  <div className="mt-1.5 flex flex-wrap gap-2">
+              <div className="px-3 py-2">
+                <p className="text-[0.8125rem]">{selected.detail}</p>
+                {quote && (
+                  <button type="button" onClick={() => setSource(selected.explanation?.source ?? null)} className="mt-1.5 flex cursor-pointer items-start gap-1 text-left text-xs text-info hover:underline">
+                    <Quote aria-hidden className="mt-0.5 size-3 shrink-0" />“{quote}”
+                  </button>
+                )}
+                <div className="mt-2 rounded-md bg-canvas px-2.5 py-2">
+                  <p className="flex items-center gap-1.5 text-xs">
+                    <SuggestedChip by={selected.suggested.by} />
+                    <span className="font-semibold">{OUTCOMES[selected.suggested.outcome].label}</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted">{selected.suggested.reason}</p>
+                </div>
+                {selected.clauses.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
                     {selected.clauses.map((clause) => (
-                      <Button key={clause.label} size="sm" variant="secondary" onClick={() => setSource(clause)}>
-                        <FileText aria-hidden className="size-3.5" />
+                      <button
+                        key={clause.label}
+                        type="button"
+                        onClick={() => setSource(clause)}
+                        className="inline-flex h-6 cursor-pointer items-center gap-1 rounded border border-line px-1.5 text-[0.6875rem] hover:border-stone"
+                      >
+                        <FileText aria-hidden className="size-3" />
                         {clause.label}
-                      </Button>
+                      </button>
                     ))}
                   </div>
-                </div>
-              )}
-              {!decided && !selected.rule_outcome && (
-                <div className="mt-4 border-t border-sand pt-4">
-                  {change ? (
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium" htmlFor="triage-reason">
-                        Reason for {OUTCOMES[change].label.toLowerCase()}
-                      </label>
-                      <textarea
-                        id="triage-reason"
-                        value={note}
-                        onChange={(event) => setNote(event.target.value)}
-                        rows={2}
-                        className="w-full rounded-lg border border-line px-3 py-2 text-sm"
-                        placeholder="Why the suggestion does not fit"
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" disabled={!note.trim() || action.isPending} onClick={() => decide(selected, change, note)}>
-                          Save decision
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setChange(null)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button disabled={action.isPending} onClick={() => decide(selected, selected.suggested.outcome)}>
-                        <CheckCircle2 aria-hidden className="size-4" />
-                        {selected.suggested.outcome === "query" ? "Confirm: query the sender" : selected.suggested.outcome === "expert" ? "Confirm: send to expert" : "Confirm issue"}
-                      </Button>
-                      {(["query", "confirmed", "expert"] as Outcome[])
-                        .filter((o) => o !== selected.suggested.outcome)
-                        .map((o) => (
-                          <Button key={o} size="sm" variant="ghost" onClick={() => setChange(o)}>
-                            {OUTCOMES[o].short} instead
+                )}
+                {!decided && !selected.rule_outcome && (
+                  <div className="mt-3 border-t border-sand pt-2.5">
+                    {change ? (
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium" htmlFor="triage-reason">
+                          Reason for {OUTCOMES[change].label.toLowerCase()}
+                        </label>
+                        <textarea id="triage-reason" value={note} onChange={(event) => setNote(event.target.value)} rows={2} className="w-full rounded-md border border-line px-2 py-1.5 text-[0.8125rem]" />
+                        <div className="flex gap-2">
+                          <Button size="sm" disabled={!note.trim() || action.isPending} onClick={() => decide(selected, change, note)}>
+                            Save
                           </Button>
-                        ))}
-                    </div>
-                  )}
-                  {error && (
-                    <p role="alert" className="mt-2 text-sm text-danger">
-                      {error}
-                    </p>
-                  )}
-                </div>
-              )}
-              {decided && session?.triage[selected.id]?.note && <p className="mt-3 text-sm text-muted">Analyst's reason: {session.triage[selected.id].note}</p>}
-            </Card>
+                          <Button size="sm" variant="ghost" onClick={() => setChange(null)}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Button size="sm" disabled={action.isPending || actor !== "analyst"} onClick={() => decide(selected, selected.suggested.outcome)}>
+                          Accept: {OUTCOMES[selected.suggested.outcome].short}
+                        </Button>
+                        {(["query", "confirmed", "expert"] as Outcome[])
+                          .filter((o) => o !== selected.suggested.outcome)
+                          .map((o) => (
+                            <Button key={o} size="sm" variant="secondary" disabled={actor !== "analyst"} onClick={() => setChange(o)}>
+                              {OUTCOMES[o].short}
+                            </Button>
+                          ))}
+                        {actor !== "analyst" && <span className="text-xs text-muted">Preparer action</span>}
+                      </div>
+                    )}
+                    {error && (
+                      <p role="alert" className="mt-1.5 text-xs text-danger">
+                        {error}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="border-t border-line px-3 py-2">
+                <p className="mb-1.5 text-[0.6875rem] font-semibold text-muted">Activity</p>
+                <Activity
+                  entries={audit}
+                  origin={[
+                    ...(selected.rule_outcome ? [{ at: selected.raised, text: `Logged by rule: ${selected.suggested.reason}` }] : []),
+                    { at: selected.raised, text: `Raised by ${selected.check.toLowerCase()} check` },
+                  ]}
+                />
+              </div>
+            </section>
           ) : (
-            <Card className="p-5 text-sm text-muted">Select a finding.</Card>
+            <p className="rounded-lg border border-dashed border-line p-4 text-xs text-muted">No exception selected.</p>
           )}
-          <SourcePanel source={shown} emptyText="No document page for this finding: it comes from the tapes or the cycle's own records." />
+          <SourcePanel source={shown} emptyText="No document page: raised from tape data." />
         </div>
       </div>
     </>

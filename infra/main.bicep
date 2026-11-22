@@ -7,6 +7,9 @@ targetScope = 'resourceGroup'
 @description('Azure region for everything except where a service is not offered.')
 param location string = resourceGroup().location
 
+@description('Region for PostgreSQL, where the main region does not offer its Burstable SKU to this subscription.')
+param postgresLocation string = location
+
 @description('Short lowercase prefix for resource names.')
 @maxLength(16)
 param name string = 'oxaneworkbench'
@@ -31,6 +34,9 @@ param analystUsers string = ''
 @description('Comma-separated sign-in names of second analysts.')
 param approverUsers string = ''
 
+@description('Comma-separated sign-in names of heads of monitoring (third approval level).')
+param seniorUsers string = ''
+
 @allowed(['anthropic', 'foundry'])
 param llmProvider string = 'foundry'
 
@@ -46,8 +52,6 @@ var deployApp = !empty(image)
 var signInConfigured = !empty(authClientId)
 var hasFoundry = !empty(foundryApiKey)
 var postgresUser = 'workbench'
-var keyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
-var acrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
 resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: '${name}-logs'
@@ -58,26 +62,19 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
+// Nothing here assigns roles, so a subscription Contributor can deploy it. The app pulls with
+// the registry's admin credential, held as a container app secret, and reads Key Vault through
+// an access policy for its managed identity.
 resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: '${name}${suffix}'
   location: location
   sku: { name: 'Basic' }
-  properties: { adminUserEnabled: false }
+  properties: { adminUserEnabled: true }
 }
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: '${name}-identity'
   location: location
-}
-
-resource pullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(registry.id, identity.id, acrPull)
-  scope: registry
-  properties: {
-    principalId: identity.properties.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', acrPull)
-  }
 }
 
 resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -86,23 +83,20 @@ resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   properties: {
     tenantId: tenant().tenantId
     sku: { family: 'A', name: 'standard' }
-    enableRbacAuthorization: true
-  }
-}
-
-resource vaultRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(vault.id, identity.id, keyVaultSecretsUser)
-  scope: vault
-  properties: {
-    principalId: identity.properties.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUser)
+    enableRbacAuthorization: false
+    accessPolicies: [
+      {
+        tenantId: tenant().tenantId
+        objectId: identity.properties.principalId
+        permissions: { secrets: ['get'] }
+      }
+    ]
   }
 }
 
 resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
   name: '${name}-${suffix}'
-  location: location
+  location: postgresLocation
   sku: { name: 'Standard_B1ms', tier: 'Burstable' }
   properties: {
     version: '16'
@@ -167,15 +161,24 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
     type: 'UserAssigned'
     userAssignedIdentities: { '${identity.id}': {} }
   }
-  dependsOn: [pullRole, vaultRole, database, allowAzure]
+  dependsOn: [database, allowAzure]
   properties: {
     managedEnvironmentId: appEnvironment.id
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: { external: true, targetPort: 8000, transport: 'auto' }
-      registries: [{ server: registry.properties.loginServer, identity: identity.id }]
+      registries: [
+        {
+          server: registry.properties.loginServer
+          username: registry.listCredentials().username
+          passwordSecretRef: 'registry-password'
+        }
+      ]
       secrets: concat(
-        [{ name: 'database-url', keyVaultUrl: databaseSecret.properties.secretUri, identity: identity.id }],
+        [
+          { name: 'registry-password', value: registry.listCredentials().passwords[0].value }
+          { name: 'database-url', keyVaultUrl: databaseSecret.properties.secretUri, identity: identity.id }
+        ],
         signInConfigured
           ? [{ name: 'auth-client-secret', keyVaultUrl: '${vault.properties.vaultUri}secrets/auth-client-secret', identity: identity.id }]
           : [],
@@ -195,9 +198,10 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
           env: concat(
             [
               { name: 'DATABASE_URL', secretRef: 'database-url' }
-              { name: 'AUTH_REQUIRED', value: 'true' }
+              { name: 'AUTH_REQUIRED', value: signInConfigured ? 'true' : 'false' }
               { name: 'ANALYST_USERS', value: analystUsers }
               { name: 'APPROVER_USERS', value: approverUsers }
+              { name: 'SENIOR_USERS', value: seniorUsers }
               { name: 'LLM_PROVIDER', value: llmProvider }
               { name: 'ANTHROPIC_FOUNDRY_RESOURCE', value: foundryResource }
             ],

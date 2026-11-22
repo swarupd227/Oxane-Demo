@@ -12,7 +12,8 @@ export interface Source {
 }
 
 export type Outcome = "logged" | "query" | "confirmed" | "expert";
-export type FacilityId = "bramble" | "northmoor" | "kestrel";
+export type FacilityId = "bramble" | "northmoor" | "kestrel" | "larkspur";
+export type ClientId = "calderwood" | "thornbury";
 
 export interface Facility {
   id: FacilityId;
@@ -24,6 +25,33 @@ export interface Facility {
   size: string;
   size_note?: string;
   reporting: string;
+  client: ClientId;
+  client_name: string;
+  ai_permitted: boolean;
+}
+
+export interface Person {
+  name: string;
+  role: string;
+}
+
+export interface Override {
+  field: string;
+  default: string;
+  override: string;
+  reason: string;
+}
+
+export interface Client {
+  id: ClientId;
+  name: string;
+  ai_permitted: boolean;
+  ai_note?: string;
+  contact: Person;
+  client_contact: Person;
+  status_call: string;
+  approval_levels: { level: number; actor: CycleActor; title: string }[];
+  master_field_overrides?: Override[];
 }
 
 export interface Chase {
@@ -34,14 +62,209 @@ export interface Chase {
 }
 
 export interface Submission {
-  facility: FacilityId;
+  ref: string;
+  facility: string;
   label: string;
   file: string | null;
   due: string;
   received: string | null;
-  status: "received" | "late" | "received_late" | "awaited";
+  status: "received" | "late" | "received_late" | "awaited" | "reused";
   sender?: string;
   chase: Chase[];
+  channel: "Email" | "SFTP" | "API" | "Data room" | "Upload";
+  internal_deadline: string;
+  deadline_status: "met" | "missed" | "at_risk";
+  client: ClientId;
+  reused: { from: string; note: string; consent: string } | null;
+}
+
+export interface RuleRow {
+  id: string;
+  family: string;
+  family_name: string;
+  severity: "blocking" | "warning";
+  text: string;
+  field: string;
+  checked: number;
+  failed: number;
+  status: "passed" | "warning" | "blocking" | "n/a";
+  examples: { key: string; value: string; row: number }[];
+}
+
+export interface ChangeRow {
+  id: string;
+  metric: string;
+  label: string;
+  text: string;
+  prior: number;
+  current: number;
+  change: number;
+  basis: "pct" | "abs";
+  limit: number;
+  flagged: boolean;
+}
+
+export interface Explanation {
+  explained: boolean;
+  cause: string;
+  quote: string;
+  document: string;
+  source: Source | null;
+  figures: Record<string, string>;
+  verified: boolean;
+  by: "AI";
+}
+
+export interface Feed {
+  facility: FacilityId;
+  file: string;
+  kind: string;
+  sha256: string;
+  rows_in_file: number;
+  rows_loaded: number;
+  rules: RuleRow[];
+  prior_period: ChangeRow[];
+  held: boolean;
+  resolution: { rule: string; proposed: string; collapsible: boolean; collapsed: string[] } | null;
+  explanation: Explanation | null;
+  month?: string;
+  price_file?: string;
+}
+
+export interface MappingFeed {
+  facility: FacilityId;
+  client: ClientId;
+  file: string;
+  sha256: string;
+  rows: number;
+  columns_total: number;
+  from_memory: number;
+  layout: "changed" | "unchanged";
+  stored: string;
+  ai_used: boolean;
+  fields: { column: string; master_field: string; entity: string; new?: boolean }[];
+  entities: Record<string, number>;
+  overrides: Override[];
+}
+
+export interface QcLine {
+  line: string;
+  unit: string;
+  platform: number | string | null;
+  qc: number | string | null;
+  class: "agrees" | "blank" | "rounding" | "sign" | "percent" | "genuine";
+  label: string;
+  cell: string;
+}
+
+export interface HeadroomRow {
+  facility: string;
+  test: string;
+  clause: string;
+  value: number;
+  limit: number;
+  direction: "max" | "min";
+  unit: string;
+  headroom: number;
+  used_pct: number;
+  passed: boolean;
+  early_warning: boolean;
+  trend: "towards" | "away" | "flat";
+  series: { period: string; value: number }[];
+  note: string;
+  source: Source | null;
+}
+
+export interface AlertRule {
+  facility: FacilityId;
+  metric: string;
+  operator: string;
+  threshold: number;
+  unit: string;
+  label: string;
+}
+
+export interface AlertDraft {
+  request: string;
+  client: ClientId;
+  drafted: { understood: boolean; metric: string; operator: string; threshold: string; summary: string; concepts: string[]; question: string };
+  rule: AlertRule | null;
+  valid: boolean;
+  problems: string[];
+  back_test: { period: string; value: number; fires: boolean }[];
+  fires: number;
+  by: "AI";
+}
+
+export interface Brief {
+  client: ClientId;
+  ai: boolean;
+  opening: string;
+  sections: { heading: string; points: string[] }[];
+  figures: Record<string, PackFigure>;
+  unknown_placeholders: string[];
+  numbers_in_text: string[];
+}
+
+export interface Position {
+  loanx: string;
+  cusip: string;
+  issuer: string;
+  facility: string;
+  par: number;
+  spread_bps: number;
+  maturity: string;
+  moodys: string;
+  sp: string;
+  industry: string;
+  ccc: boolean;
+  in_excess: boolean;
+  bid: number;
+  prior_bid: number | null;
+  prior_rating: string[] | null;
+}
+
+export interface Larkspur {
+  basis: string;
+  override: Override | null;
+  determination_date: string;
+  positions_file: string;
+  prices_file: string;
+  positions: Position[];
+  borrowing_base: {
+    total_par: number;
+    ccc_par: number;
+    ccc_pct: number;
+    ccc_limit_pct: number;
+    ccc_limit: number;
+    ccc_excess: number;
+    excess: { loanx: string; issuer: string; par_in_excess: number; bid: number; haircut: number }[];
+    haircut: number;
+    adjusted: number;
+    advance_rate_pct: number;
+    borrowing_base: number;
+    commitment: number;
+    drawn: number;
+    availability: number;
+    passed: boolean;
+  };
+  april: { ccc_pct: number; haircut: number; borrowing_base: number; availability: number; total_par: number };
+  moodys_only: { ccc_pct: number; passed: boolean; haircut: number };
+  changes: {
+    sold: string[];
+    bought: string[];
+    relinked: { old_loanx: string; new_loanx: string; old_cusip: string; new_cusip: string; issuer: string; matched_on: string[] }[];
+    unexplained_gone: string[];
+    unexplained_new: string[];
+  };
+  trades: { trade_date: string; direction: string; loanx: string; issuer: string; par: number; price: number }[];
+  par_roll: { opening: number; sold: number; bought: number; expected: number; closing: number; gap: number };
+  downgrades: { loanx: string; issuer: string; before: string[]; after: string[]; notches: number; into_ccc: boolean }[];
+  price_moves: { loanx: string; issuer: string; before: number; after: number; change: number }[];
+  price_move_limit: number;
+  clauses: Source[];
+  ccc_source: Source | null;
+  warning_source: Source | null;
 }
 
 export interface Trigger {
@@ -59,6 +282,8 @@ export interface Trigger {
 
 export interface Finding {
   id: string;
+  ref: string;
+  raised: string;
   facility: string; // one id, or two joined by a comma
   check: string;
   title: string;
@@ -71,6 +296,8 @@ export interface Finding {
   suggested: { outcome: Outcome; reason: string; by: "AI" | "Rule" };
   sources: (Source | null)[];
   clauses: Source[];
+  blocking?: boolean;
+  explanation?: Explanation;
 }
 
 export interface PackFigure {
@@ -86,6 +313,7 @@ export interface LenderPack {
   figures: Record<string, PackFigure>;
   unknown_placeholders: string[];
   numbers_in_text: string[];
+  ai?: boolean;
 }
 
 export interface Holding {
@@ -115,12 +343,59 @@ export interface TermRow {
   next_value: string;
 }
 
+/** A facility in the rest of the book: summary figures only, every test worked out by code. */
+export interface BookFacility {
+  id: string;
+  name: string;
+  borrower: string;
+  client: ClientId;
+  client_name: string;
+  ai_permitted: boolean;
+  type: string;
+  asset_class: string;
+  role: string;
+  size: string;
+  commitment: number;
+  drawn: number;
+  reporting: string;
+  period: string;
+  analyst: string;
+  documents: { received: number; total: number; late: number };
+  tests: Pick<HeadroomRow, "test" | "clause" | "value" | "limit" | "unit" | "direction" | "headroom" | "passed" | "early_warning" | "trend">[];
+  trend: { label: string; unit: string; limit: number; direction: "max" | "min"; series: { period: string; value: number }[] };
+  report: {
+    status: "released" | "in_review" | "preparing";
+    levels: number;
+    done: number;
+    prepared: { by: string; at: string } | null;
+    approvals: { level: number; by: string; at: string }[];
+    released_at: string | null;
+  };
+}
+
 export interface Cycle {
+  team: Record<CycleActor, { name: string; title: string }>;
+  book: { facilities: BookFacility[]; submissions: Submission[]; headroom: HeadroomRow[] };
   cycle: { id: string; label: string; period_end: string; as_of: string };
   lender: string;
   desk: string;
   tolerances: { certificate_usd: number; roll_forward_usd: number; trigger_warning_pts: number };
+  clients: Client[];
   facilities: Facility[];
+  validation: { feeds: Feed[] };
+  mapping: {
+    feeds: MappingFeed[];
+    memories: { client: ClientId; name: string; layouts: { facility: FacilityId; columns: number; kind: string }[] }[];
+    entities: Record<string, string>;
+  };
+  qc: Record<FacilityId, { file: string; lines: QcLine[]; agrees: number; presentation: number; genuine: string[] }>;
+  headroom: HeadroomRow[];
+  early_warnings: { facility: FacilityId; kind: string; subject: string; detail: string; source: Source | null }[];
+  alerts: Record<
+    ClientId,
+    { ai_permitted: boolean; catalogue: Record<string, { label: string; unit: string }>; history: Record<string, [string, number][]>; presets: AlertDraft[] }
+  >;
+  briefs: Brief[];
   submissions: Submission[];
   layout: {
     facility: FacilityId;
@@ -165,7 +440,17 @@ export interface Cycle {
   tests: {
     bramble: {
       borrowing_base: {
-        system: { eligible_pool: number; excess: number; borrowing_base: number; availability: number; advance_rate_pct: number; provisional: boolean };
+        system: {
+          eligible_pool: number;
+          excess: number;
+          borrowing_base: number;
+          availability: number;
+          advance_rate_pct: number;
+          provisional: boolean;
+          gross_pool: number;
+          ineligible: number;
+          ineligible_loans: number;
+        };
         certificate: { eligible_pool: number; borrowing_base: number; availability: number };
         differences: { eligible_pool: number; borrowing_base: number; availability: number };
         within_tolerance: boolean;
@@ -222,6 +507,7 @@ export interface Cycle {
       concentration: { largest: string; largest_pct: number; top_five_pct: number; largest_limit: number; top_five_limit: number; passed: boolean; clause: string };
       positions: { name: string; value: number; valued: string }[];
     };
+    larkspur: Larkspur;
   };
   collateral: {
     checked: Record<FacilityId, number>;
@@ -232,15 +518,25 @@ export interface Cycle {
   findings: Finding[];
   packs: LenderPack[];
   unverified: string[];
-  usage: { model: string; calls: number; cost_usd: number; model_seconds: number };
+  usage: {
+    model: string;
+    calls: number;
+    cost_usd: number;
+    model_seconds: number;
+    by_client: { client: ClientId; ai_permitted: boolean; calls: number; tokens: number; cost_usd: number }[];
+  };
   llm_mode: LlmMode;
 }
 
 export interface CycleAudit {
   at: string;
   actor: string;
+  role?: CycleActor;
   action: string;
   reason: string | null;
+  type?: string;
+  subject?: string | null;
+  hash?: string;
 }
 
 export interface CycleSession {
@@ -248,6 +544,26 @@ export interface CycleSession {
   layoutConfirmed: boolean;
   triage: Record<string, { outcome: Outcome; note: string | null; at: string; overrode: boolean }>;
   packs: Partial<Record<FacilityId, { at: string; by: string }>>;
+  blocks: Partial<Record<FacilityId, { note: string; at: string; by: string }>>;
+  qcResolved: Partial<Record<FacilityId, Record<string, { note: string; at: string; by: string }>>>;
+  approvals: Partial<Record<FacilityId, { level: number; title: string; by: string; actor: CycleActor; at: string }[]>>;
+  alerts: {
+    id: number;
+    client: ClientId;
+    request: string;
+    rule: AlertRule | null;
+    summary: string | null;
+    fires: number | null;
+    status: "requested" | "live";
+    requestedAt: string;
+    approvedAt?: string;
+    approvedBy?: string;
+  }[];
+  levels: Record<FacilityId, { level: number; actor: CycleActor; title: string }[]>;
+  held: Record<FacilityId, boolean>;
+  qcOpen: Record<FacilityId, string[]>;
+  provisional: Record<FacilityId, boolean>;
+  events: number;
   audit: CycleAudit[];
   actions: number;
   decisions: Record<string, Outcome | null>;
@@ -263,7 +579,7 @@ export const OUTCOMES: Record<Outcome, { label: string; short: string; tone: str
   expert: { label: "Expert review", short: "Expert", tone: "bg-warn-tint text-warn", who: "Credit or legal expert" },
 };
 
-const TIMEOUT_MS = 4000;
+const TIMEOUT_MS = 15000;
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
@@ -281,7 +597,7 @@ export function useCycleSession() {
   return useQuery({ queryKey: ["cycle-session"], queryFn: () => getJson<CycleSession>("/api/monitoring/session") });
 }
 
-export type CycleActor = "analyst" | "approver";
+export type CycleActor = "analyst" | "approver" | "senior" | "client";
 export const ActorContext = createContext<{ actor: CycleActor; setActor: (actor: CycleActor) => void }>({
   actor: "analyst",
   setActor: () => undefined,
@@ -342,10 +658,53 @@ export function useWhatIf() {
 
 export interface CycleScorecard {
   available: boolean;
-  measures: { name: string; formula: string; target: string; value: string; details: string[]; passed: boolean | null }[];
-  issues: { id: string; summary: string; expected: Outcome; found: boolean }[];
+  measures: {
+    name: string;
+    measured: { value: string; details: string[] };
+    assumed: { value: string; details: string[] } | null;
+    target: string;
+    passed: boolean | null;
+  }[];
+  issues: { id: string; summary: string; expected: Outcome; found: boolean; facility: string }[];
+  noise: { id: string; summary: string; raised: boolean }[];
+  assumptions: string;
   caveat: string;
 }
+
+export class DraftRefusal extends Error {}
+
+export function useAlertDraft() {
+  return useMutation({
+    mutationFn: async ({ client, request }: { client: ClientId; request: string }) => {
+      const response = await fetch("/api/monitoring/alerts/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client, request }),
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        throw new DraftRefusal(body.detail ?? "The request could not be drafted.");
+      }
+      return body as AlertDraft;
+    },
+  });
+}
+
+export function workbookUrl(facility: FacilityId): string {
+  return `/api/monitoring/workbook/${facility}.xlsx`;
+}
+
+/** Replace each {{placeholder}} with code's figure, for plain text. */
+export function fillText(text: string, figures: Record<string, { value: string }>): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (match, key: string) => figures[key]?.value ?? match);
+}
+
+export function clientOf(cycle: Cycle, facility: string): Client | undefined {
+  const owner = cycle.facilities.find((f) => f.id === facility)?.client;
+  return cycle.clients.find((c) => c.id === owner);
+}
+
+export const FACILITY_ORDER: FacilityId[] = ["bramble", "northmoor", "kestrel", "larkspur"];
 
 export function useCycleScorecard() {
   return useQuery({ queryKey: ["cycle-scorecard"], queryFn: () => getJson<CycleScorecard>("/api/monitoring/scorecard") });

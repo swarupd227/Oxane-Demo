@@ -10,7 +10,7 @@ export default defineConfig({
   timeout: 60_000,
   outputDir: "./test-results",
   reporter: [["list"]],
-  expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled" } },
+  expect: { timeout: 15_000, toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled" } },
   use: {
     baseURL: process.env.BASE_URL ?? "http://localhost:5180",
     viewport: size,

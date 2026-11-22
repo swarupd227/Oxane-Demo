@@ -5,14 +5,15 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   await resetCase(request);
 
   await test.step("Deal", async () => {
-    await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Calderwood Bank");
-    await expect(page.getByText("Sandbox environment.")).toBeVisible();
+    // Walkthrough mode shows the next-step buttons this test follows.
+    await page.goto("/?presenter=1");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Bramble Auto Receivables");
+    await expect(page.getByText(/UAT environment/)).toBeVisible();
     await page.getByRole("button", { name: "Start onboarding" }).click();
   });
 
   await test.step("Intake", async () => {
-    await page.getByRole("button", { name: "Load sandbox pack" }).click();
+    await page.getByRole("button", { name: "Load received pack" }).click();
     await expect(page.getByText("Expected but not received")).toBeVisible({ timeout: 10_000 });
     await expect(page.locator("tbody tr")).toHaveCount(8);
     await expect(page.getByText("Schedule 4")).toBeVisible();
@@ -39,7 +40,7 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   });
 
   await test.step("Rules", async () => {
-    await step(page, "Rules");
+    await step(page, "Rules & Configuration");
     await page.getByRole("button", { name: "Edit E5" }).click();
     await page.getByRole("spinbutton").fill("70000");
     await expect(page.getByText("Loans becoming ineligible")).toBeVisible();
@@ -49,10 +50,10 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   });
 
   await test.step("Mapping", async () => {
-    await step(page, "Mapping");
+    await step(page, "Mapping & Backbook");
     await expect(page.getByText("38 tape columns mapped")).toBeVisible();
     await page.getByRole("button", { name: "Accept LoanNumber" }).click();
-    await expect(page.getByText("1 accepted.")).toBeVisible();
+    await expect(page.getByText(/1 accepted$/)).toBeVisible();
     await page.getByRole("button", { name: /Accept remaining/ }).click();
     await page.getByRole("button", { name: "View validation" }).click();
   });
@@ -107,7 +108,8 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   await test.step("Scorecard", async () => {
     await expect(page.getByText("Exceptions found", { exact: true })).toBeVisible();
     await expect(page.getByText("Extraction was tuned on this synthetic pack.")).toBeVisible();
-    await page.getByText("Field-level accuracy, Tier 1, before review").click();
-    await expect(page.getByText("How it is calculated:").first()).toBeVisible();
+    await expect(page.getByText("Field-level accuracy, Tier 1, before review")).toBeVisible();
+    await expect(page.getByText("Correct values / fields extracted").first()).toBeVisible();
+    await expect(page.getByText("Measured").first()).toBeVisible();
   });
 });

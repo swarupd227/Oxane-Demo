@@ -1,0 +1,162 @@
+# The platform's record of case 0412 beyond the document pack: where the client's own files
+# are, the query log with its timeline, the backbook batch, and the scorecard's stated
+# assumptions. The casework run and the workbench read this file; nothing here is an answer.
+
+case:
+  number: "0412"
+  client: Calderwood Bank plc
+  # The sandbox clock. The audit log keeps the real time of every action.
+  pack_received: 2026-05-04T09:00:00
+  clock: 2026-05-15T16:00:00
+  business_day: {start: "09:00", end: "17:30"}
+
+files:
+  client_model: casework/client/Calderwood_BB_Model_Template_v3.2.xlsx
+  qc: casework/qc/QC_Bramble_Onboarding_April_2026.xlsx
+  backbook: casework/backbook
+
+# Queries on the case. The first three were worked before the demo; the client-model queries are
+# drafted by the casework run and sent in the session. Times are on the sandbox clock.
+queries:
+  - id: Q-01
+    source: X2
+    to: Borrower's counsel, via Calderwood
+    subject: Schedule 4 (Restricted Jurisdictions) is missing from the executed agreement
+    text: >-
+      The executed credit agreement lists Schedule 4 (Restricted Jurisdictions) in its contents,
+      but the schedule is not in the pack. Eligibility criterion 7 cannot be tested until we
+      have it, so every result stays provisional. Please send the executed schedule.
+    raised: 2026-05-04T14:00:00
+    sent: 2026-05-05T10:00:00
+    answered: null
+    blocking: true
+    earlier: true
+  - id: Q-02
+    source: X7
+    to: Bramble Auto Finance (servicer)
+    subject: Servicer report has no recoveries figure
+    text: >-
+      The April servicer report shows charge-offs but leaves the recoveries line blank. Please
+      confirm whether recoveries were nil or the line was left out.
+    raised: 2026-05-05T11:00:00
+    sent: 2026-05-05T11:30:00
+    answered: 2026-05-07T16:00:00
+    closed: 2026-05-08T10:00:00
+    answer: Recoveries were nil for April. The line will be shown from the May report.
+    blocking: false
+    earlier: true
+  - id: Q-03
+    source: Definitions
+    to: Bramble Auto Finance (servicer)
+    subject: Credit and Collection Policy is referred to but not in the pack
+    text: >-
+      The definition of Defaulted Receivable turns on the charge-off period in the Credit and
+      Collection Policy, which was delivered to Calderwood before closing but is not in the
+      pack. Please send the current policy.
+    raised: 2026-05-06T15:00:00
+    sent: 2026-05-06T16:00:00
+    answered: 2026-05-11T10:30:00
+    closed: 2026-05-11T12:00:00
+    answer: >-
+      Policy version 4.1 attached. Receivables are charged off at 120 days contractually past
+      due, or when the vehicle is sold after repossession, whichever is earlier.
+    # What the analyst took from the answer into the case record.
+    answer_facts: {charge_off_days: 120}
+    blocking: false
+    earlier: true
+  # One per difference the comparison finds, in this order. `answer` is Calderwood's reply.
+  - id: Q-04
+    topic: advance_rate
+    to: Calderwood warehouse desk
+    raised: 2026-05-12T11:00:00
+    sent: 2026-05-12T15:00:00
+    answered: 2026-05-14T14:30:00
+    closed: 2026-05-14T16:00:00
+    answer: >-
+      Our template predates Amendment No. 1. Use 82.5% from 1 March 2026; we have moved our
+      model to version 3.3.
+    resolution: Agreement governs
+    blocking: true
+  - id: Q-05
+    topic: concentration_denominator
+    to: Calderwood warehouse desk
+    raised: 2026-05-12T11:00:00
+    sent: 2026-05-12T15:00:00
+    answered: 2026-05-14T14:30:00
+    closed: 2026-05-14T16:00:00
+    answer: >-
+      The agreement governs: measure the limits against the Eligible Pool Balance. Please show
+      the total-pool basis alongside for the first three reports so we can reconcile.
+    resolution: Agreement governs; client basis reported alongside for three months
+    blocking: true
+  - id: Q-06
+    topic: dealer_grouping
+    to: Calderwood warehouse desk
+    raised: 2026-05-12T11:00:00
+    sent: 2026-05-12T15:00:00
+    answered: 2026-05-14T14:30:00
+    closed: 2026-05-14T16:00:00
+    answer: >-
+      Combine affiliated dealers as the agreement says. We will ask Bramble for its affiliate
+      list each month.
+    resolution: Agreement governs
+    blocking: true
+  - id: Q-07
+    topic: fico_bucket
+    to: Calderwood warehouse desk
+    raised: 2026-05-12T11:00:00
+    sent: 2026-05-12T15:00:00
+    answered: 2026-05-14T14:30:00
+    closed: 2026-05-14T16:00:00
+    answer: >-
+      Below 600 for the borrowing base, as the amendment says. Keep our 600-and-below band in
+      the FICO stratification of the monthly report.
+    resolution: Agreement governs the borrowing base; client band kept for stratification only
+    blocking: false
+  - id: Q-08
+    topic: past_due_exclusion
+    to: Calderwood warehouse desk
+    raised: 2026-05-12T11:00:00
+    sent: 2026-05-12T15:00:00
+    answered: 2026-05-14T14:30:00
+    closed: 2026-05-14T16:00:00
+    answer: More than 30 days, as the agreement says. Our wording was loose.
+    resolution: Agreement governs
+    blocking: false
+  - id: Q-09
+    topic: missing_fico
+    to: Calderwood warehouse desk
+    raised: 2026-05-12T11:00:00
+    sent: 2026-05-12T15:00:00
+    answered: null
+    answer: null
+    resolution: null
+    blocking: false
+
+# Genuine QC variances must be resolved one of these ways before the report is released.
+qc_resolutions:
+  - Platform corrected
+  - QC calculation corrected
+  - Explained, no effect on the borrowing base
+
+# Existing Calderwood facilities moving onto the platform. Their servicers export from the same
+# loan servicing system as Bramble, so Bramble's stored mapping is applied to each.
+backbook:
+  - {id: ashdown, name: Ashdown Auto Funding II LLC, deal_type: Auto warehouse, file: Ashdown_Tape_2026-04.csv}
+  - {id: kingsbury, name: Kingsbury Motor Credit Warehouse LLC, deal_type: Auto warehouse, file: Kingsbury_Tape_2026-04.csv}
+  - {id: redfern, name: Redfern Auto Receivables 2025-W LLC, deal_type: Auto warehouse, file: Redfern_Tape_2026-04.csv}
+  - {id: whitcombe, name: Whitcombe Auto Trust 2024-2, deal_type: Auto term securitisation, file: Whitcombe_Tape_2026-04.csv}
+
+# Stated assumptions for the scorecard, to be replaced by measured baselines in discovery.
+assumptions:
+  baseline_hours:
+    "New facility (asset-based warehouse)": 40
+    "Backbook deal, stored mapping": 6
+  platform_hours:
+    new_facility_base: 6
+    backbook_deal_base: 0.5
+    per_exception: 0.5
+    per_query: 0.75
+  analyst_cost_per_hour_usd: 55
+  analyst_hours_per_month: 140
+  source: planning assumptions in casework.yaml, pending measured baselines by deal type

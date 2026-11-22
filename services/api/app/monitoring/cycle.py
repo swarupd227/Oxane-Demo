@@ -43,7 +43,12 @@ from engine.run import coerce_loan, run, to_cents
 from openpyxl import load_workbook
 
 from app.config import settings
-from app.monitoring import steps
+from app.monitoring import alerts as client_alerts
+from app.monitoring import book as desk_book
+from app.monitoring import brief as status_brief
+from app.monitoring import clients as policy
+from app.monitoring import clo, qc, steps
+from app.monitoring import validate as validation
 from app.pipeline.catalogue import PLATFORM_FIELDS
 from app.pipeline.documents import PdfDocument, find_citation, normalise, read_pdf
 from app.pipeline.gateway import AnthropicClient, Gateway
@@ -76,10 +81,10 @@ def served_files() -> set[str]:
             (settings.pipeline_dir / "pack.json").read_text(encoding="utf-8")
         ).values()
     }
-    for item in record()["facilities"]:
-        folder = cycle_path(item["folder"])
+    for folder_name in [item["folder"] for item in record()["facilities"]] + ["qc"]:
+        folder = cycle_path(folder_name)
         if folder.exists():
-            names |= {f"{item['folder']}/{path.name}" for path in folder.iterdir()}
+            names |= {f"{folder_name}/{path.name}" for path in folder.iterdir()}
     return names
 
 
@@ -195,15 +200,19 @@ def business_days_after(day: date, count: int) -> date:
 
 
 def collect(as_of: date) -> list[dict[str, Any]]:
-    policy = record()["chase_policy"]
+    chase_policy = record()["chase_policy"]
+    days = record()["internal_deadline_days"]
     items = []
     for item in record()["submissions"]:
         due, received = item["due"], item["received"]
-        late = received is None and as_of > due
+        reused = item.get("reused")
+        late = received is None and not reused and as_of > due
+        internal = business_days_after(due, days)
+        client = policy.client_of(record(), item["facility"])
         chase = []
         if late:
-            first = business_days_after(due, policy["first"])
-            escalate = business_days_after(due, policy["escalate"])
+            first = business_days_after(due, chase_policy["first"])
+            escalate = business_days_after(due, chase_policy["escalate"])
             sender = item.get("sender", "the sender")
             chase = [
                 {
@@ -226,16 +235,26 @@ def collect(as_of: date) -> list[dict[str, Any]]:
                 )
         items.append(
             {
-                **{k: v for k, v in item.items() if k not in ("due", "received")},
+                **{k: v for k, v in item.items() if k not in ("due", "received", "reused")},
+                "client": client["id"],
                 "due": due.isoformat(),
+                "internal_deadline": internal.isoformat(),
+                "deadline_status": "met"
+                if (received and received <= internal) or reused
+                else "missed"
+                if as_of > internal
+                else "at_risk",
                 "received": received.isoformat() if received else None,
                 "status": "late"
                 if late
+                else "reused"
+                if reused
                 else "received"
                 if received and received <= due
                 else "received_late"
                 if received
                 else "awaited",
+                "reused": {**reused, "consent": client.get("reuse_consent")} if reused else None,
                 "chase": chase,
             }
         )
@@ -572,11 +591,19 @@ def bramble_tests(
     return {
         "borrowing_base": {
             "system": {
+                "gross_pool": result.gross_pool_cents / 100,
+                "ineligible": (result.gross_pool_cents - result.eligible_pool_cents) / 100,
+                "ineligible_loans": len(result.failed_rules_by_loan),
                 "eligible_pool": result.eligible_pool_cents / 100,
                 "excess": result.excess_cents / 100,
+                "reserve": result.reserve_cents / 100,
+                "reserve_pct": float(ruleset.reserve_pct),
+                "facility_limit": ruleset.facility_limit_cents / 100,
+                "outstanding": result.outstanding_advances_cents / 100,
                 "borrowing_base": result.borrowing_base_cents / 100,
                 "availability": result.availability_cents / 100,
                 "advance_rate_pct": float(result.advance_rate_pct),
+                "advance_rate_source": result.advance_rate_source,
                 "provisional": result.provisional,
             },
             "certificate": {k: v / 100 for k, v in stated.items()},
@@ -650,14 +677,19 @@ def _trigger_view(trigger: Any, clause: str, source: dict[str, Any] | None) -> d
 
 
 def northmoor_tests(
-    gateway: Gateway, evidence: Evidence, northmoor: dict[str, Any]
+    gateway: Gateway,
+    evidence: Evidence,
+    northmoor: dict[str, Any],
+    loaded_may: list[dict[str, str]],
 ) -> dict[str, Any]:
+    """`loaded_may` is the May tape as validation loads it, with any repeated line collapsed."""
     folder = cycle_path("northmoor")
     terms = northmoor["terms"]
     tapes = {
         month: mapped(read_tape(folder / name), northmoor["mapping"])
         for month, name in northmoor["tapes"].items()
     }
+    tapes["May"] = loaded_may
     monthly = [
         (
             f"{month} 2026",
@@ -682,8 +714,8 @@ def northmoor_tests(
     for month, name in northmoor["servicer_reports"].items():
         relative = f"northmoor/{name}"
         reading = steps.read_excess_spread(gateway, evidence.add(relative))
-        parts = {
-            key: money(evidence.figure(relative, reading.figures, key)["value"])
+        read = {
+            key: evidence.figure(relative, reading.figures, key)
             for key in (
                 "Interest collections",
                 "Servicing fee",
@@ -692,6 +724,7 @@ def northmoor_tests(
                 "Ending principal balance",
             )
         }
+        parts = {key: money(item["value"]) for key, item in read.items()}
         stated = evidence.figure(relative, reading.figures, "Excess spread")
         # Recompute the spread from its parts; the stated figure is only a cross-check.
         net = (
@@ -707,6 +740,9 @@ def northmoor_tests(
                 "value": float(value),
                 "stated": stated["value"],
                 "source": stated["source"],
+                # Sizes, as the spread formula subtracts each outflow.
+                "parts": {key: abs(value) / 100 for key, value in parts.items()},
+                "sources": {key: item["source"] for key, item in read.items()},
             }
         )
         if reading.collections_history:
@@ -945,6 +981,7 @@ def findings(
     timeline: dict[str, Any],
     tests: dict[str, Any],
     shared: dict[str, Any],
+    feeds: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Every check that failed or nearly failed, plus the items logged within tolerance.
 
@@ -1120,18 +1157,150 @@ def findings(
             owner="Manager",
             sources=[stale["source"]] if stale["source"] else [],
         )
+    for feed in feeds or []:
+        add_validation(add, feed)
+    if "larkspur" in tests:
+        add_larkspur(add, tests["larkspur"])
     return items
 
 
+def add_validation(add: Any, feed: dict[str, Any]) -> None:
+    """A blocking failure, a feed's logged warnings and any change that needs context."""
+    name = feed["facility"].title()
+    if feed["held"]:
+        res = feed["resolution"]
+        rule = next(r for r in feed["rules"] if r["id"] == res["rule"])
+        add(
+            id=f"F-validate-{feed['facility']}-duplicate",
+            facility=feed["facility"],
+            check="Validation",
+            title=f"{name} May tape lists loan {', '.join(res['collapsed'])} twice",
+            detail=f"Blocking rule {rule['id']} failed: {rule['text'].lower()}. The load is held "
+            f"until this is resolved. {res['proposed']}",
+            owner="Servicer",
+            loans=res["collapsed"],
+            blocking=True,
+        )
+    warnings = [r for r in feed["rules"] if r["status"] == "warning"]
+    count = sum(w["failed"] for w in warnings)
+    if warnings:
+        add(
+            id=f"F-warnings-{feed['facility']}",
+            facility=feed["facility"],
+            check="Validation",
+            rule_outcome="logged",
+            rule_reason="Warning rules only, so nothing is held. Each row is logged for the next "
+            "query to the sender.",
+            title=f"{count} warning{'s' if count != 1 else ''} on {name}'s file",
+            detail="; ".join(f"{w['text']}: {w['failed']}" for w in warnings) + ".",
+        )
+    flagged = [c for c in feed["prior_period"] if c["flagged"]]
+    if flagged:
+        explanation = feed["explanation"] or {}
+        moves = " and ".join(
+            f"{c['label'].lower()} {'up' if c['change'] > 0 else 'down'} "
+            f"{abs(c['change']):.2f}{'%' if c['basis'] == 'pct' else ' points'}"
+            for c in flagged
+        )
+        explained = explanation.get("explained") and explanation.get("verified")
+        cause = explanation.get("cause", "")
+        for key, value in explanation.get("figures", {}).items():
+            cause = cause.replace(f"{{{{{key}}}}}", value.lstrip("+"))
+        add(
+            id=f"F-change-{feed['facility']}-pool",
+            facility=feed["facility"],
+            check="Change against prior period",
+            title=f"{name}: {moves} on April",
+            detail="Beyond the client's limits for one month: "
+            + "; ".join(c["text"].lower() for c in flagged)
+            + ".",
+            owner="Servicer",
+            sources=[explanation["source"]] if explanation.get("source") else [],
+            suggested={
+                "outcome": "logged" if explained else "query",
+                "reason": cause
+                if explained
+                else "The documents do not explain the change, so ask the servicer.",
+                "by": "AI",
+            },
+            explanation=explanation,
+        )
+
+
+def add_larkspur(add: Any, lark: dict[str, Any]) -> None:
+    """Thornbury does not permit AI, so rules suggest each outcome here, as they do today."""
+    bb = lark["borrowing_base"]
+    if not bb["passed"]:
+        down = lark["downgrades"]
+        add(
+            id="F-larkspur-ccc",
+            facility="larkspur",
+            check="CCC bucket",
+            title=f"CCC share {bb['ccc_pct']:.2f}% against a {bb['ccc_limit_pct']:.1f}% limit",
+            detail=(
+                f"{down[0]['issuer']} was downgraded from {'/'.join(down[0]['before'])} to "
+                f"{'/'.join(down[0]['after'])}. "
+                if down
+                else ""
+            )
+            + f"The excess of US${bb['ccc_excess']:,.2f} is carried at market value, "
+            + ", ".join(f"{e['issuer']} at {e['bid']:.2f}" for e in bb["excess"])
+            + f", which takes US${bb['haircut']:,.2f} off the collateral balance.",
+            owner="Lender",
+            sources=[lark["ccc_source"]] if lark["ccc_source"] else [],
+            clauses=lark["clauses"],
+            suggested={
+                "outcome": "confirmed",
+                "by": "Rule",
+                "reason": "The CCC test fails on clear terms, so the lender is told. Suggested "
+                "by rule: this client does not permit AI.",
+            },
+        )
+    for move in lark["price_moves"]:
+        add(
+            id="F-larkspur-price",
+            facility="larkspur",
+            check="Early warning",
+            title=f"{move['issuer']} bid down {abs(move['change']):.2f} points",
+            detail=f"Bid {move['before']:.2f} at the end of April, {move['after']:.2f} on 29 May. "
+            f"Thornbury asked to hear of any fall over {lark['price_move_limit']:.0f} points in "
+            "a month. The rating has not changed.",
+            owner="Lender",
+            sources=[lark["warning_source"]] if lark["warning_source"] else [],
+            suggested={
+                "outcome": "confirmed",
+                "by": "Rule",
+                "reason": "An early warning the lender asked for, so the lender is told. "
+                "Suggested by rule: this client does not permit AI.",
+            },
+        )
+    for link in lark["changes"]["relinked"]:
+        add(
+            id="F-larkspur-identifier",
+            facility="larkspur",
+            check="Identifiers",
+            rule_outcome="logged",
+            rule_reason="Matched on issuer, facility, maturity and spread, with no trade: the "
+            "same loan under new identifiers, not a sale and a new purchase.",
+            title=f"{link['issuer']}: LoanX {link['old_loanx']} is now {link['new_loanx']}",
+            detail=f"CUSIP {link['old_cusip']} is now {link['new_cusip']}. Its rating and price "
+            "history carry over. Reported in the pack commentary.",
+        )
+
+
 def triage(gateway: Gateway, items: list[dict[str, Any]]) -> None:
+    """The model suggests outcomes only for open items with no suggestion yet. Items of a client
+    that does not permit AI already carry a rule's suggestion, so they never reach it."""
     open_items = [
         {"id": i["id"], "check": i["check"], "title": i["title"], "detail": i["detail"]}
         for i in items
-        if i["rule_outcome"] is None
+        if i["rule_outcome"] is None and "suggested" not in i
     ]
     reading = steps.suggest_triage(gateway, open_items)
     suggestions = {s.id: s for s in reading.suggestions}
     for item in items:
+        if "suggested" in item:
+            continue
         if item["rule_outcome"]:
             item["suggested"] = {"outcome": "logged", "reason": item["rule_reason"], "by": "Rule"}
         elif item["id"] in suggestions:
@@ -1161,6 +1330,14 @@ TOPICS = {
     "F-shared-vin": "One car securing a loan in both Bramble and Northmoor",
     "F-kestrel-markdown": "Loan-to-value with and without a post-quarter markdown",
     "F-kestrel-stale-valuation": "One investment's valuation older than the agreement allows",
+    "F-validate-northmoor": "May tape repeats one loan's row, so the load is held until the "
+    "servicer confirms it",
+    "F-warnings-": "Minor gaps in fields no test uses, logged for the next query",
+    "F-change-bramble": "Pool grew faster than usual on April; the servicer report says why",
+    "F-larkspur-ccc": "A downgrade takes the CCC bucket over its limit; the excess is carried at "
+    "market value",
+    "F-larkspur-price": "One loan's price fell more than the client's alert level",
+    "F-larkspur-identifier": "One loan's identifiers changed; linked to its history",
 }
 OUTCOME_WORDS = {
     "logged": "logged within tolerance, no alert",
@@ -1191,6 +1368,8 @@ PACK_HEADINGS = {
         "Open items",
     ],
     "kestrel": ["Submissions", "Loan-to-value", "Valuations and concentration", "Open items"],
+    "larkspur": ["Submissions", "CCC bucket and borrowing base", "Early warnings",
+                 "Identifier changes"],
 }
 
 
@@ -1253,6 +1432,18 @@ def pack_figures(
                 "affiliate guarantee kept off the balance sheet",
                 lev["guarantees"][0]["source"] if lev["guarantees"] else None,
             ),
+        }
+    elif facility_id == "larkspur":
+        lark = tests["larkspur"]
+        bb = lark["borrowing_base"]
+        figures |= {
+            "ccc_pct": fig(f"{bb['ccc_pct']:.2f}%", "CCC share of par", lark["ccc_source"]),
+            "ccc_limit": fig(f"{bb['ccc_limit_pct']:.1f}%", "CCC limit"),
+            "ccc_excess": fig(dollars(bb["ccc_excess"]), "CCC excess"),
+            "haircut": fig(dollars(bb["haircut"]), "CCC excess adjustment"),
+            "borrowing_base": fig(dollars(bb["borrowing_base"]), "borrowing base, recomputed"),
+            "availability": fig(dollars(bb["availability"]), "availability, recomputed"),
+            "april_ccc_pct": fig(f"{lark['april']['ccc_pct']:.2f}%", "CCC share in April"),
         }
     elif facility_id == "northmoor":
         n = tests["northmoor"]
@@ -1359,6 +1550,114 @@ def lender_pack(
     }
 
 
+def possessive(name: str) -> str:
+    return f"{name}'" if name.endswith("s") else f"{name}'s"
+
+
+def larkspur_pack(
+    tests: dict[str, Any], recon: dict[str, Any], items: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """The pack for a client that does not permit AI: code's standard wording, no model."""
+    lark = tests["larkspur"]
+    figures = pack_figures("larkspur", tests, recon, items)
+    downgrade = lark["downgrades"][0] if lark["downgrades"] else None
+    sections = [
+        {"heading": "Submissions", "text": "The May collateral report arrived by SFTP and the "
+         "29 May bid prices by API, both on time. Both passed every blocking check."},
+        {"heading": "CCC bucket and borrowing base", "text": "The CCC share is {{ccc_pct}} "
+         "against a {{ccc_limit}} limit, up from {{april_ccc_pct}} in April"
+         + (f", after {downgrade['issuer']} was downgraded to {'/'.join(downgrade['after'])}"
+            if downgrade else "")
+         + ". The excess of {{ccc_excess}} is carried at market value, so the CCC excess "
+         "adjustment of {{haircut}} comes off the collateral balance. The borrowing base is "
+         "{{borrowing_base}} and availability {{availability}}."},
+        {"heading": "Early warnings", "text": " ".join(
+            f"{possessive(m['issuer'])} bid fell from {m['before']:.2f} to {m['after']:.2f}, "
+            "more than "
+            "the alert level you asked for. Its rating has not changed." for m in
+            lark["price_moves"]) or "No price moves beyond the alert level."},
+        {"heading": "Identifier changes", "text": " ".join(
+            f"{c['issuer']}'s term loan has a new LoanX ID ({c['new_loanx']}, was "
+            f"{c['old_loanx']}) and CUSIP ({c['new_cusip']}, was {c['old_cusip']}). We matched "
+            "it on issuer, facility, maturity and spread. No trade took place, so it is the same "
+            "loan and its history carries over." for c in lark["changes"]["relinked"])
+         or "None this month."},
+    ]
+    return {
+        "facility": "larkspur",
+        "summary": "Larkspur's CCC bucket is over its limit after a downgrade, and the excess is "
+        "carried at market value. Prepared on code checks only, as Thornbury requires.",
+        "sections": sections,
+        "figures": figures,
+        "unknown_placeholders": [],
+        "numbers_in_text": [],
+        "ai": False,
+    }
+
+
+def mapping_view(
+    meta: dict[str, Any],
+    layout: dict[str, Any],
+    memory: dict[str, str],
+    feeds: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """What each file was mapped with, which client's memory it came from, and where each
+    master field lands in the platform's standard model."""
+    model = meta["standard_model"]
+
+    def entity(field: str) -> str:
+        for name in ("stratification", "portfolio", "test"):
+            if field in model[name]:
+                return name
+        return "loan"
+
+    by = {f["id"]: f for f in meta["facilities"]}
+    sources = {
+        "bramble": (memory, "Onboarding, April 2026", layout),
+        "northmoor": (by["northmoor"]["mapping"], "Onboarding, September 2025", None),
+        "larkspur": (by["larkspur"]["mapping"], "Onboarding, February 2026", None),
+    }
+    out = []
+    for feed in feeds:
+        columns, stored, change = sources[feed["facility"]]
+        client = policy.client_of(meta, feed["facility"])
+        new = change["new_columns"] if change else []
+        fields = [{"column": c, "master_field": f, "entity": entity(f)} for c, f in
+                  columns.items()]
+        fields += [{"column": c["column"], "master_field": c["field"] or "extra attribute",
+                    "entity": "loan", "new": True} for c in new]
+        out.append({
+            "facility": feed["facility"],
+            "client": client["id"],
+            "file": feed["file"],
+            "sha256": feed["sha256"],
+            "rows": feed["rows_in_file"],
+            "columns_total": len(columns) + len(new),
+            "from_memory": len(columns),
+            "layout": "changed" if new else "unchanged",
+            "stored": stored,
+            "ai_used": bool(new),
+            "fields": fields,
+            "entities": {name: sum(1 for f in fields if f["entity"] == name)
+                         for name in model["entities"]},
+            "overrides": client.get("master_field_overrides", []),
+        })
+    memories = []
+    for client in meta["clients"]:
+        mine = [f for f in meta["facilities"] if f["client"] == client["id"]]
+        memories.append({
+            "client": client["id"],
+            "name": client["name"],
+            "layouts": [
+                {"facility": f["id"], "columns": len(sources[f["id"]][0]) if f["id"] in sources
+                 else 0, "kind": "Loan tape" if f["asset_class"] == "Auto ABF" else
+                 "Collateral report" if f["id"] == "larkspur" else "Documents only"}
+                for f in mine
+            ],
+        })
+    return {"feeds": out, "memories": memories, "entities": model["entities"]}
+
+
 def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     meta = record()
@@ -1368,88 +1667,188 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
     memory = json.loads((settings.pipeline_dir / "mapping.json").read_text("utf-8"))["columns"]
     bramble, northmoor, kestrel = (facility(f) for f in ("bramble", "northmoor", "kestrel"))
     evidence = Evidence()
+    # Every model call goes through its client's gateway, which refuses anything from a client
+    # that does not permit AI.
+    gateways = policy.guarded(gateway, meta)
+    calderwood = gateways["calderwood"]
 
-    # Collect
+    # Expect and receive, then map
     subs = collect(as_of)
     may_raw = read_tape(cycle_path("bramble") / bramble["tape"])
-    layout = layout_changes(gateway, bramble, list(may_raw[0]), may_raw)
-    may_rows = mapped(may_raw, memory)
+    layout = layout_changes(calderwood, bramble, list(may_raw[0]), may_raw)
+    may_mapped = mapped(may_raw, memory)
     april_rows = mapped(
         read_tape(settings.deal_kit_output / "pack" / _pack_file("loan_tape")), memory
     )
-    northmoor_may = mapped(
+    northmoor_raw = mapped(
         read_tape(cycle_path("northmoor") / northmoor["tapes"]["May"]), northmoor["mapping"]
     )
+    northmoor_april = mapped(
+        read_tape(cycle_path("northmoor") / northmoor["tapes"]["April"]), northmoor["mapping"]
+    )
+
+    # Validate: each file against its client's rules, before any test uses it
+    bramble_feed, may_rows = validation.run_feed(
+        meta, "bramble", bramble["tape"], cycle_path("bramble") / bramble["tape"], "auto_tape",
+        may_mapped, april_rows,
+    )
+    northmoor_feed, northmoor_may = validation.run_feed(
+        meta, "northmoor", northmoor["tapes"]["May"],
+        cycle_path("northmoor") / northmoor["tapes"]["May"], "auto_tape", northmoor_raw,
+        northmoor_april,
+    )
+    validation.explain(
+        calderwood, evidence, bramble_feed, bramble["name"],
+        [f"bramble/{bramble['servicer_report']}", f"bramble/{bramble['amendments'][0]}"],
+    )
+    lark_tests, lark_feeds = clo.larkspur_tests(
+        meta, policy.client_of(meta, "larkspur"), cycle_path("larkspur"), evidence
+    )
+    feeds = [bramble_feed, northmoor_feed, *lark_feeds]
 
     # Reconcile
-    recon = reconcile_bramble(gateway, evidence, bramble, april_rows, may_rows)
-    timeline = terms_timeline(gateway, evidence, onboarding, period_end)
+    recon = reconcile_bramble(calderwood, evidence, bramble, april_rows, may_rows)
+    timeline = terms_timeline(calderwood, evidence, onboarding, period_end)
 
     # Test
     tests = {
         "bramble": bramble_tests(
-            gateway, evidence, bramble, may_rows, recon["delinquency_trend"], facts
+            calderwood, evidence, bramble, may_rows, recon["delinquency_trend"], facts
         ),
-        "northmoor": northmoor_tests(gateway, evidence, northmoor),
-        "kestrel": kestrel_tests(gateway, evidence, kestrel),
+        "northmoor": northmoor_tests(calderwood, evidence, northmoor, northmoor_may),
+        "kestrel": kestrel_tests(calderwood, evidence, kestrel),
+        "larkspur": lark_tests,
     }
     shared = collateral(may_rows, northmoor_may)
 
-    # Triage and report
-    items = findings(subs, layout, recon, timeline, tests, shared)
-    triage(gateway, items)
+    # Review: triage, then report
+    items = findings(subs, layout, recon, timeline, tests, shared, feeds)
+    triage(calderwood, items)
+    for item in items:
+        item["topic"] = topic(item)
     packs = [
-        lender_pack(gateway, f["id"], f["name"], tests, recon, items, subs)
+        larkspur_pack(tests, recon, items)
+        if not policy.ai_permitted(meta, f["id"])
+        else lender_pack(calderwood, f["id"], f["name"], tests, recon, items, subs)
         for f in meta["facilities"]
     ]
 
-    usage = {
-        "model": gateway.model,
-        "calls": len(gateway.usage),
-        "input_tokens": sum(u.input_tokens for u in gateway.usage),
-        "output_tokens": sum(u.output_tokens for u in gateway.usage),
-        "cost_usd": gateway.total_cost_usd(),
-        "model_seconds": round(sum(u.seconds for u in gateway.usage)),
-    }
-    result = {
+    result: dict[str, Any] = {
         "cycle": meta["cycle"] | {"as_of": as_of.isoformat(), "period_end": period_end.isoformat()},
         "lender": meta["lender"],
         "desk": meta["desk"],
         "tolerances": meta["tolerances"],
+        "clients": [
+            {k: v for k, v in c.items() if k != "reuse_consent"} for c in meta["clients"]
+        ],
         "facilities": [
             {
-                k: v
-                for k, v in f.items()
-                if k
-                in (
-                    "id",
-                    "name",
-                    "borrower",
-                    "type",
-                    "asset_class",
-                    "role",
-                    "size",
-                    "size_note",
-                    "reporting",
-                )
+                **{
+                    k: v
+                    for k, v in f.items()
+                    if k
+                    in (
+                        "id",
+                        "name",
+                        "borrower",
+                        "type",
+                        "asset_class",
+                        "role",
+                        "size",
+                        "size_note",
+                        "reporting",
+                        "client",
+                    )
+                },
+                "client_name": policy.client_of(meta, f["id"])["name"],
+                "ai_permitted": policy.ai_permitted(meta, f["id"]),
             }
             for f in meta["facilities"]
         ],
         "submissions": subs,
         "layout": layout,
+        "validation": {"feeds": feeds},
         "reconciliation": recon,
         "terms": timeline,
         "tests": tests,
         "collateral": shared,
         "findings": items,
         "packs": packs,
-        "unverified": evidence.unverified,
-        "usage": usage,
     }
+    result["mapping"] = mapping_view(meta, layout, memory, [bramble_feed, northmoor_feed,
+                                                            *lark_feeds])
+    result["qc"] = qc.compare(result, cycle_path("qc"))
+    result["headroom"] = client_alerts.headroom_view(meta, result)
+    result["early_warnings"] = client_alerts.early_warning_indicators(result)
+    result["alerts"] = {
+        client["id"]: {
+            "ai_permitted": client["ai_permitted"],
+            "catalogue": client_alerts.catalogue(meta, client["id"]),
+            "history": {
+                key: values
+                for key, values in client_alerts.history(meta, result).items()
+                if key in client_alerts.catalogue(meta, client["id"])
+            },
+            "presets": [
+                client_alerts.draft(gateways[client["id"]], meta, result, client["id"], text)
+                for text in meta["alert_presets"]
+            ]
+            if client["ai_permitted"]
+            else [],
+        }
+        for client in meta["clients"]
+    }
+    result["briefs"] = [
+        status_brief.draft_calderwood(gateways[c["id"]], c, result, items)
+        if c["ai_permitted"]
+        else status_brief.template_brief(c, result)
+        for c in meta["clients"]
+    ]
+    result["unverified"] = evidence.unverified
+    result["usage"] = {
+        "model": gateway.model,
+        "calls": len(gateway.usage),
+        "input_tokens": sum(u.input_tokens for u in gateway.usage),
+        "output_tokens": sum(u.output_tokens for u in gateway.usage),
+        "cache_read_tokens": sum(u.cache_read_tokens for u in gateway.usage),
+        "cache_write_tokens": sum(u.cache_write_tokens for u in gateway.usage),
+        "cost_usd": gateway.total_cost_usd(),
+        "model_seconds": round(sum(u.seconds for u in gateway.usage)),
+        "by_client": policy.usage_by_client(gateways),
+        "by_task": {
+            task: sum(1 for u in gateway.usage if u.task == task)
+            for task in sorted({u.task for u in gateway.usage})
+        },
+    }
+    # The rest of the book and the desk's own references. Added last: no model call sees them.
+    result["team"] = meta.get("team", {})
+    result["book"] = desk_book.build(meta, cycle_path("book"), as_of, business_days_after)
+    number(result, as_of)
     (out_dir / "cycle.json").write_text(
         json.dumps(result, indent=1, default=str) + "\n", encoding="utf-8"
     )
     return result
+
+
+def number(result: dict[str, Any], as_of: date) -> None:
+    """Reference numbers for findings and submissions, and the date each finding was raised:
+    the day its facility's last file arrived, or the day a late file was escalated."""
+    period = result["cycle"]["id"].removeprefix("M-")
+    subs = [*result["submissions"], *result["book"]["submissions"]]
+    for index, sub in enumerate(subs, start=1):
+        sub["ref"] = f"SUB-{period}-{index:04d}"
+    arrived: dict[str, str] = {}
+    for sub in result["submissions"]:
+        if sub["received"]:
+            arrived[sub["facility"]] = max(arrived.get(sub["facility"], ""), sub["received"])
+    late = {s["facility"]: s for s in result["submissions"] if s["status"] == "late"}
+    for index, item in enumerate(result["findings"], start=141):
+        item["ref"] = f"EXC-{period}-{index:04d}"
+        chased = late.get(item["facility"]) if item["check"] == "Submissions" else None
+        item["raised"] = (
+            chased["chase"][-1]["at"] if chased and chased["chase"]
+            else max(arrived.get(f, as_of.isoformat()) for f in item["facility"].split(","))
+        )
 
 
 def main() -> int:

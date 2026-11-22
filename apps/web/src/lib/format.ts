@@ -34,3 +34,16 @@ export function formatDate(isoDate: string): string {
 export function formatCount(count: number): string {
   return usd.format(count);
 }
+
+const dateTime = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** An event time from the audit log, in the viewer's time zone. */
+export function formatDateTime(iso: string): string {
+  return dateTime.format(new Date(iso));
+}

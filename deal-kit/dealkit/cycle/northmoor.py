@@ -198,8 +198,15 @@ def build_northmoor(
     shared = _plant_shared_vin(
         months["may"]["rows"], months["may"]["roll"].new_loans, bramble_rows, rng
     )
+    # M10: the May file repeats one loan's row exactly, so its loan number is not unique. The
+    # load is held until the analyst confirms with the servicer that it is a repeated line.
+    duplicate = _duplicate_line(months["may"]["rows"], shared["northmoor_loan"])
     for month, _ in MONTHS:
-        write_tape(months[month]["rows"], COLUMNS, folder / FILES[f"loan_tape_{month}"])
+        rows = months[month]["rows"]
+        if month == "may":
+            at = rows.index(duplicate) + 1
+            rows = [*rows[:at], duplicate, *rows[at:]]
+        write_tape(rows, COLUMNS, folder / FILES[f"loan_tape_{month}"])
 
     outstanding = spec["outstanding_advances_usd"]
     views = {m: northmoor_view(months[m]["rows"], spec, outstanding) for m in ("april", "may")}
@@ -245,8 +252,15 @@ def build_northmoor(
             "last_may_vs_april": spec["seasonal_profile"][1],
         },
         "shared_vin": shared,
+        "duplicate_line": {"loan_id": duplicate["loan_id"], "balance": duplicate["current_balance"],
+                           "rows_in_file": len(months["may"]["rows"]) + 1},
         "pool": {m: pool_balance(months[m]["rows"]) for m in ("march", "april", "may")},
     }
+
+
+def _duplicate_line(rows: list[dict[str, Any]], avoid: str) -> dict[str, Any]:
+    current = [r for r in rows if r["status"] == "ACTIVE" and r["loan_id"] != avoid]
+    return current[len(current) // 3]
 
 
 def _plant_shared_vin(

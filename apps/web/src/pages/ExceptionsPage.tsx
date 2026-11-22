@@ -1,14 +1,17 @@
 import clsx from "clsx";
-import { ArrowRight, ArrowUpRight, BellRing, Check, Lightbulb, Send } from "lucide-react";
+import { ArrowUpRight, BellRing, Check, Send } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { EvidencePanel } from "../components/evidence/EvidencePanel";
-import { StatusPill, TierBadge, Kbd } from "../components/ui/badges";
+import { Kbd, ProvenanceChip, StatusPill, TierBadge } from "../components/ui/badges";
+import { Avatar } from "../components/ui/Avatar";
+import { Timeline, useHistory } from "../components/ui/Timeline";
+import { formatDateTime } from "../lib/format";
 import { Button } from "../components/ui/Button";
 import { Dialog } from "../components/ui/Dialog";
 import { Card, SectionLabel, Skeleton } from "../components/ui/layout";
-import { NeedsIntake, PageHeader, SeedNotice } from "../components/ui/PageHeader";
+import { KeyHints, NeedsIntake, NextStep, PageHeader, SeedNotice } from "../components/ui/PageHeader";
 import { LoanDrill } from "../components/validation/LoanDrill";
 import { formatUsd } from "../lib/format";
 import { useSession, type ExceptionOutcome } from "../lib/session";
@@ -79,7 +82,9 @@ export function ExceptionsPage() {
   const { data } = useWorkbench();
   const { state, dispatch } = useSession();
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState("X4");
+  const [params] = useSearchParams();
+  const [selectedId, setSelectedId] = useState(params.get("id") ?? "X4");
+  const history = useHistory([selectedId]);
   const [drafting, setDrafting] = useState(false);
   const [draft, setDraft] = useState("");
   const runQuery = useValidationRun(state.dealerMatched, state.ran);
@@ -106,6 +111,7 @@ export function ExceptionsPage() {
   }
 
   const open = items.filter((item) => !state.exceptions[item.id]);
+  const raised = state.startedAt;
 
   useKeys({
     j: () => {
@@ -140,13 +146,8 @@ export function ExceptionsPage() {
     <div>
       <PageHeader
         title="Exception queue"
-        summary={`${open.length} open of ${items.length}.`}
-        actions={
-          <Button size="lg" onClick={() => navigate("/approve")}>
-            View approval
-            <ArrowRight aria-hidden className="size-4" />
-          </Button>
-        }
+        summary={`${open.length} open of ${items.length} · ${items.filter((item) => item.blocking).length} blocking · raised ${raised ? formatDateTime(raised) : "-"}`}
+        actions={<NextStep to="/approve" label="View approval" />}
       />
       {data.seed && (
         <SeedNotice>
@@ -156,7 +157,7 @@ export function ExceptionsPage() {
       )}
 
       <div className="grid grid-cols-[26rem_minmax(0,1fr)] items-start gap-5">
-        <Card className="sticky top-32 overflow-hidden">
+        <Card className="sticky top-14 overflow-hidden">
           <ul className="max-h-[calc(100vh-17rem)] overflow-y-auto">
             {items.map((item) => (
               <QueueRow
@@ -168,6 +169,7 @@ export function ExceptionsPage() {
               />
             ))}
           </ul>
+          <KeyHints>
           <p className="flex items-center gap-1.5 border-t border-line px-4 py-2 text-xs text-muted">
             <Kbd>J</Kbd>
             <Kbd>K</Kbd>
@@ -179,6 +181,7 @@ export function ExceptionsPage() {
             <Kbd>X</Kbd>
             escalate
           </p>
+          </KeyHints>
         </Card>
 
         <Card className="overflow-hidden">
@@ -191,8 +194,12 @@ export function ExceptionsPage() {
               />
               <span className="text-[0.8125rem] text-muted">{selected.label}</span>
               {selected.tier1 && <TierBadge tier={1} />}
+              {selected.blocking && <StatusPill status="missing" label="Blocking" />}
+              {raised && (
+                <span className="numeric ml-auto text-xs text-muted">Raised {formatDateTime(raised)}</span>
+              )}
             </div>
-            <h2 className="mt-2 text-xl leading-snug font-semibold tracking-tight">
+            <h2 className="mt-1.5 text-base leading-snug font-semibold">
               {selected.title}
             </h2>
             <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
@@ -202,7 +209,10 @@ export function ExceptionsPage() {
               </div>
               <div>
                 <SectionLabel>Owner</SectionLabel>
-                <p className="mt-0.5">{selected.owner}</p>
+                <p className="mt-0.5 flex items-center gap-1.5">
+                  <Avatar name={selected.owner} />
+                  {selected.owner}
+                </p>
               </div>
             </div>
             <div className="mt-4">
@@ -213,12 +223,15 @@ export function ExceptionsPage() {
                 ))}
               </ul>
             </div>
-            <div className="mt-4 flex items-start gap-3 rounded-lg bg-canvas p-3">
-              <Lightbulb aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
-              <div>
-                <SectionLabel>Suggested action</SectionLabel>
-                <p className="mt-0.5 text-sm font-medium">{selected.suggestion}</p>
-              </div>
+            <div className="mt-3 rounded-md bg-canvas px-3 py-2">
+              <p className="flex items-center gap-2">
+                <SectionLabel>Recommended action</SectionLabel>
+                <ProvenanceChip
+                  kind="suggested"
+                  tip={selected.evidence[0] ?? selected.where}
+                />
+              </p>
+              <p className="mt-0.5 text-sm font-medium">{selected.suggestion}</p>
             </div>
             <div className="mt-4 flex items-center gap-2">
               {selected.actions.includes("accept") && (
@@ -240,6 +253,14 @@ export function ExceptionsPage() {
                 </Button>
               )}
               {outcome && <StatusPill status="approved" label={OUTCOMES[outcome]} />}
+            </div>
+            <div className="mt-4 border-t border-line pt-3">
+              <SectionLabel>History</SectionLabel>
+              <Timeline
+                className="mt-2"
+                entries={history}
+                empty={raised ? `Raised ${formatDateTime(raised)} · not yet worked` : "Not yet worked"}
+              />
             </div>
           </div>
 
@@ -288,7 +309,7 @@ export function ExceptionsPage() {
         open={drafting}
         onOpenChange={setDrafting}
         title="Draft query"
-        description={`To: ${DRAFTS[selected.id]?.to ?? selected.owner}. Sandbox: queries are logged, not sent.`}
+        description={`To: ${DRAFTS[selected.id]?.to ?? selected.owner}`}
       >
         <form
           className="space-y-3"

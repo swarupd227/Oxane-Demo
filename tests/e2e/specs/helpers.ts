@@ -38,7 +38,7 @@ export async function prepare(
 }
 
 export async function step(page: Page, name: string) {
-  await page.getByRole("navigation", { name: "Onboarding steps" }).getByRole("link", { name }).click();
+  await page.getByRole("navigation", { name: "Case sections" }).getByRole("link", { name, exact: true }).click();
 }
 
 export async function term(page: Page, name: string) {

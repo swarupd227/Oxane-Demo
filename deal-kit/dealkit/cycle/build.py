@@ -8,7 +8,7 @@ import json
 import shutil
 
 from dealkit.config import OUTPUT_DIR, ROOT, load_deal
-from dealkit.cycle import bramble, kestrel, northmoor
+from dealkit.cycle import book, bramble, kestrel, larkspur, northmoor, qc
 from dealkit.cycle.common import CYCLE_DIR, CYCLE_KEY_DIR, load_cycle
 from dealkit.cycle.key import build_cycle_key
 from dealkit.reports import build_financials
@@ -21,7 +21,10 @@ def build_cycle() -> dict[str, str]:
     deal, cycle = load_deal(), load_cycle()
     shutil.rmtree(CYCLE_DIR, ignore_errors=True)
     shutil.rmtree(CYCLE_KEY_DIR, ignore_errors=True)
-    folders = {name: CYCLE_DIR / name for name in ("bramble", "northmoor", "kestrel")}
+    folders = {
+        name: CYCLE_DIR / name
+        for name in ("bramble", "northmoor", "kestrel", "larkspur", "qc", "book")
+    }
     for folder in folders.values():
         folder.mkdir(parents=True)
 
@@ -31,6 +34,9 @@ def build_cycle() -> dict[str, str]:
     build_financials(deal, folders["bramble"] / "BAF_Financial_Statements_Q1_2026.pdf")
     northmoor_facts = northmoor.build_northmoor(cycle, folders["northmoor"], bramble_facts["rows"])
     kestrel_facts = kestrel.build_kestrel(cycle, folders["kestrel"])
+    larkspur_facts = larkspur.build_larkspur(cycle, folders["larkspur"])
+    # The rest of the book: nothing planted, nothing in the key.
+    book.build_book(cycle, folders["book"])
 
     files = {
         "bramble": {
@@ -39,9 +45,21 @@ def build_cycle() -> dict[str, str]:
         },
         "northmoor": northmoor.FILES,
         "kestrel": kestrel.FILES,
+        "larkspur": larkspur.FILES,
     }
-    build_cycle_key(
-        deal, cycle, bramble_facts, northmoor_facts, kestrel_facts, files, CYCLE_KEY_DIR
+    key = build_cycle_key(
+        deal,
+        cycle,
+        bramble_facts,
+        northmoor_facts,
+        kestrel_facts,
+        files,
+        CYCLE_KEY_DIR,
+        larkspur_facts,
+    )
+    key["checks"]["qc"] = qc.build_qc(key, folders["qc"])
+    (CYCLE_KEY_DIR / "key.json").write_text(
+        json.dumps(key, indent=2, default=str) + "\n", encoding="utf-8"
     )
     return {
         path.relative_to(OUTPUT_DIR).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()

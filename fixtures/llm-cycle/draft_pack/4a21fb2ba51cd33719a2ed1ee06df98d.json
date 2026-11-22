@@ -1,0 +1,14 @@
+{
+ "task": "draft_pack",
+ "model": "claude-opus-5-5",
+ "text": "{\"facility\":\"Northmoor Motor Credit Trust\",\"summary\":\"The May loan tape and borrowing base certificate were received, but the May servicer report is late and the borrowing base remains pending until it arrives. The delinquency average stands at {{delinquency_average}}, close to its trigger of {{delinquency_limit}}, and a car securing a loan in both Bramble and Northmoor has been reported to the lender, who will decide on any action.\",\"sections\":[{\"heading\":\"Submissions\",\"text\":\"The May loan tape and the May borrowing base certificate were received. The May servicer report has not been received; a reminder and an escalation have been sent to the servicer. The May loan tape repeats a loan's row, so we are holding the tape load until the servicer confirms the position. Minor gaps were noted in fields that no test uses; these have been logged and will be raised with the next query.\"},{\"heading\":\"Triggers\",\"text\":\"The delinquency average used for the trigger is {{delinquency_average}}, against a trigger level of {{delinquency_limit}}, above which an amortisation event occurs. The average is close to the trigger, and a June delinquency figure above {{june_threshold}} would take it over that level. We have informed the lender, who will decide whether any action is needed. The excess spread average for March and April is {{excess_spread}}, against a floor of {{excess_spread_floor}}.\"},{\"heading\":\"Borrowing base and collections\",\"text\":\"The borrowing base is pending until the May servicer report arrives. May principal collections fell by {{collections_change}} against April, in line with the fall of {{last_year_change}} in principal collections last May. This is within tolerance and no alert has been raised.\"},{\"heading\":\"Collateral\",\"text\":\"A car has been identified as securing a loan in both Bramble and Northmoor. We have confirmed the issue and informed the lender, who will decide on next steps.\"},{\"heading\":\"Open items\",\"text\":\"There are {{open_items}} items requiring action: the outstanding May servicer report, which has been chased and escalated; the repeated loan row on the May tape, awaiting the servicer's confirmation before the load proceeds; the delinquency average close to its trigger; and the car securing a loan in both Bramble and Northmoor, both of which are with the lender for decision.\"}]}",
+ "usage": {
+  "task": "draft_pack",
+  "input_tokens": 1464,
+  "output_tokens": 1881,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "from_replay": false,
+  "seconds": 18.4
+ }
+}

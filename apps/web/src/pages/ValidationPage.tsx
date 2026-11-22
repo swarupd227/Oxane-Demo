@@ -1,12 +1,11 @@
 import clsx from "clsx";
-import { ArrowRight, BellRing, CircleAlert, Loader2, Play } from "lucide-react";
+import { BellRing, CircleAlert, Loader2, Play } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { StatusPill } from "../components/ui/badges";
 import { Button } from "../components/ui/Button";
 import { Card, SectionLabel } from "../components/ui/layout";
-import { NeedsIntake, PageHeader } from "../components/ui/PageHeader";
+import { NeedsIntake, NextStep, PageHeader } from "../components/ui/PageHeader";
 import { AnimatedMoney } from "../components/validation/AnimatedMoney";
 import { Bridge } from "../components/validation/Bridge";
 import { LoanDrill } from "../components/validation/LoanDrill";
@@ -160,7 +159,6 @@ const TABS = ["Rules", "Concentration", "Covenants"] as const;
 
 export function ValidationPage() {
   const { state, dispatch } = useSession();
-  const navigate = useNavigate();
   const [running, setRunning] = useState(false);
   const [selected, setSelected] = useState<string | null>("E1");
   const [tab, setTab] = useState<(typeof TABS)[number]>("Rules");
@@ -187,24 +185,17 @@ export function ValidationPage() {
     <div className="space-y-4">
       <PageHeader
         title="First validation run"
-        summary="System recalculation against the borrower's certificate, April 2026."
-        actions={
-          state.ran && (
-            <Button size="lg" onClick={() => navigate("/exceptions")}>
-              View exception queue
-              <ArrowRight aria-hidden className="size-4" />
-            </Button>
-          )
-        }
+        summary={`Period ending 30 Apr 2026 · borrower's certificate against system${run && state.ran ? ` · run ${run.digest.slice(0, 12)}` : ""}`}
+        actions={state.ran && <NextStep to="/exceptions" label="View exception queue" />}
       />
 
       {!state.ran && (
-        <Card className="flex h-72 flex-col items-center justify-center gap-3 text-center">
-          <p className="text-lg font-medium">Ready to run</p>
-          <p className="text-sm text-muted">
-            {formatCount(2400)} loans through 16 rules. E7 cannot run until Schedule 4 arrives.
+        <Card className="flex h-48 flex-col items-center justify-center gap-2 text-center">
+          <p className="text-sm font-medium">Not run</p>
+          <p className="numeric text-xs text-muted">
+            April tape · {formatCount(2400)} loans · 16 rules · E7 not evaluated (Schedule 4)
           </p>
-          <Button size="lg" disabled={running} onClick={() => setRunning(true)}>
+          <Button className="mt-1" disabled={running} onClick={() => setRunning(true)}>
             {running ? (
               <Loader2 aria-hidden className="size-4 animate-spin" />
             ) : (
@@ -229,7 +220,7 @@ export function ValidationPage() {
           {run.provisional && (
             <p className="flex items-center gap-2 rounded-lg bg-warn-tint px-3 py-2 text-sm text-warn">
               <CircleAlert aria-hidden className="size-4 shrink-0" />
-              Provisional: E7 not run. Schedule 4 is not in the pack, so one eligibility test is outstanding.
+              Provisional: E7 not run. Schedule 4 not received.
             </p>
           )}
           <AnimatePresence>
@@ -240,7 +231,7 @@ export function ValidationPage() {
                 className="flex items-center gap-2 overflow-hidden rounded-lg bg-danger-tint px-3 py-2 text-sm font-medium text-danger"
               >
                 <BellRing aria-hidden className="size-4 shrink-0" />
-                Availability is below the Calderwood alert threshold of US$500,000.
+                Availability below Calderwood alert threshold (US$500,000)
               </motion.p>
             )}
           </AnimatePresence>
@@ -263,7 +254,7 @@ export function ValidationPage() {
               )}
             </div>
 
-            <Card className="sticky top-32 overflow-hidden">
+            <Card className="sticky top-14 overflow-hidden">
               <div role="tablist" className="flex gap-1 border-b border-line p-2">
                 {TABS.map((name) => (
                   <button

@@ -15,7 +15,9 @@ import {
 import { Button } from "../components/ui/Button";
 import { Dialog } from "../components/ui/Dialog";
 import { Card, SectionLabel, Skeleton } from "../components/ui/layout";
-import { NeedsIntake, PageHeader, SeedNotice } from "../components/ui/PageHeader";
+import { KeyHints, NeedsIntake, PageHeader, SeedNotice } from "../components/ui/PageHeader";
+import { Timeline, useHistory } from "../components/ui/Timeline";
+import { useSearchParams } from "react-router-dom";
 import { formatDate } from "../lib/format";
 import { termStatus, useSession } from "../lib/session";
 import { useKeys } from "../lib/useKeys";
@@ -64,7 +66,7 @@ function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citatio
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.18 }}
-            className="numeric text-[2rem] leading-none font-semibold tracking-tight"
+            className="numeric text-2xl leading-none font-semibold tracking-tight"
           >
             {amended ? current : original}
           </motion.span>
@@ -156,7 +158,9 @@ export function TermsPage() {
   const { data } = useWorkbench();
   const { state, dispatch } = useSession();
   const [filter, setFilter] = useState<Filter>("all");
-  const [selectedName, setSelectedName] = useState("Advance rate");
+  const [params] = useSearchParams();
+  const [selectedName, setSelectedName] = useState(params.get("term") ?? "Advance rate");
+  const history = useHistory([`term:${selectedName}`]);
   const [override, setOverride] = useState<Citation | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -218,7 +222,7 @@ export function TermsPage() {
     <div>
       <PageHeader
         title="Facility terms"
-        summary={`${approved} of ${terms.length} approved. Tier 1 terms require analyst approval at any confidence level.`}
+        summary={`${approved} of ${terms.length} approved · ${terms.filter((term) => term.tier === 1).length} Tier 1 · ${terms.filter((term) => term.status === "missing").length} not found`}
         actions={
           <Button
             variant="secondary"
@@ -253,6 +257,7 @@ export function TermsPage() {
                 {item.label}
               </button>
             ))}
+            <KeyHints>
             <span className="ml-auto flex items-center gap-1.5 pr-2 text-xs text-muted">
               <Kbd>J</Kbd>
               <Kbd>K</Kbd>
@@ -264,6 +269,7 @@ export function TermsPage() {
               <Kbd>Q</Kbd>
               queue
             </span>
+            </KeyHints>
           </div>
           <div className="max-h-[calc(100vh-19rem)] overflow-y-auto">
             <table className="w-full text-left">
@@ -295,7 +301,7 @@ export function TermsPage() {
           </div>
         </Card>
 
-        <Card className="sticky top-32 space-y-4 p-5">
+        <Card className="sticky top-14 space-y-4 p-5">
           <div>
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-lg leading-snug font-semibold">{selected.name}</h2>
@@ -303,7 +309,17 @@ export function TermsPage() {
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <TierBadge tier={selected.tier} />
-              <ProvenanceChip kind={state.termEdits[selected.name] ? "edited" : "ai"} />
+              {state.termEdits[selected.name] ? (
+                <ProvenanceChip kind="edited" />
+              ) : (
+                selected.status !== "missing" && (
+                  <ProvenanceChip
+                    kind="extracted"
+                    detail={selected.confidence === "none" ? undefined : `${selected.confidence} confidence`}
+                    tip={`${selected.clause}${selected.source ? `, page ${selected.source.page}` : ""}`}
+                  />
+                )
+              )}
               <span className="text-[0.8125rem] text-muted">{selected.clause}</span>
             </div>
           </div>
@@ -370,6 +386,12 @@ export function TermsPage() {
               Send to queue
             </Button>
           </div>
+          {history.length > 0 && (
+            <div className="border-t border-line pt-3">
+              <SectionLabel>History</SectionLabel>
+              <Timeline className="mt-2" entries={history} />
+            </div>
+          )}
         </Card>
       </div>
 
@@ -377,7 +399,6 @@ export function TermsPage() {
         open={editing}
         onOpenChange={setEditing}
         title={`Edit ${selected.name}`}
-        description="The change is logged with your name and reason."
       >
         <form
           className="space-y-3"

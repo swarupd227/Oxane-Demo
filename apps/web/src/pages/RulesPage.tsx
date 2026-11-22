@@ -5,9 +5,16 @@ import { Button } from "../components/ui/Button";
 import { Dialog } from "../components/ui/Dialog";
 import { Card, SectionLabel, Skeleton } from "../components/ui/layout";
 import { NeedsIntake, PageHeader, SeedNotice } from "../components/ui/PageHeader";
+import { Timeline, useHistory } from "../components/ui/Timeline";
 import { formatCount, formatUsd } from "../lib/format";
 import { ANALYST, useSession } from "../lib/session";
 import { useRulePreview, useWorkbench, type Rule } from "../lib/workbench";
+
+/** A rule change's record ID: the audit sequence of the event that proposed it. */
+export function ruleChangeId(audit: { type?: string; seq?: number }[]): string {
+  const proposed = [...audit].reverse().find((entry) => entry.type === "propose-rule");
+  return proposed?.seq ? `RC-0412-${String(proposed.seq).padStart(3, "0")}` : "RC-0412";
+}
 
 const signed = (value: number) => `${value > 0 ? "+" : ""}${formatUsd(value)}`;
 
@@ -86,9 +93,7 @@ function EditRuleDialog({ rule, onClose }: { rule: Rule; onClose: () => void }) 
             className="mt-1 w-full rounded-lg border border-line px-3 py-2 font-normal"
           />
         </label>
-        <p className="text-[0.8125rem] text-muted">
-          Saved as pending. Runs keep using the approved rules until a second analyst decides.
-        </p>
+        <p className="text-xs text-muted">Pending until second-analyst approval.</p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
@@ -105,12 +110,12 @@ function EditRuleDialog({ rule, onClose }: { rule: Rule; onClose: () => void }) 
 function RuleRow({ rule, onEdit, pending }: { rule: Rule; onEdit: () => void; pending: boolean }) {
   return (
     <tr className="border-b border-sand align-top last:border-0">
-      <td className="numeric py-3 pr-3 pl-5 text-sm font-semibold">{rule.id}</td>
-      <td className="w-[34%] py-3 pr-5">
+      <td className="numeric py-2 pr-3 pl-5 text-sm font-semibold">{rule.id}</td>
+      <td className="w-[34%] py-2 pr-5">
         <p className="text-[0.8125rem] leading-snug text-muted">{rule.clause_text}</p>
         <p className="mt-1 text-xs font-medium text-muted">{rule.clause_ref}</p>
       </td>
-      <td className="py-3 pr-5 text-sm font-medium">
+      <td className="py-2 pr-5 text-sm font-medium">
         {rule.plain_english}
         {rule.concepts && rule.concepts.length > 0 && (
           <p className="mt-1.5 flex flex-wrap gap-1" aria-label="Private Credit Ontology concepts">
@@ -125,20 +130,22 @@ function RuleRow({ rule, onEdit, pending }: { rule: Rule; onEdit: () => void; pe
           </p>
         )}
       </td>
-      <td className="py-3 pr-5">
+      <td className="py-2 pr-5">
         <code className="font-mono text-[0.8125rem] leading-snug">{rule.logic}</code>
         {rule.effective_from && (
           <p className="numeric mt-1 text-xs text-muted">From 1 Mar 2026</p>
         )}
       </td>
-      <td className="py-3 pr-5">
+      <td className="py-2 pr-5">
         {rule.status === "not_evaluated" && (
           <StatusPill status="missing" label="Cannot run: Schedule 4 missing" />
         )}
         {pending && <StatusPill status="review" label="Change pending" />}
-        {rule.status === "ready" && !pending && <ProvenanceChip kind="ai" />}
+        {rule.status === "ready" && !pending && (
+          <ProvenanceChip kind="ai" tip={`${rule.clause_ref}: “${rule.clause_text}”`} />
+        )}
       </td>
-      <td className="py-3 pr-5 text-right">
+      <td className="py-2 pr-5 text-right">
         {rule.threshold !== null && (
           <Button variant="ghost" size="sm" aria-label={`Edit ${rule.id}`} onClick={onEdit}>
             <Pencil aria-hidden className="size-3.5" />
@@ -159,9 +166,10 @@ function RuleGroup(props: {
 }) {
   return (
     <Card className="overflow-hidden">
-      <div className="border-b border-line px-5 py-3">
-        <h2 className="font-semibold">{props.title}</h2>
-        <p className="text-[0.8125rem] text-muted">{props.summary}</p>
+      <div className="border-b border-line px-4 py-2">
+        <h2 className="text-sm font-semibold">
+          {props.title} <span className="font-normal text-muted">· {props.summary} · {props.rules.length}</span>
+        </h2>
       </div>
       <table className="w-full text-left">
         <thead>
@@ -195,6 +203,7 @@ export function RulesPage() {
   const { data } = useWorkbench();
   const { state } = useSession();
   const [editing, setEditing] = useState<Rule | null>(null);
+  const history = useHistory(state.ruleEdit ? [`rule:${state.ruleEdit.rule_id}`] : []);
 
   if (!state.intakeDone) {
     return <NeedsIntake />;
@@ -204,13 +213,14 @@ export function RulesPage() {
   }
 
   const edit = state.ruleEdit;
+  const changeId = ruleChangeId(state.audit);
   const pendingId = edit?.status === "pending" ? edit.rule_id : undefined;
 
   return (
     <div className="space-y-4">
       <PageHeader
         title="Eligibility and concentration rules"
-        summary={`${formatCount(data.rules.length)} rules from Schedules 1 and 2, as amended.`}
+        summary={`${formatCount(data.rules.length)} rules · Schedules 1 and 2, as amended · rule set ${edit?.status === "approved" ? "v2" : "v1"}`}
       />
       {data.seed && (
         <SeedNotice>
@@ -219,35 +229,37 @@ export function RulesPage() {
       )}
 
       {edit && (
-        <div className="flex items-start gap-3 rounded-lg border border-warn/30 bg-warn-tint p-3 text-sm">
+        <div className="flex items-start gap-3 rounded-md border border-warn/30 bg-warn-tint px-3 py-2 text-[0.8125rem]">
           <History aria-hidden className="mt-0.5 size-4 shrink-0 text-warn" />
-          <p>
-            <span className="font-medium">
-              {{ pending: "Pending rule set v2:", declined: "Declined:", approved: "Approved, rule set v2:" }[edit.status]}
-            </span>{" "}
-            {edit.rule_id} from {edit.from} to {edit.to}, by {ANALYST}. Reason: {edit.reason}
-            {edit.status === "pending" && " Runs still use the approved rule set v1."}
-            {edit.status === "approved" && " All runs now use rule set v2."}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p>
+              <span className="mr-2 font-mono text-xs text-muted">{changeId}</span>
+              <span className="font-medium">
+                {{ pending: "Pending rule set v2:", declined: "Declined:", approved: "Approved, rule set v2:" }[edit.status]}
+              </span>{" "}
+              {edit.rule_id} {edit.from} → {edit.to} · {ANALYST} · “{edit.reason}”
+            </p>
+            <Timeline className="mt-2" entries={history} />
+          </div>
         </div>
       )}
       {data.rules.some((rule) => rule.status === "not_evaluated") && (
         <div className="flex items-center gap-3 rounded-lg bg-danger-tint p-3 text-sm">
           <CircleAlert aria-hidden className="size-4 shrink-0 text-danger" />
-          E7 cannot run until Schedule 4 is received, so every result stays provisional.
+          E7 not evaluated · Schedule 4 not received · results provisional
         </div>
       )}
 
       <RuleGroup
         title="Eligibility criteria"
-        summary="Schedule 1. A loan that fails any test is excluded in full."
+        summary="Schedule 1"
         rules={data.rules.filter((rule) => rule.group === "eligibility")}
         pendingId={pendingId}
         onEdit={setEditing}
       />
       <RuleGroup
         title="Concentration limits"
-        summary="Schedule 2, as amended. The amount above each limit is deducted, in schedule order."
+        summary="Schedule 2, as amended"
         rules={data.rules.filter((rule) => rule.group === "concentration")}
         onEdit={setEditing}
       />

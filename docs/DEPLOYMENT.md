@@ -1,6 +1,6 @@
 # Deploying to Azure
 
-The workbench runs as one always-on container. It serves the app and API on one address, with a recorded run built in, so it needs no model key to work.
+The workbench runs as one always-on container. It serves both demos, onboarding at `/` and the monitoring cycle at `/monitoring`, and the API on one address. The recorded runs are built in, so it needs no model key to work. The image build regenerates the deal pack and the monitoring cycle and fails if either differs from `deal-kit/pack.manifest.json` or `deal-kit/cycle.manifest.json`.
 
 ## What gets created
 
@@ -10,15 +10,15 @@ The workbench runs as one always-on container. It serves the app and API on one 
 | PostgreSQL Flexible Server, B1ms | Session and audit log | US$15 |
 | Container Registry, Basic | The image | US$5 |
 | Log Analytics | Container logs | Under US$5 |
-| Key Vault, managed identity | Secrets | Under US$1 |
+| Key Vault, managed identity | Secrets (the identity reads them through an access policy) | Under US$1 |
 
 These costs are estimates to check against the Azure pricing calculator. Total: about US$95 a month while it exists. Delete the resource group to stop all charges.
 
 ## What you need
 
-- An Azure subscription where you can create a resource group and assign roles on it.
+- An Azure subscription where you can create a resource group. Contributor is enough: the template assigns no roles.
 - Permission to register an application in Entra ID. If you don't have it, ask an administrator to create one, using the redirect address in the script.
-- The sign-in names of the people who will use it: at least one onboarding analyst and one second analyst, who must be different people.
+- The sign-in names of the people who will use it: at least one analyst and one second analyst, who must be different people. A person is on one list only; someone on both counts as a second analyst. You can deploy with only an analyst and add the second analyst later: everything except approval then works.
 - For live runs only: a Claude deployment on Microsoft Foundry. Replay needs none of this.
 
 ## Steps
@@ -44,10 +44,14 @@ az account set --subscription "<subscription name or ID>"
 3. Deploy. This takes about 15 minutes.
 
 ```powershell
-./infra/deploy.ps1 -ResourceGroup rg-oxane-workbench -Location eastus2 -AnalystUsers "analyst@yourcompany.com" -ApproverUsers "reviewer@yourcompany.com"
+./infra/deploy.ps1 -Subscription "<subscription name or ID>" -ResourceGroup rg-oxane-workbench -Location eastus2 -AnalystUsers "analyst@yourcompany.com" -ApproverUsers "reviewer@yourcompany.com"
 ```
 
-The script prints a generated database password once. Keep it, and set it as `OXANE_POSTGRES_PASSWORD` before any later deployment, otherwise the app will lose its database connection.
+On the first deployment the script generates a database password and saves it to `.env.azure` in the project folder, which git ignores. Later deployments read it from there, or from `OXANE_POSTGRES_PASSWORD` if set. Keep it: a deployment with a different password leaves the app without its database.
+
+If the subscription does not allow ACR Tasks (`az acr build`), add `-LocalBuild` to build with local Docker and push. If the region does not offer PostgreSQL's Burstable B1ms to the subscription (`SkuNotAvailable`), add `-PostgresLocation centralus` or another nearby region.
+
+If you may not register applications in Entra ID, the script stops at "Registering sign-in with Entra" after printing the sign-in redirect address, and leaves the app undeployed rather than open. Ask an administrator to register a single-tenant web application ("Accounts in this organizational directory only") with that redirect address and ID tokens enabled, and to give you its client ID and a client secret. Then run the same command with `-AuthClientId "<client ID>"`, and the secret in `OXANE_AUTH_CLIENT_SECRET` or `-AuthClientSecret`.
 
 4. Open the address the script prints, and sign in.
 
@@ -59,6 +63,9 @@ Use a person on each list, in two separate browser sessions.
 2. As the analyst, work the case through to approval, and confirm the Approve button stays disabled.
 3. As the second analyst, approve and download the load file.
 4. Confirm the audit log shows both real names.
+5. Open `/monitoring` and do the same for the May cycle: the analyst triages, the second analyst approves the lender packs.
+
+To add or change who can use it, redeploy with new `-AnalystUsers`, `-ApproverUsers` and `-SeniorUsers` (heads of monitoring, the third approval level some clients need), or change the `ANALYST_USERS`, `APPROVER_USERS` and `SENIOR_USERS` settings on the container app. Anyone in the organisation can sign in, but only people on a list can act.
 
 ## Live runs
 
@@ -81,6 +88,7 @@ az group delete --name rg-oxane-workbench
 ## Known limits
 
 - The database accepts connections from Azure services, protected by its password. A private network would be the step up for a pilot.
+- The app pulls its image with the registry's admin credential, so a Contributor can deploy without assigning roles. With Owner or User Access Administrator, an AcrPull role for the managed identity would be the step up.
 - Logs go to Log Analytics. Application Insights is not set up.
 - Files are built into the image, so Blob Storage is not used. A pilot that accepts real uploads would need it.
 - The Sandbox labels stay on in Azure, because the data is still synthetic.

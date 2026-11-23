@@ -150,7 +150,7 @@ export function RavenglassCovenants({
               className={clsx(
                 "h-6 cursor-pointer rounded-md px-2 font-medium",
                 filter === f
-                  ? "bg-ink text-white"
+                  ? "bg-accent-tint text-accent-strong font-medium"
                   : "bg-sand text-muted hover:text-ink",
               )}
             >

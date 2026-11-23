@@ -171,7 +171,7 @@ export function QueriesPage() {
           </p>
         </div>
         <div className="mt-3 flex h-7 overflow-hidden rounded-md text-xs font-medium" aria-hidden>
-          <div className="flex items-center bg-ink px-2 text-white" style={{ width: `${analystShare}%` }}>
+          <div className="flex items-center bg-accent px-2 text-white" style={{ width: `${analystShare}%` }}>
             {analystShare > 12 && "Analyst"}
           </div>
           <div className="flex flex-1 items-center bg-warn-tint px-2 text-warn">

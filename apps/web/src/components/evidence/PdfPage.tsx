@@ -113,7 +113,7 @@ export function PdfPage({ url, page, rects, label }: PdfPageProps) {
               animate={{ opacity: 1, scaleX: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.22, delay: index * 0.03, ease: "easeOut" }}
-              className="pointer-events-none absolute origin-left rounded-[3px] bg-accent/40 ring-1 ring-ink/70"
+              className="pointer-events-none absolute origin-left rounded-[3px] bg-highlight/70 ring-1 ring-warn/60"
               style={{
                 left: `${(rect.x0 - 0.004) * 100}%`,
                 top: `${(rect.top - 0.002) * 100}%`,

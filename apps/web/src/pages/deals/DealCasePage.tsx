@@ -41,7 +41,7 @@ function Stages({ view }: { view: CaseView }) {
   return (
     <ol aria-label="Stage" className="mb-3 flex flex-wrap gap-1 text-[0.6875rem]">
       {view.stages.map((s, i) => (
-        <li key={s} className={clsx("rounded px-1.5 py-0.5", i < at ? "bg-ok-tint text-ok" : i === at ? "bg-ink font-semibold text-white" : "bg-sand text-muted")} aria-current={i === at ? "step" : undefined}>
+        <li key={s} className={clsx("rounded px-1.5 py-0.5", i < at ? "bg-ok-tint text-ok" : i === at ? "bg-accent font-semibold text-white" : "bg-sand text-muted")} aria-current={i === at ? "step" : undefined}>
           {STAGE_LABEL[s]}
         </li>
       ))}

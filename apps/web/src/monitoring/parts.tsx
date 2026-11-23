@@ -78,7 +78,7 @@ export function Filled({
             <button
               type="button"
               onClick={() => onSource(figure.source)}
-              className="numeric inline-flex cursor-pointer items-center gap-0.5 rounded bg-accent/30 px-1 font-semibold underline decoration-ink/40 decoration-dotted underline-offset-2 hover:bg-accent/60"
+              className="numeric inline-flex cursor-pointer items-center gap-0.5 rounded bg-highlight/60 px-1 font-semibold underline decoration-ink/40 decoration-dotted underline-offset-2 hover:bg-highlight"
             >
               {figure.value}
               {figure.source && <Link2 aria-hidden className="size-3" />}

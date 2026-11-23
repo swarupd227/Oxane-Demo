@@ -129,7 +129,7 @@ export function HandOffHint({ items }: { items: WorkItem[] }) {
     return null;
   }
   return (
-    <p role="status" className="mb-3 rounded-md bg-accent/30 px-3 py-1.5 text-xs font-medium">
+    <p role="status" className="mb-3 rounded-md bg-accent-tint px-3 py-1.5 text-xs font-medium text-accent-strong">
       Switch to {next.assignee_name || next.role_label} to continue
     </p>
   );

@@ -336,8 +336,10 @@ test("(d) the scripted case 0412 hands an escalation to the credit expert and ba
   await page.goto("/work");
   await expect(page.getByRole("button", { name: /^Acting as Ruth Adeyemi/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "Expert judgement: X5, case 0412" }).first()).toBeVisible();
-  await page.getByLabel("Decision and reasoning").fill("Treat the shared VINs as double pledged; keep excluded");
-  await page.getByRole("button", { name: "Record decision" }).click();
+  // Other cases' escalations may wait on Ruth too; work the one for case 0412.
+  const x5 = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: "Expert judgement: X5, case 0412" }) }).first();
+  await x5.getByLabel("Decision and reasoning").fill("Treat the shared VINs as double pledged; keep excluded");
+  await x5.getByRole("button", { name: "Record decision" }).click();
   // It moves from waiting to recently done.
   await expect(page.getByText(/done .* by Ruth Adeyemi/).first()).toBeVisible();
   await switchTo(page, "Hannah Cole");

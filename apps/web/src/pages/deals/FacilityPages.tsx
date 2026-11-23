@@ -117,7 +117,6 @@ export function FacilityPage() {
                     <td className="numeric">{s.period}</td>
                     <td className="numeric">{s.due_date}</td>
                     <td><Badge tone={SUB_TONE[s.status]}>{SUB_LABEL[s.status]}</Badge></td>
-                    <td className="font-mono text-xs">{s.panorama ?? "–"}</td>
                     <td className="pr-3 text-right"><Link to={`/facilities/${id}/submissions/${s.id}`} className="text-xs font-medium text-info hover:underline">Open</Link></td>
                   </tr>
                 ))}
@@ -263,7 +262,7 @@ export function SubmissionPage() {
                 )}
               </div>
             )}
-            {s.validation?.held && !s.hold_released && <p role="alert" className="rounded bg-danger-tint px-2 py-1 text-xs font-medium text-danger">The load is held by a blocking check, so the calculations did not run. Decide the blocking finding below.</p>}
+            {s.validation?.held && <p role="alert" className="rounded bg-danger-tint px-2 py-1 text-xs font-medium text-danger">The load is held by a blocking check. Decide the blocking finding below.</p>}
             {e && (
               <Kpis items={[
                 { label: "Pool", value: usd(e.gross_pool_cents) },

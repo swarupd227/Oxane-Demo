@@ -47,7 +47,7 @@ export function Stepper() {
                   aria-hidden
                   className={clsx(
                     "numeric flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                    active ? "bg-ink text-white" : "bg-sand text-muted",
+                    active ? "bg-accent text-white" : "bg-sand text-muted",
                   )}
                 >
                   {index + 1}

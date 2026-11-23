@@ -97,7 +97,7 @@ function Sidebar() {
     return {
       "/monitoring/submissions": { n: late, tone: "bg-danger text-white" },
       "/monitoring/validation": { n: held, tone: "bg-danger text-white" },
-      "/monitoring/triage": { n: open, tone: "bg-ink text-white" },
+      "/monitoring/triage": { n: open, tone: "bg-accent text-white" },
       "/monitoring/pack": { n: cycle.facilities.length - released, tone: "bg-sand text-muted" },
     } as Record<string, { n: number; tone: string }>;
   }, [cycle, session]);
@@ -355,7 +355,7 @@ function Header({ onReset }: { onReset: () => void }) {
             aria-pressed={presenter.on}
             aria-label="Presenter mode"
             onClick={presenter.toggle}
-            className={clsx("grid size-8 cursor-pointer place-items-center rounded-md", presenter.on ? "bg-accent text-ink" : "text-muted hover:bg-sand hover:text-ink")}
+            className={clsx("grid size-8 cursor-pointer place-items-center rounded-md", presenter.on ? "bg-accent text-white" : "text-muted hover:bg-sand hover:text-ink")}
           >
             <Presentation aria-hidden className="size-4" />
           </button>

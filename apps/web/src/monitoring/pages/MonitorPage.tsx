@@ -227,7 +227,7 @@ export function MonitorPage() {
                       setError(null);
                       drafting.reset();
                     }}
-                    className={clsx("h-6 cursor-pointer rounded px-2 text-xs", clientId === c.id ? "bg-ink text-white" : "text-muted hover:text-ink")}
+                    className={clsx("h-6 cursor-pointer rounded px-2 text-xs", clientId === c.id ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:text-ink")}
                   >
                     {c.name.split(" ")[0]}
                   </button>

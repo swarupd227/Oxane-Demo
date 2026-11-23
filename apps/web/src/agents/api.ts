@@ -98,7 +98,7 @@ export function usd(value: number): string {
   if (value === 0) {
     return "US$0";
   }
-  return `US$${value < 1 ? value.toFixed(4) : value.toFixed(2)}`;
+  return value < 0.01 ? "<US$0.01" : `US$${value.toFixed(2)}`;
 }
 
 export function pct(value: number | null): string {

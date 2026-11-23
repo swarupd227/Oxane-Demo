@@ -100,7 +100,7 @@ export function StatusCallPage() {
               setClientId(c.id);
               setSource(undefined);
             }}
-            className={clsx("-mb-px flex h-9 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium", clientId === c.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
+            className={clsx("-mb-px flex h-9 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium", clientId === c.id ? "border-accent text-accent-strong" : "border-transparent text-muted hover:text-ink")}
           >
             {c.name}
             {!c.ai_permitted && <NoAiBadge compact />}

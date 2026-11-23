@@ -352,7 +352,7 @@ export function CovenantsPage() {
               role="tab"
               aria-selected={tab === id}
               onClick={() => pick(id)}
-              className={clsx("-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap", tab === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
+              className={clsx("-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap", tab === id ? "border-accent text-accent-strong" : "border-transparent text-muted hover:text-ink")}
             >
               {facility.name}
               <FacilityTag id={id} name={facility.asset_class} />

@@ -255,7 +255,7 @@ export function SubmissionsPage() {
             className={clsx(
               "-mb-px h-9 cursor-pointer border-b-2 px-3 text-[0.8125rem] font-medium",
               view === v.id
-                ? "border-ink text-ink"
+                ? "border-accent text-accent-strong"
                 : "border-transparent text-muted hover:text-ink",
             )}
           >

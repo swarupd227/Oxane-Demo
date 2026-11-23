@@ -70,7 +70,7 @@ export function Tabs() {
           className={({ isActive }) =>
             clsx(
               "-mb-px border-b-2 px-2.5 pb-1.5 text-[0.8125rem]",
-              isActive || (onDetail && tab.to === base) ? "border-ink font-semibold text-ink" : "border-transparent text-muted hover:text-ink",
+              isActive || (onDetail && tab.to === base) ? "border-accent font-medium text-accent-strong" : "border-transparent text-muted hover:text-ink",
             )
           }
         >

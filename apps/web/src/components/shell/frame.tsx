@@ -1,6 +1,6 @@
 /* The frame every workbench shares: brand, workbench switch, navigation items and the header bar. */
 import clsx from "clsx";
-import type { LucideIcon } from "lucide-react";
+import { FolderKanban, LayoutGrid, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { MONITORING_ROLES, ONBOARDING_ROLES, useRole } from "../../lib/persona";
@@ -19,13 +19,26 @@ export function Brand() {
   );
 }
 
-export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitoring" }) {
+export function WorkbenchSwitch({ current, shared = false }: { current: "onboarding" | "monitoring"; shared?: boolean }) {
   // Each role sees the workbenches it uses; with only one, there is nothing to switch.
   const role = useRole();
   const items = [
     { to: "/cases", label: "Onboarding", id: "onboarding", shown: !role || ONBOARDING_ROLES.includes(role) },
     { to: "/monitoring", label: "Monitoring", id: "monitoring", shown: !role || MONITORING_ROLES.includes(role) },
   ].filter((item) => item.shown);
+  if (items.length === 1) {
+    // One workbench: a plain way back to it from the shared pages, rather than a switch.
+    const only = items[0];
+    if (!shared && current === only.id) {
+      return null;
+    }
+    return (
+      <NavLink to={only.to} className={navItem(false)}>
+        <NavIcon icon={only.id === "monitoring" ? LayoutGrid : FolderKanban} active={false} />
+        {only.label} workbench
+      </NavLink>
+    );
+  }
   if (items.length < 2) {
     return null;
   }
@@ -104,10 +117,13 @@ export function NavSection({ label, children, className }: { label?: ReactNode; 
 /** The full-height sidebar: brand and workbench switch on top, navigation, then a footer. */
 export function SidebarFrame({
   current,
+  shared = false,
   children,
   footer,
 }: {
   current?: "onboarding" | "monitoring";
+  /** My work, clients, facilities and settings belong to no single workbench. */
+  shared?: boolean;
   children: ReactNode;
   footer?: ReactNode;
 }) {
@@ -115,7 +131,7 @@ export function SidebarFrame({
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-surface lg:flex">
       <div className="space-y-3 px-3 pt-3 pb-3">
         <Brand />
-        {current && <WorkbenchSwitch current={current} />}
+        {current && <WorkbenchSwitch current={current} shared={shared} />}
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3">{children}</div>
       {footer && <div className="border-t border-line px-2 py-2">{footer}</div>}

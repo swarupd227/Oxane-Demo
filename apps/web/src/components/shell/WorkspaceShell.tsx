@@ -82,7 +82,7 @@ export function WorkspaceShell() {
   );
   return (
     <div className="flex min-h-screen">
-      {!client && <SidebarFrame current={monitoringSide ? "monitoring" : "onboarding"}>{nav}</SidebarFrame>}
+      {!client && <SidebarFrame current={monitoringSide ? "monitoring" : "onboarding"} shared>{nav}</SidebarFrame>}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className={HEADER}>
           {client && <Brand />}

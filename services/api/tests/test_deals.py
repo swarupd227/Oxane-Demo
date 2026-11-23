@@ -271,6 +271,55 @@ def test_no_ai_client_runs_manually_with_page_references():
         assert db.scalars(select(LlmSpend).where(LlmSpend.case_id == cid)).first() is None
 
 
+def test_overlapping_changes_to_one_case_both_survive(monkeypatch):
+    """A case's state is saved whole, so a step that read it before another step's save would
+    wipe that save. On the hosted app the rule approval took 1.4 s and the next step began
+    inside it, and the approval was lost; each change to a case now waits for the last."""
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.deals import onboard
+
+    row = flow.new_client("Kingsgate Bank N.A.", "Rosa Lind", False)
+    case = flow.new_case(row["id"], "Fenwick SME Funding III", "SME loans", 80_000_000)
+    cid = case["id"]
+    folder = flow.deal_dir("fenwick") / "onboarding"
+    flow.upload(cid, folder / "Fenwick_Receivables_Financing_Agreement.pdf", "agreement")
+    flow.upload(cid, folder / "Fenwick_Portfolio_2026-09.xlsx", "loan_tape")
+    flow.step(cid, "terms/manual")
+    doc = "Fenwick_Receivables_Financing_Agreement.pdf"
+    for term, (value, page) in {"commitment": ("US$80,000,000", 2), "advance_rate": ("70.00%", 2),
+                                "delinquency_trigger": ("7.50%", 3)}.items():
+        flow.step(cid, f"terms/{term}", {"action": "enter", "value": value, "document": doc,
+                                         "page": page, "basis_days": 30, "window_months": 3})
+    for term in ("reserve", "loss_trigger"):
+        flow.step(cid, f"terms/{term}", {"action": "absent", "reason": "Not in the agreement"})
+    flow.step(cid, "rules", {"action": "add", "kind": "eligibility", "rule": {
+        "ref": "First Schedule (a)", "plain_english": "Not more than 30 days in arrears",
+        "clause_text": "the loan is not more than 30 days in arrears;", "document": doc,
+        "test": {"kind": "max", "field": "days_past_due", "high": 30}}})
+
+    real = onboard.suggest_mapping
+
+    def slow(*args, **kwargs):
+        result = real(*args, **kwargs)
+        time.sleep(1.5)
+        return result
+
+    monkeypatch.setattr(onboard, "suggest_mapping", slow)
+    with ThreadPoolExecutor(2) as pool:
+        mapping = pool.submit(client.post, f"/api/deals/cases/{cid}/mapping/suggest",
+                              headers=h("hannah", True))
+        time.sleep(0.5)
+        approval = pool.submit(client.post, f"/api/deals/cases/{cid}/rules",
+                               headers=h("hannah"), json={"action": "approve"})
+        assert mapping.result().status_code == 200
+        assert approval.result().status_code == 200
+    state = ok(client.get(f"/api/deals/cases/{cid}", headers=h("hannah")))["state"]
+    assert state["rules"]["status"] == "approved"
+    assert state["mapping"]["source"] == "rules"
+
+
 def test_unfamiliar_documents_degrade_without_inventing_numbers():
     row = flow.new_client("Ashgrove Capital Partners LP", "Nadia Brooks", True)
     case = flow.new_case(row["id"], "Unfamiliar pack", "Auto ABS", 50_000_000)

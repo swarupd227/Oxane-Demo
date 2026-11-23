@@ -36,8 +36,8 @@ def invalid(fields: dict[str, str], message: str = "Check the highlighted fields
         raise HTTPException(status_code=422, detail={"message": message, "fields": fields})
 
 
-def _get(db: Session, model: Any, ident: int, what: str) -> Any:
-    row = db.get(model, ident)
+def _get(db: Session, model: Any, ident: int, what: str, lock: bool = False) -> Any:
+    row = db.get(model, ident, with_for_update=lock)
     if row is None:
         raise HTTPException(status_code=404, detail=f"No such {what}")
     return row
@@ -334,8 +334,12 @@ def case_view(db: Session, case: DealCase, persona: Persona | None) -> dict[str,
     }
 
 
-def _case(db: Session, case_id: int) -> tuple[DealCase, Client]:
-    case = _get(db, DealCase, case_id, "case")
+def _case(db: Session, case_id: int, lock: bool = False) -> tuple[DealCase, Client]:
+    """A case with its client. An endpoint that changes the case takes the row lock: a case's
+    state is one document, read, changed and written back whole, so two overlapping changes
+    would otherwise lose one of them (an approval wiped by the next step's save). The lock is
+    held to the request's commit; reads never take it."""
+    case = _get(db, DealCase, case_id, "case", lock)
     return case, db.get(Client, case.client_id)
 
 
@@ -413,7 +417,7 @@ def get_case(case_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
 def patch_case(case_id: int, body: CaseBody, request: Request, db: SessionDep
                ) -> dict[str, Any]:
     persona = require(request, db, "onboarding_analyst")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     _writable(case)
     values = _case_fields(body, case, db)
     changed = {k: v for k, v in values.items() if getattr(case, k) != v}
@@ -430,7 +434,7 @@ def patch_case(case_id: int, body: CaseBody, request: Request, db: SessionDep
 @router.post("/api/deals/cases/{case_id}/archive")
 def archive_case(case_id: int, body: Note, request: Request, db: SessionDep) -> dict[str, Any]:
     persona = require(request, db, "onboarding_analyst", "admin")
-    case, _ = _case(db, case_id)
+    case, _ = _case(db, case_id, lock=True)
     if case.facility_id:
         raise HTTPException(status_code=409, detail="This case went live; archive the facility")
     if not (body.note or "").strip():
@@ -469,7 +473,7 @@ async def post_document(case_id: int, request: Request, db: SessionDep, name: st
                         kind: str = "auto", effective_date: str | None = None) -> dict[str, Any]:
     check_access(request)
     persona = require(request, db, "onboarding_analyst")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     _writable(case)
     if kind == "auto" and not client.ai_permitted:
         invalid({"kind": f"{client.name} does not permit AI: choose the type"})
@@ -493,7 +497,7 @@ async def replace_document(case_id: int, doc_id: int, request: Request, db: Sess
                            name: str) -> dict[str, Any]:
     check_access(request)
     persona = require(request, db, "onboarding_analyst")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     _writable(case)
     old = _get(db, Document, doc_id, "document")
     if old.case_id != case.id or old.status != "active":
@@ -519,7 +523,7 @@ class DocBody(BaseModel):
 def patch_document(case_id: int, doc_id: int, body: DocBody, request: Request, db: SessionDep
                    ) -> dict[str, Any]:
     persona = require(request, db, "onboarding_analyst")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     _writable(case)
     doc = _get(db, Document, doc_id, "document")
     if doc.case_id != case.id:
@@ -545,7 +549,7 @@ def patch_document(case_id: int, doc_id: int, body: DocBody, request: Request, d
 def delete_document(case_id: int, doc_id: int, request: Request, db: SessionDep
                     ) -> dict[str, Any]:
     persona = require(request, db, "onboarding_analyst")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     _writable(case)
     doc = _get(db, Document, doc_id, "document")
     if doc.case_id != case.id or doc.status != "active":
@@ -571,7 +575,7 @@ def _case_step(case_id: int, request: Request, db: Session, model: bool = False
     if model:
         check_access(request)
     persona = require(request, db, "onboarding_analyst")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     _writable(case)
     return case, client, persona
 
@@ -707,7 +711,7 @@ class Answer(BaseModel):
 def post_decide(case_id: int, ref: str, body: Answer, request: Request, db: SessionDep
                 ) -> dict[str, Any]:
     persona = require(request, db, "expert")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     onboard.answer(db, case, client, persona, ref, body.text, "expert")
     db.commit()
     return case_view(db, case, persona)
@@ -717,7 +721,7 @@ def post_decide(case_id: int, ref: str, body: Answer, request: Request, db: Sess
 def post_answer(case_id: int, ref: str, body: Answer, request: Request, db: SessionDep
                 ) -> dict[str, Any]:
     persona = require(request, db, "client")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     if persona.client != f"deal:{client.id}":
         raise HTTPException(status_code=404, detail="No such query")
     onboard.answer(db, case, client, persona, ref, body.text, "client", body.outcome)
@@ -759,7 +763,7 @@ class QcMark(BaseModel):
 @router.post("/api/deals/cases/{case_id}/qc")
 def post_qc(case_id: int, body: QcMark, request: Request, db: SessionDep) -> dict[str, Any]:
     persona = require(request, db, "qc")
-    case, _ = _case(db, case_id)
+    case, _ = _case(db, case_id, lock=True)
     onboard.qc_mark(db, case, persona, body.item, body.result, body.note)
     db.commit()
     return case_view(db, case, persona)
@@ -768,7 +772,7 @@ def post_qc(case_id: int, body: QcMark, request: Request, db: SessionDep) -> dic
 @router.post("/api/deals/cases/{case_id}/qc/complete")
 def post_qc_complete(case_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
     persona = require(request, db, "qc")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     onboard.qc_complete(db, case, persona)
     onboard.rebuild(db, case, client)
     db.commit()
@@ -782,7 +786,7 @@ class Reason(BaseModel):
 @router.post("/api/deals/cases/{case_id}/approve")
 def post_approve(case_id: int, body: Reason, request: Request, db: SessionDep) -> dict[str, Any]:
     persona = require(request, db, "reviewer")
-    case, _ = _case(db, case_id)
+    case, _ = _case(db, case_id, lock=True)
     onboard.approve(db, case, persona, body.reason)
     db.commit()
     return case_view(db, case, persona)
@@ -791,7 +795,7 @@ def post_approve(case_id: int, body: Reason, request: Request, db: SessionDep) -
 @router.post("/api/deals/cases/{case_id}/return")
 def post_return(case_id: int, body: Reason, request: Request, db: SessionDep) -> dict[str, Any]:
     persona = require(request, db, "reviewer")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     onboard.return_case(db, case, persona, body.reason or "")
     onboard.rebuild(db, case, client)
     db.commit()
@@ -801,7 +805,7 @@ def post_return(case_id: int, body: Reason, request: Request, db: SessionDep) ->
 @router.post("/api/deals/cases/{case_id}/go-live")
 def post_go_live(case_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
     persona = require(request, db, "reviewer")
-    case, client = _case(db, case_id)
+    case, client = _case(db, case_id, lock=True)
     onboard.go_live(db, case, client, persona)
     db.flush()
     send_load_file(db, case, persona)
@@ -843,7 +847,7 @@ def send_load_file(db: Session, case: DealCase, persona: Persona) -> dict[str, A
 def post_case_panorama(case_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
     """Send the approved load file again, after a failed hand-off."""
     persona = require(request, db, "reviewer", "onboarding_analyst")
-    case, _ = _case(db, case_id)
+    case, _ = _case(db, case_id, lock=True)
     if not (case.state or {}).get("live_at"):
         raise HTTPException(status_code=409, detail="The load file goes to Panorama at go-live")
     if ((case.state or {}).get("panorama") or {}).get("ok"):

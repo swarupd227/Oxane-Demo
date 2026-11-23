@@ -12,7 +12,7 @@ import { Badge, Panel, PageTitle, RecordId } from "../../monitoring/ui";
 
 interface Portal {
   client_name: string;
-  queries: { case_id: number | null; case: string; facility: string; ref: string; title: string; question: string; asked_by: string; asked_at: string; answer: string | null; status: "waiting" | "answered"; scripted: boolean }[];
+  queries: { case_id: number | null; case: string; facility: string; ref: string; title: string; question: string; asked_by: string; asked_at: string; answer: string | null; status: "waiting" | "answered"; scripted: boolean; model?: string | null; outcome?: "confirmed" | "changes" | null }[];
   reports: { facility: string; period: string; released_at: string; text: string[]; download: string; scripted: boolean }[];
   summary: { title: string; greeting: string; opening: string; sections: { heading: string; points: string[] }[]; released_at: string } | null;
   alerts: { id: number; request: string; summary: string | null; status: string; requestedAt: string }[];
@@ -23,12 +23,12 @@ function Query({ q, refresh }: { q: Portal["queries"][number]; refresh: () => vo
   const [text, setText] = useState("");
   const form = useForm();
   const action = useDealAction<unknown>();
-  const answer = () =>
+  const answer = (outcome?: "confirmed" | "changes") =>
     void form.run(async () => {
       if (q.scripted) {
         await post("/api/session/events", { type: "record-answer", actor: "analyst", payload: { ids: [q.ref] } });
       } else {
-        await action.mutateAsync(() => post(`/api/deals/queries/${q.case_id}/${q.ref}/answer`, { text }));
+        await action.mutateAsync(() => post(`/api/deals/queries/${q.case_id}/${q.ref}/answer`, { text, outcome }));
       }
       refresh();
     });
@@ -42,8 +42,23 @@ function Query({ q, refresh }: { q: Portal["queries"][number]; refresh: () => vo
       </div>
       <p className="mt-1 text-[0.8125rem]">{q.title}</p>
       {q.question && <p className="mt-0.5 text-xs text-muted">{q.question}</p>}
-      {q.answer && <p className="mt-1 rounded bg-canvas px-2 py-1 text-xs">Your answer: {q.answer}</p>}
-      {q.status === "waiting" && (
+      {q.model && (
+        <a href={q.model} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-info hover:underline">
+          <Download aria-hidden className="size-3.5" />
+          The model Oxane built for you
+        </a>
+      )}
+      {q.answer && <p className="mt-1 rounded bg-canvas px-2 py-1 text-xs">Your answer{q.outcome ? (q.outcome === "confirmed" ? " (model confirmed)" : " (changes requested)") : ""}: {q.answer}</p>}
+      {q.status === "waiting" && q.model && (
+        <div className="mt-2 space-y-2">
+          <TextInput id={`answer-${q.ref}`} aria-label="Answer" placeholder="Your comments, or the changes you need" value={text} onChange={(e) => setText(e.target.value)} invalid={Boolean(form.errors.text)} />
+          <div className="flex gap-2">
+            <Button size="sm" disabled={form.busy || !text.trim()} onClick={() => answer("confirmed")}>Confirm the model</Button>
+            <Button size="sm" variant="secondary" disabled={form.busy || !text.trim()} onClick={() => answer("changes")}>Ask for changes</Button>
+          </div>
+        </div>
+      )}
+      {q.status === "waiting" && !q.model && (
         <form
           className="mt-2 flex items-start gap-2"
           onSubmit={(event) => {

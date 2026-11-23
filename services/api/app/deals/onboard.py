@@ -743,7 +743,7 @@ def compare_client_model(db: Session, case: DealCase, state: dict[str, Any]
                          ) -> list[dict[str, Any]]:
     """The client's own model against the approved terms, cell by cell. Code only."""
     model = next((d for d in active_docs(db, case) if d.kind == "client_model"
-                  and d.name.lower().endswith(".xlsx")), None)
+                  and d.kind_source != "oxane" and d.name.lower().endswith(".xlsx")), None)
     if model is None:
         return []
     terms = state.get("terms") or {}
@@ -866,6 +866,20 @@ def _wanted_exceptions(db: Session, case: DealCase, state: dict[str, Any]) -> li
         items.append(_exc(f"val:status:{status}", "Data", "blocking",
                           f"Status {status} has no standard status", "Map it on the Mapping tab",
                           "Correct the mapping", "mapping"))
+    built = state.get("built_model")
+    if built:
+        # Oxane built the model because the client has none: the client validates it through
+        # the query cycle like any other question, and the clock on their wait runs the same.
+        validation = built.get("validation") or {}
+        items.append(_exc(f"model:validation:v{built['version']}", "Client model", "blocking",
+                          f"Client model v{built['version']} built by Oxane: client to validate",
+                          f"{built['name']}, built from the approved terms and rule set "
+                          f"v{built['rules_version']}. "
+                          + ("The client confirmed it." if validation.get("outcome") == "confirmed"
+                             else "The client asked for changes: " + validation["text"]
+                             if validation.get("outcome") == "changes" else
+                             "Send it to the client to confirm or change."),
+                          "Query the client: send the model for validation", "exceptions"))
     for diff in state.get("client_model", []):
         if diff["differs"]:
             items.append(_exc(f"model:{diff['term']}", "Client model", "warning",
@@ -930,6 +944,12 @@ def work_exception(db: Session, case: DealCase, client: Client, persona: Persona
     if item["status"] in ("accepted", "resolved"):
         raise refuse("This exception is already closed")
     subject_link = f"/deals/cases/{case.id}/exceptions"
+    model_check = item["key"].startswith("model:validation:")
+    if model_check and action in ("accept", "escalate"):
+        raise refuse("Only the client can validate the model Oxane built: query the client")
+    outcome = ((state.get("built_model") or {}).get("validation") or {}).get("outcome")
+    if model_check and action == "close" and outcome != "confirmed":
+        raise refuse("The client asked for changes: rebuild the model and send the new version")
     if action == "accept":
         if item["severity"] == "blocking" and item["type"] == "Data":
             check_id = item["key"].split(":", 1)[1]
@@ -953,6 +973,12 @@ def work_exception(db: Session, case: DealCase, client: Client, persona: Persona
         item["status"] = "with_client"
         item["query"] = {"text": note, "sent_at": datetime.now(UTC).isoformat(),
                          "by": persona.name}
+        if model_check:
+            built = state["built_model"]
+            item["query"]["model_doc"] = built["doc_id"]
+            built.update(status="with_client", sent_at=item["query"]["sent_at"],
+                         sent_by=persona.name, ref=ref)
+            state["built_model"] = built
         handoffs.open_item(db, f"case:{case.id}:exc:{ref}:query", subject(case), case.audit_id,
                            "query", f"Query on {case.facility_name}: {item['title']}"[:200],
                            "client", "/portal", persona, detail=note,
@@ -977,8 +1003,9 @@ def work_exception(db: Session, case: DealCase, client: Client, persona: Persona
 
 
 def answer(db: Session, case: DealCase, client: Client, persona: Persona, ref: str,
-           text: str, role: str) -> dict[str, Any]:
-    """A client answers a query, or an expert records a decision. Both go back to the analyst."""
+           text: str, role: str, outcome: str | None = None) -> dict[str, Any]:
+    """A client answers a query, or an expert records a decision. Both go back to the analyst.
+    On the model Oxane built, the client either confirms it or asks for changes."""
     state = _state(case)
     item = next((e for e in state.get("exceptions", []) if e["ref"] == ref), None)
     want = "with_client" if role == "client" else "with_expert"
@@ -987,6 +1014,19 @@ def answer(db: Session, case: DealCase, client: Client, persona: Persona, ref: s
     if not text.strip():
         raise HTTPException(status_code=422, detail={"message": "Write the answer",
                                                      "fields": {"text": "Required"}})
+    if item["key"].startswith("model:validation:"):
+        if outcome not in ("confirmed", "changes"):
+            raise HTTPException(status_code=422, detail={
+                "message": "Confirm the model or ask for changes",
+                "fields": {"outcome": "Confirm or ask for changes"}})
+        built = state["built_model"]
+        built["validation"] = {"outcome": outcome, "text": text.strip(), "by": persona.name,
+                               "at": datetime.now(UTC).isoformat()}
+        built["status"] = "confirmed" if outcome == "confirmed" else "changes_requested"
+        state["built_model"] = built
+        log(db, case, persona, "model-validation",
+            f"{ref}: the client {'confirmed' if outcome == 'confirmed' else 'asked for changes to'}"
+            f" client model v{built['version']}", {"refs": [ref], "reason": text.strip()})
     kind = "query" if role == "client" else "expert"
     item["status"] = "answered" if role == "client" else "decided"
     item["answer" if role == "client" else "decision"] = {
@@ -1019,11 +1059,23 @@ def readiness(db: Session, case: DealCase, state: dict[str, Any]) -> dict[str, b
     validation = state.get("validation") or {}
     return {
         "terms_approved": terms_ready(state),
+        "reporting_captured": bool((state.get("reporting") or {}).get("lines")),
         "rules_approved": (state.get("rules") or {}).get("status") == "approved",
         "mapping_confirmed": bool((state.get("mapping") or {}).get("confirmed")),
         "validation_run": bool(validation.get("engine")),
+        "client_model_agreed": client_model_agreed(db, case, state),
         "exceptions_worked": not open_exceptions(state),
     }
+
+
+def client_model_agreed(db: Session, case: DealCase, state: dict[str, Any]) -> bool:
+    """The client's own model was compared with the agreement, or, where the client has none,
+    the model Oxane built was confirmed by the client."""
+    if any(d.kind == "client_model" and d.kind_source != "oxane" for d in active_docs(db, case)):
+        return True
+    built = state.get("built_model") or {}
+    return ((built.get("validation") or {}).get("outcome") == "confirmed"
+            and built.get("status") == "confirmed")
 
 
 def preparers(db: Session, case: DealCase) -> set[str]:
@@ -1189,6 +1241,12 @@ def due_date(period_end: date, day: int) -> date:
     return nxt.replace(day=min(day, 28))
 
 
+def _provenance(db: Session, client: Client, state: dict[str, Any]) -> dict[str, Any]:
+    from app.deals.setup import provenance
+
+    return provenance(db, client, state)
+
+
 def go_live(db: Session, case: DealCase, client: Client, persona: Persona) -> Facility:
     state = _state(case)
     if not state.get("approved_at"):
@@ -1223,6 +1281,11 @@ def go_live(db: Session, case: DealCase, client: Client, persona: Persona) -> Fa
                       f"{t.get('doc_name')} p.{t.get('page')}" if t.get("page") else None}
                   for k, t in terms.items()},
         "reporting_day": reporting_day,
+        "reporting": state.get("reporting"),
+        "provenance": _provenance(db, client, state),
+        "client_model": {k: (state.get("built_model") or {}).get(k) for k in
+                         ("name", "version", "status", "doc_id")}
+        if state.get("built_model") else {"status": "client's own"},
         "baseline": {"period": as_of.isoformat()[:7], "as_of": as_of.isoformat(),
                      "tape_doc": state["mapping"]["tape_doc"],
                      "excluded_rows": state.get("excluded_rows", []),

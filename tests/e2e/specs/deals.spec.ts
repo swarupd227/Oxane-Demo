@@ -1,7 +1,8 @@
 /* New deals end to end through the browser, switching persona at each hand-off:
  * (a) a new client and a consumer-instalment onboarding from upload to go-live,
  * (b) its first monitoring month to a released report,
- * (c) a client that does not permit AI, onboarded by hand.
+ * (c) a client outside the AI scope (existing process), onboarded by hand, with the client
+ *     model Oxane builds because the client has none, validated by the client in the portal.
  *
  * (a) and (b) need the model. They run against the deterministic test model when the API has
  * DEALS_STUB_MODEL=1 (the CI variant), and against the live model only when E2E_LIVE=1 and a key
@@ -16,7 +17,7 @@ const ASHGROVE = `Ashgrove Capital Partners LP ${run}`;
 const KINGSGATE = `Kingsgate Bank N.A. ${run}`;
 const state: { caseUrl?: string; facilityUrl?: string; contact?: string; subPath?: string; clientName?: string } = {};
 
-test.describe.configure({ mode: "serial", timeout: 240_000 });
+test.describe.configure({ mode: "serial", timeout: 360_000 });
 
 async function switchTo(page: Page, name: string, within = "") {
   await page.getByRole("button", { name: /^Acting as/ }).click();
@@ -76,6 +77,12 @@ async function openCase(page: Page, client: string, facility: string, dealType: 
   state.caseUrl = page.url().replace(/\/documents$/, "");
 }
 
+async function recordReporting(page: Page) {
+  await tab(page, "Reporting");
+  await page.getByRole("button", { name: "Record requirements" }).click();
+  await expect(page.getByText(/v1 · recorded by Hannah Cole/)).toBeVisible();
+}
+
 async function workAllExceptions(page: Page) {
   await tab(page, "Exceptions");
   await clickEach(
@@ -101,6 +108,7 @@ async function qcAndApprove(page: Page, facility: string) {
   await page.getByRole("button", { name: "Approve", exact: true }).click();
   await expect(page.getByText(/Approved by Marcus Hale/)).toBeVisible();
   await page.getByRole("button", { name: "Go live" }).click();
+  await expect(page.getByText(/Sent to Panorama · receipt PNR-/)).toBeVisible();
   await page.getByRole("link", { name: "Open facility" }).click();
   await expect(page.getByRole("heading", { level: 1, name: facility })).toBeVisible();
   state.facilityUrl = page.url();
@@ -138,6 +146,7 @@ test("(a) a new client onboards a consumer-instalment deal from upload to go-liv
   await page.getByRole("button", { name: "Approve verified Tier 2 and 3" }).click();
   await clickEach(page, () => page.getByRole("button", { name: "Approve", exact: true }));
   await expect(page.getByText(/13\/13 approved/)).toBeVisible();
+  await recordReporting(page);
 
   await tab(page, "Rules");
   await page.getByRole("button", { name: "Draft with AI" }).click();
@@ -208,12 +217,15 @@ test("(b) its first monitoring month runs through to a released report", async (
     await confirm.click();
     await expect(confirm).toBeHidden();
   }
-  await page.getByRole("button", { name: "Run the month" }).click();
+  // No button to press: validation ran on its own and the blocking duplicate held the load.
   await expect(page.getByText(/The load is held by a blocking check/)).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/Automatic after validation by Workbench \(automatic\)/)).toBeVisible();
   const dup = page.getByRole("listitem").filter({ hasText: "Each loan appears once" });
   await dup.getByLabel(/^Outcome for/).selectOption("confirmed");
   await dup.getByLabel(/^Reason for/).fill("Duplicate account excluded; corrected tape requested from the servicer");
   await dup.getByRole("button", { name: "Decide" }).click();
+  await expect(page.getByText(/Hold released by Priya Raman/)).toBeVisible();
+  await page.getByRole("button", { name: "Re-run calculations" }).click();
   await expect(page.getByText("Borrowing base", { exact: true })).toBeVisible({ timeout: 60_000 });
   await clickEach(page, () => page.getByRole("button", { name: "Decide", exact: true }));
   await page.getByRole("button", { name: "Draft report" }).click();
@@ -225,6 +237,7 @@ test("(b) its first monitoring month runs through to a released report", async (
   await page.locator(`main a[href="${state.subPath}"]`).first().click();
   await page.getByRole("button", { name: "Approve, level 2" }).click();
   await expect(page.getByText("Released", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/Sent to Panorama · receipt PNR-/)).toBeVisible();
   await switchTo(page, state.contact ?? "Nadia Brooks", state.clientName ?? ASHGROVE);
   await expect(page.getByText("Harbourline Consumer Receivables LLC").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Workbook" })).toBeVisible();
@@ -232,7 +245,7 @@ test("(b) its first monitoring month runs through to a released report", async (
   await expect(page).toHaveURL(/\/portal$/);
 });
 
-test("(c) a client that does not permit AI onboards by hand, with page references", async ({ page }) => {
+test("(c) a client outside the AI scope onboards by hand, and validates the model Oxane built", async ({ page }) => {
   const facility = "Fenwick SME Funding LLC";
   await createClient(page, KINGSGATE, "Rosa Lind", false);
   await enterCode(page);
@@ -244,6 +257,7 @@ test("(c) a client that does not permit AI onboards by hand, with page reference
   await page.getByLabel("Choose files").setInputFiles(`${FILES}/fenwick/onboarding/Fenwick_Portfolio_2026-09.xlsx`);
   await expect(page.getByText("2 active")).toBeVisible();
   await expect(page.getByRole("button", { name: "Classify with AI" })).toBeDisabled();
+  await expect(page.getByText("Existing process — outside AI scope").first()).toBeVisible();
 
   await tab(page, "Terms");
   await page.getByRole("button", { name: "Start manual entry" }).click();
@@ -266,6 +280,7 @@ test("(c) a client that does not permit AI onboards by hand, with page reference
   await enter("Advance rate", "advance_rate", "70.00%", "2");
   await enter("Delinquency trigger", "delinquency_trigger", "7.50%", "3");
   await clickEach(page, () => page.getByRole("button", { name: "Not in documents" }));
+  await recordReporting(page);
 
   await tab(page, "Rules");
   await page.getByRole("button", { name: "Add rule" }).first().click();
@@ -288,7 +303,25 @@ test("(c) a client that does not permit AI onboards by hand, with page reference
   await page.getByRole("button", { name: "Validate and run" }).click();
   await expect(page.getByText("Borrowing base", { exact: true })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/model cost US\$0\.00/)).toBeVisible();
+
+  // No client model: Oxane builds one in code and the client validates it.
+  await tab(page, "Client model");
+  await page.getByRole("button", { name: "Build client model" }).click();
+  await expect(page.getByText(/Notes from the code template/)).toBeVisible();
+  await page.getByRole("button", { name: "Send to client for validation" }).click();
+  await expect(page.getByText(/v1 · With the client/)).toBeVisible();
   await workAllExceptions(page);
+  await switchTo(page, "Rosa Lind", KINGSGATE);
+  await expect(page).toHaveURL(/\/portal$/);
+  await expect(page.getByRole("link", { name: "The model Oxane built for you" })).toBeVisible();
+  await page.getByLabel("Answer").fill("The model matches how we calculate the base.");
+  await page.getByRole("button", { name: "Confirm the model" }).click();
+  await expect(page.getByText(/model confirmed/)).toBeVisible();
+  await switchTo(page, "Hannah Cole");
+  await page.goto(`${new URL(state.caseUrl!).pathname}/client-model`);
+  await page.getByRole("button", { name: "Close: model agreed" }).click();
+  await expect(page.getByText(/v1 · Confirmed by the client/)).toBeVisible();
+  await expect(page.getByText(/model cost US\$0\.00/)).toBeVisible();
   await qcAndApprove(page, facility);
 });
 

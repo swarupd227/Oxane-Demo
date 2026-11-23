@@ -1,6 +1,6 @@
 # Oxane AI-Assisted Onboarding and Monitoring Demos
 
-One workbench for two of Oxane's RFP use cases. All documents and data are synthetic. It is not connected to Panorama.
+One workbench for two of Oxane's RFP use cases. All documents and data are synthetic. It is not connected to Panorama: the hand-off to Panorama is a stub (see *Panorama hand-off* below).
 
 - **Onboarding** (use case 1) takes a fictional asset-based finance facility from a raw document pack to approved, platform-ready data, with the pitch brief's harder cases worked beside each step: nested definitions, the client's own model and the query cycle, the configuration workbook, a backbook load and independent QC before release. Build plan: [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md).
 - **Monitoring** (use case 2, at `/monitoring`) runs the May 2026 cycle for two clients and four facilities, along the pitch brief's seven steps: expect and receive, map and ingest, validate, review and resolve, calculate and report (with a lender Excel workbook and an independent QC comparison), monitor and alert (headroom, early warnings, client self-service alerts), and the weekly status call. One client, Thornbury Bank, does not permit AI, so its CLO warehouse runs on code checks only. Build plan: [docs/MONITORING_PLAN.md](docs/MONITORING_PLAN.md).
@@ -162,6 +162,16 @@ The model reads, classifies, maps and drafts; code finds every quote on its page
 | `DEALS_STUB_MODEL` | `false` | Tests and offline end-to-end runs only: a deterministic test double for the generated test deals in place of the model. Never set in a deployment |
 
 Two generated test deals, distinct from the Bramble pack, are built into `deal-kit/output/newdeals/` (`docker compose run --rm deal-kit python -m dealkit.newdeals.build`): Harbourline (consumer instalment, CSV tape, an amendment changing the advance rate and adding a concentration limit, the lender's own model with a stale rate, a later month with a duplicate account and a loan missing from the file) and Fenwick (SME loans, XLSX tape, no reserve in the agreement, a later month with a renamed and an added column). `tests/record_deals.py` records their model calls once a key is set.
+
+## Panorama hand-off (stub)
+
+At go-live the approved load file, and on release each month's results, are posted by an outbound client (`services/api/app/panorama.py`) to Panorama. The demo has no Panorama: with `PANORAMA_BASE_URL` unset the client posts to a mock inside the app, `POST /api/mock/panorama/{onboarding-load|monitoring-results}`, which checks the payload's shape, accepts only approved or released data and returns a receipt `PNR-…` derived from the payload's hash. The request (URL, bytes, sha256), the response and the receipt are written to the case's or submission's audit chain and shown as *Sent to Panorama · receipt PNR-…* on the case, the facility and the report. A failed hand-off is recorded, never raised, and can be sent again. `GET /api/panorama/config` shows the mode.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `PANORAMA_BASE_URL` | unset | Unset: the in-app mock. Set: a real endpoint (not tested by this demo) |
+| `PANORAMA_API_KEY` | unset | Sent as a bearer token to a configured endpoint |
+| `PANORAMA_TIMEOUT_SECONDS` | `10` | Per request |
 
 ## Personas and hand-offs
 

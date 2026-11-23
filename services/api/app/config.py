@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     # mounted into the container; saving a key also writes it there.
     settings_encryption_key: str = ""
     local_env_file: str = ""
+    # Oxane's platform (Panorama). The real integration is configuration only: unset, approved
+    # load files and released results go to the in-app mock at /api/mock/panorama, which is a
+    # stub that issues receipts and stores nothing outside this app.
+    panorama_base_url: str = ""
+    panorama_api_key: str = ""
+    panorama_timeout_seconds: float = 10.0
 
     def deals_key_set(self) -> bool:
         key = self.anthropic_foundry_api_key if self.llm_provider == "foundry" \

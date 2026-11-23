@@ -7,6 +7,7 @@ import { Skeleton } from "../../components/ui/layout";
 import { useCycle, useCycleSession, type Cycle, type CycleSession } from "../cycle";
 import { allSubmissions, deskRows, REPORT_LABEL, useScope, type DeskRow } from "../desk";
 import { NoAiBadge, OutcomePill } from "../parts";
+import { useReuse } from "./ReuseView";
 import { SCHEDULE_STATUS } from "./Schedules";
 import { Activity, Badge, DataTable, FilterSelect, fmtUnit, Kpis, PageTitle, Person, RecordId, useWide, when, type Column, type Tone } from "../ui";
 
@@ -74,6 +75,7 @@ function Drawer({ row, cycle, session, onClose }: { row: DeskRow; cycle: Cycle; 
   const audit = (session?.audit ?? []).filter((a) => a.subject && ids.has(a.subject));
   const book = cycle.book?.facilities.find((f) => f.id === row.id);
   const schedule = cycle.schedules?.find((s) => s.facility === row.id);
+  const reuse = useReuse().data?.facilities.find((f) => f.facility === row.id);
   const origin = book
     ? [
         ...(book.report.prepared ? [{ at: book.report.prepared.at, by: book.report.prepared.by, text: "Report prepared" }] : []),
@@ -122,6 +124,15 @@ function Drawer({ row, cycle, session, onClose }: { row: DeskRow; cycle: Cycle; 
             {row.report.done}/{row.report.levels} levels
           </span>
         </dd>
+        {reuse && (
+          <>
+            <dt className="text-muted">Set up from</dt>
+            <dd>
+              {reuse.counts.library_rules} rules from the bank's library · {reuse.counts.facility_rules} facility-specific · {reuse.counts.reused_layouts} layouts reused ·{" "}
+              <Link to="/monitoring/mapping?view=reuse" className="text-info hover:underline">Reuse</Link>
+            </dd>
+          </>
+        )}
       </dl>
       <div className="border-t border-line px-3 py-2">
         <p className="mb-1 text-[0.6875rem] font-semibold text-muted">Tests</p>

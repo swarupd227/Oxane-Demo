@@ -183,7 +183,7 @@ function RunLog({ registry }: { registry: Registry }) {
             <div key={id} className="flex items-center gap-4 rounded-lg border border-line bg-surface px-3 py-2 text-xs">
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[0.8125rem] font-semibold">{clientName(id)}</span>
-                <span className="text-muted">{c?.ai_permitted === false ? "AI not permitted · code checks only" : "AI permitted"}</span>
+                <span className="text-muted">{c?.ai_permitted === false ? "Existing process — outside AI scope" : "AI permitted"}</span>
               </span>
               <Stat label="Calls" value={s.runs} />
               <Stat label="Refused" value={s.refused} />

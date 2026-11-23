@@ -223,6 +223,7 @@ export interface Rule {
   limit_pct?: number;
   effective_from?: string | null;
   edited?: { reason: string; by: string };
+  origin?: { facility_id: number; facility: string; ref: string };
 }
 
 export interface MappingCheck {
@@ -297,7 +298,7 @@ export interface CaseException {
   link: string;
   status: "open" | "accepted" | "resolved" | "with_client" | "answered" | "with_expert" | "decided";
   history: { at: string; by: string; action: string; note: string }[];
-  query?: { text: string; sent_at: string; by: string };
+  query?: { text: string; sent_at: string; by: string; model_doc?: number };
   answer?: { text: string; at: string; by: string };
   escalation?: { text: string; at: string; by: string };
   decision?: { text: string; at: string; by: string };
@@ -306,7 +307,7 @@ export interface CaseException {
 
 export interface CaseState {
   terms?: Record<string, Term>;
-  rules?: { eligibility: Rule[]; concentration: Rule[]; not_codable: string[]; status: string; version: number; approved_by?: string };
+  rules?: { eligibility: Rule[]; concentration: Rule[]; not_codable: string[]; status: string; version: number; approved_by?: string; library_checked?: { added: string[]; skipped: { describe: string; why: string }[] } };
   mapping?: Mapping;
   validation?: Validation;
   exceptions?: CaseException[];
@@ -317,6 +318,76 @@ export interface CaseState {
   live_at?: string;
   classified?: Record<string, { kind: string; title: string; dated: string | null }>;
   as_of?: string;
+  reporting?: Reporting;
+  built_model?: BuiltModel;
+  panorama?: PanoramaSend;
+}
+
+export interface Reporting {
+  lines: string[];
+  frequency: string;
+  format: string;
+  day: number | null;
+  day_source: string | null;
+  note: string | null;
+  version: number;
+  captured_by: string;
+  captured_at: string;
+}
+
+export interface BuiltModel {
+  version: number;
+  name: string;
+  doc_id: number;
+  rules_version: number;
+  built_by: string;
+  built_at: string;
+  notes: string[];
+  notes_by: "ai" | "template";
+  status: "built" | "with_client" | "confirmed" | "changes_requested";
+  sent_at?: string;
+  ref?: string;
+  validation: { outcome: "confirmed" | "changes"; text: string; by: string; at: string } | null;
+}
+
+export interface PanoramaSend {
+  kind: string;
+  ok: boolean;
+  receipt: string | null;
+  request: { method: string; url: string; bytes: number; sha256: string; feed: string; mode: string; at: string };
+  response: { status: number; body: unknown };
+  by: string;
+  audit_hash: string;
+}
+
+export interface QueryRow {
+  ref: string;
+  title: string;
+  type: string;
+  sent_at: string;
+  sent_by: string;
+  answered_at: string | null;
+  closed_at: string | null;
+  status: "waiting" | "answered" | "closed";
+  client_wait_hours: number | null;
+  model_check: boolean;
+}
+
+export interface Provenance {
+  rules: { id: string; kind: string; describe: string; plain_english: string; from: "bank_library" | "facility"; origin: Rule["origin"] | null }[];
+  library_rules: number;
+  facility_rules: number;
+  mapping: { source: string | null; from: "lender_mapping" | "new"; signature: string; columns: number };
+  thresholds: string;
+  client: string;
+}
+
+export interface CaseSetup {
+  report_catalogue: { key: string; label: string; how: string }[];
+  queries: { queries: QueryRow[]; open: number; client_wait_hours: number };
+  own_client_model: boolean;
+  rule_library: { describe: string; kind: string; plain_english: string; origin: NonNullable<Rule["origin"]> }[];
+  provenance: Provenance;
 }
 
 export interface CaseView extends Omit<CaseSummary, "client"> {
@@ -330,6 +401,8 @@ export interface CaseView extends Omit<CaseSummary, "client"> {
   work: WorkItem[];
   can: Record<"prepare" | "ai" | "qc" | "review" | "expert" | "client", string | null>;
   stages: string[];
+  setup: CaseSetup;
+  panorama: PanoramaSend | null;
 }
 
 export interface FacilitySummary {
@@ -343,13 +416,16 @@ export interface FacilitySummary {
   case_id: number | null;
   live_at: string | null;
   reporting_day: number | null;
-  submissions: { id: number; ref: string; period: string; period_end: string; due_date: string; status: string }[];
+  submissions: { id: number; ref: string; period: string; period_end: string; due_date: string; status: string; panorama: string | null }[];
+  panorama: string | null;
   latest: { period: string; status: string; borrowing_base_cents: number | null; delinquency_average: string | null; delinquency_limit: string | null; breached: boolean; warning: boolean; open: number } | null;
 }
 
 export interface FacilityView extends FacilitySummary {
   config: { thresholds: { delinquency: { limit_pct: string; days: number; months: number; source: string } | null; loss: { limit_pct: string; source: string } | null }; rules: CaseState["rules"]; mapping: { headers: string[]; columns: Record<string, string | null> }; terms: Record<string, { value: string | null; source: string | null }> };
   case_ref: string | null;
+  provenance: Provenance | null;
+  bank_library: { describe: string; kind: string; origin: NonNullable<Rule["origin"]> }[];
   history: History;
   work: WorkItem[];
 }
@@ -382,6 +458,9 @@ export interface SubmissionView {
     findings?: Finding[];
     report?: { text: string[]; drafted_by: string; approvals: { level: number; title: string; by: string; at: string }[]; released_at: string | null };
     excluded_rows?: string[];
+    runs?: { at: string; trigger: "auto" | "manual"; by: string; held: boolean; borrowing_base_cents: number | null }[];
+    hold_released?: { by: string; at: string; ref: string; rows: number };
+    panorama?: PanoramaSend;
   };
   facility: FacilitySummary;
   documents: DocumentRow[];

@@ -114,6 +114,16 @@ def approve_terms(case: dict[str, Any]) -> dict[str, Any]:
     return case
 
 
+REPORT_LINES = ["gross_pool", "eligible_pool", "excess_concentration", "advance_rate",
+                "borrowing_base", "availability", "delinquency_ratio"]
+
+
+def capture_reporting(case_id: int, **extra: Any) -> dict[str, Any]:
+    """The reporting the client asked for at intake."""
+    return step(case_id, "reporting", {"lines": REPORT_LINES, "frequency": "Monthly",
+                                       "format": "XLSX", **extra})
+
+
 def work_open(case: dict[str, Any], query_on: tuple[str, ...] = ("Client model",)
               ) -> dict[str, Any]:
     cid = case["id"]
@@ -138,6 +148,7 @@ def onboard_ai(deal: str, client_row: dict[str, Any], name: str, deal_type: str,
     case = step(cid, "classify", code=True)
     case = step(cid, "extract", code=True)
     case = approve_terms(case)
+    case = capture_reporting(cid)
     case = step(cid, "rules/draft", code=True)
     for kind in ("eligibility", "concentration"):
         for rule in case["state"]["rules"][kind]:
@@ -153,13 +164,16 @@ def onboard_ai(deal: str, client_row: dict[str, Any], name: str, deal_type: str,
 
 def finish_onboarding(case: dict[str, Any], client_persona: str) -> dict[str, Any]:
     cid = case["id"]
+    if not case["setup"]["own_client_model"] and not case["state"].get("built_model"):
+        # No client model: Oxane builds one and the client validates it like any query.
+        case = step(cid, "client-model/build", code=True)
     case = work_open(case)
     for item in case["state"]["exceptions"]:
         if item["status"] == "with_client":
             ok(client.post(f"/api/deals/queries/{cid}/{item['ref']}/answer",
                            headers=h(client_persona),
                            json={"text": "Our model still uses the original rate; we will "
-                                 "update it."}))
+                                 "update it.", "outcome": "confirmed"}))
     case = ok(client.get(f"/api/deals/cases/{cid}", headers=h("hannah")))
     for item in case["state"]["exceptions"]:
         if item["status"] in ("answered", "decided"):
@@ -192,8 +206,9 @@ def first_month(facility_id: int, deal: str, tape: str, report: str | None,
                        content=(folder / report).read_bytes(), headers=h("priya", True)))
     sub = sub_step(sub_id, "map", code=True)
     if confirm_mapping or not sub["state"]["mapping"]["confirmed"]:
-        sub = sub_step(sub_id, "mapping", {})
-    return sub_step(sub_id, "process", code=True)
+        sub = sub_step(sub_id, "mapping", {}, code=True)
+    # Validation, and the calculations when nothing blocks, ran by themselves.
+    return sub
 
 
 def triage_all(sub: dict[str, Any]) -> dict[str, Any]:
@@ -206,6 +221,9 @@ def triage_all(sub: dict[str, Any]) -> dict[str, Any]:
         else:
             body = {"outcome": finding["suggested"]["outcome"], "note": ""}
         sub = sub_step(sub["id"], f"triage/{finding['ref']}", body)
+    if sub["state"].get("hold_released"):
+        # The released hold is re-run by the analyst.
+        sub = sub_step(sub["id"], "process", code=True)
     if any(not f.get("decision") for f in sub["state"]["findings"]):
         return triage_all(sub)
     return sub

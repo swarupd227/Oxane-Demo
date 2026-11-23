@@ -275,7 +275,16 @@ def commentary(content: list[dict[str, Any]]) -> dict[str, Any]:
     return {"paragraphs": paragraphs}
 
 
-ANSWERS = {"deals_extract": extract, "deals_rules": rules, "deals_classify": classify,
+def model_notes(content: list[dict[str, Any]]) -> dict[str, Any]:
+    return {"paragraphs": [
+        "Oxane built this model from the agreement, applying {{eligibility_rules}} eligibility "
+        "criteria and {{concentration_limits}} concentration limits.",
+        "At an advance rate of {{advance_rate}} it gives a borrowing base of {{borrowing_base}} "
+        "on the tape dated {{as_of}}. Please confirm it or tell us what to change."]}
+
+
+ANSWERS = {"deals_model_notes": model_notes, "deals_extract": extract, "deals_rules": rules,
+           "deals_classify": classify,
            "deals_map": map_tape, "deals_report": read_report, "deals_commentary": commentary}
 
 

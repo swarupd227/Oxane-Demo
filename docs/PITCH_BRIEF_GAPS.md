@@ -37,6 +37,17 @@ What the brief changes for the demos:
 | 7. QC and release | Code checks every loan; four-eyes approval | **Independent QC comparison**: platform output against the independent Excel calculation, variances classified as genuine or presentation (blank against dash, rounding, sign, per cent as decimal); reports stay provisional until QC passes |
 | Measures (5b) | Field accuracy, issues, exceptions | Report: field-level accuracy against expert-verified records, material errors and omissions, exception rate, hours per onboarding by deal type, elapsed time split from client waiting, cost per onboarding, share of values linked to source, capacity released; measured and assumed shown apart |
 
+## Closed in the Nov 2026 gap review
+
+| Gap | Where it shows |
+|---|---|
+| UC1: no client model | Case › Client model: Oxane builds the model in code from the approved terms and rule set (AI words the notes only, figures filled by code), sends it through the portal, the client confirms or asks for changes (a new version each time), the wait counts as client waiting time in the query tracker, and QC waits until it is agreed |
+| UC1: reporting requirements | Case › Reporting: report lines, frequency, format and due day captured as their own step; they feed the Report sheet of the configuration workbook and the built model, and the facility record at go-live |
+| UC2: calculations without a trigger | A submission whose load passes validation runs reconciliation, calculations and covenant tests by itself (activity: *Workbench (automatic)*); a held load is released by a triage decision and then re-run by the analyst |
+| UC2: partial reuse | Monitoring › Mapping › Reuse by bank and sender: each bank's rule library, the layouts reused per sender, and what each facility set for itself; new deals reuse a bank's library rules (re-checked against the new agreement) and show *Set up from* on the facility |
+| Integration with Panorama | Outbound client and an in-app mock (a stub): load file at go-live, results on release, receipt in the audit trail |
+| Clients that don't permit AI | Labelled *Existing process — outside AI scope*; not presented as a feature; no model call for them, tested |
+
 ## Out of scope
 
 Use cases 3 to 6 are not scored. The pitch can mention extension briefly; the demos don't build for them.

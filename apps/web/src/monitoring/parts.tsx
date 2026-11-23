@@ -63,15 +63,18 @@ const facilityTones = [
   "bg-[#e2ebe0] text-[#3d5a2f]",
 ];
 
-/** A client that does not permit AI runs on code checks only. Said plainly wherever it shows. */
+/** A client that does not permit AI is outside the AI scope and stays on the existing process
+ * (code checks only, no model calls). Said plainly wherever it shows; not a feature to sell. */
+export const OUTSIDE_AI_SCOPE = "Existing process — outside AI scope";
+
 export function NoAiBadge({ compact }: { compact?: boolean }) {
   return (
     <span
-      title="Client policy: no AI processing"
+      title="This client does not permit AI, so it is outside the scope of the AI work and stays on the existing process: code checks only, no model calls."
       className="inline-flex h-5 shrink-0 items-center gap-1 rounded border border-ink/25 bg-surface px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-ink"
     >
       <BotOff aria-hidden className="size-3" />
-      {compact ? "No AI" : "No AI"}
+      {compact ? OUTSIDE_AI_SCOPE : OUTSIDE_AI_SCOPE}
     </span>
   );
 }

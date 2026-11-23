@@ -12,6 +12,7 @@ import copy
 import re
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from types import SimpleNamespace
 from typing import Any
 
 from engine import generic
@@ -38,6 +39,8 @@ from app.deals.onboard import (
 from app.personas import Persona
 from app.pipeline.documents import PdfDocument
 
+# Calculations run by themselves once a load passes validation; the log names the workbench.
+AUTOMATIC = SimpleNamespace(name="Workbench (automatic)", role="system")
 OUTCOMES = {"logged": "Logged, no alert", "query": "Query to sender",
             "confirmed": "Confirmed issue", "expert": "Expert review"}
 LEVEL_ROLES = {1: "monitoring_analyst", 2: "reviewer", 3: "head"}
@@ -146,11 +149,13 @@ def map_tape(db: Session, sub: Submission, facility: Facility, client: Client,
              "stored": "the client's stored mapping", "ai": "AI, for the changed layout",
              "rules": "name matching for the changed layout (AI not permitted)"}[source]
     log(db, sub, persona, "map", f"Mapped the tape with {words}")
+    if state["mapping"]["confirmed"]:
+        process(db, sub, facility, client, persona, mode="auto")
     return state["mapping"]
 
 
 def confirm(db: Session, sub: Submission, client: Client, persona: Persona,
-            body: dict[str, Any]) -> dict[str, Any]:
+            body: dict[str, Any], facility: Facility | None = None) -> dict[str, Any]:
     state = _state(sub)
     mapping = state.get("mapping")
     if not mapping:
@@ -166,6 +171,8 @@ def confirm(db: Session, sub: Submission, client: Client, persona: Persona,
     _save(sub, state)
     log(db, sub, persona, "confirm-mapping", "Confirmed the changed layout's mapping and stored "
         "it for the client")
+    if facility is not None:
+        process(db, sub, facility, client, persona, mode="auto")
     return mapping
 
 
@@ -245,7 +252,11 @@ def _history(db: Session, facility: Facility, sub: Submission) -> list[tuple[str
 
 
 def process(db: Session, sub: Submission, facility: Facility, client: Client,
-            persona: Persona) -> dict[str, Any]:
+            persona: Persona, mode: str = "manual") -> dict[str, Any]:
+    """Validate the mapped tape, then, if no blocking check holds the load, reconcile and run
+    the facility's calculations and covenant tests. Mode `auto` is the workbench running it the
+    moment the mapping is confirmed: no one presses a button. A manual run is the re-run after
+    a held load is released."""
     state = _state(sub)
     mapping = state.get("mapping")
     if not mapping or not mapping.get("confirmed"):
@@ -314,11 +325,25 @@ def process(db: Session, sub: Submission, facility: Facility, client: Client,
         state["tests"] = tests
     state["findings"] = _findings(state, sub)
     state["processed_at"] = datetime.now(UTC).isoformat()
+    state["runs"] = [*state.get("runs", []), {
+        "at": state["processed_at"], "trigger": mode,
+        "by": AUTOMATIC.name if mode == "auto" else persona.name,
+        "held": bool(view.get("held")),
+        "borrowing_base_cents": (view.get("engine") or {}).get("borrowing_base_cents")}]
+    state.pop("hold_released", None)
     _save(sub, state)
     sub.status = "held" if view.get("held") else "in_review"
-    log(db, sub, persona, "process", "Validation held the load" if view.get("held") else
-        f"Ran validation, reconciliation and tests: borrowing base US$"
-        f"{view['engine']['borrowing_base_cents'] / 100:,.2f}")
+    if mode == "auto":
+        log(db, sub, AUTOMATIC, "auto-run", (
+            "Validation found a blocking failure, so the load is held: calculations and "
+            "covenant tests wait until it is released") if view.get("held") else (
+            "Validation passed with no blocking failure, so reconciliation, calculations and "
+            "covenant tests ran automatically: borrowing base US$"
+            f"{view['engine']['borrowing_base_cents'] / 100:,.2f}"), {"trigger": "auto"})
+    else:
+        log(db, sub, persona, "process", "Re-ran validation: the load is still held" if
+            view.get("held") else "Re-ran validation, reconciliation and tests: borrowing base "
+            f"US${view['engine']['borrowing_base_cents'] / 100:,.2f}", {"trigger": "manual"})
     return state
 
 
@@ -422,6 +447,9 @@ def triage(db: Session, sub: Submission, facility: Facility, persona: Persona, r
         check = next(c for c in state["validation"]["checks"]
                      if c["id"] == item["key"].split(":", 1)[1])
         state["excluded_rows"] = sorted(set(state.get("excluded_rows", [])) | set(check["keys"]))
+        if (state.get("validation") or {}).get("held"):
+            state["hold_released"] = {"by": persona.name, "at": datetime.now(UTC).isoformat(),
+                                      "ref": ref, "rows": len(check["keys"])}
     state["findings"] = [item if f["ref"] == ref else f for f in state["findings"]]
     _save(sub, state)
     log(db, sub, persona, "triage", f"{ref}: {OUTCOMES[outcome]}", {"reason": note or None,

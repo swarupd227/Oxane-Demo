@@ -44,6 +44,7 @@ from app.monitoring import workbook as cycle_workbook
 from app.monitoring.cycle import cycle_path, served_files
 from app.monitoring.cycle import record as portfolio_record
 from app.monitoring.scoring import scorecard as cycle_scorecard
+from app.panorama import router as panorama_router
 from app.pipeline import ontology
 from app.pipeline.gateway import AnthropicClient, Gateway, ReplayMiss
 from app.scoring import scorecard
@@ -91,6 +92,7 @@ async def require_sign_in(request: Request, call_next: Any) -> Any:
 app.include_router(deals_router)
 app.include_router(agents_router)
 app.include_router(admin_router)
+app.include_router(panorama_router)
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -510,6 +512,15 @@ def get_scripted_history(scope: Literal["onboarding", "cycle"], request: Request
     else:
         sid = cycle_session.current_session(session, current_cycle())
     return handoffs.subject_history(session, sid)
+
+
+@app.get("/api/monitoring/reuse")
+def get_cycle_reuse() -> dict[str, Any]:
+    """Each bank's rule library and each facility's reuse: library rules, sender layouts and
+    what was set for the facility alone. Code only."""
+    from app.monitoring.reuse import reuse
+
+    return reuse(portfolio_record(), current_cycle())
 
 
 @app.get("/api/monitoring/scorecard")

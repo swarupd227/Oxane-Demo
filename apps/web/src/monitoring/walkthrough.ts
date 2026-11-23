@@ -13,6 +13,6 @@ export const HINTS: Record<string, string> = {
   "/monitoring/triage": "Accept or change each suggestion; a change needs a reason.",
   "/monitoring/pack": "Resolve the QC variance, then switch user to approve. Thornbury needs three levels.",
   "/monitoring/monitor": "Headroom across the book. Pick a client request to draft an alert rule.",
-  "/monitoring/status-call": "Weekly brief per client contact. Thornbury's is a code template.",
+  "/monitoring/status-call": "Weekly brief per client contact, every figure filled by code.",
   "/monitoring/results": "Measured against assumed, with the test-set results.",
 };

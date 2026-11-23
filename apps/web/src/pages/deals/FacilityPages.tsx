@@ -4,11 +4,12 @@ import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ActionButton, Activity, Field, FormMessage, Select, TextInput, useForm, when } from "../../components/deals/parts";
+import { PanoramaReceipt } from "../../components/deals/Panorama";
 import { HandOffHint } from "../../components/shell/Persona";
 import { Button } from "../../components/ui/Button";
 import { Dialog } from "../../components/ui/Dialog";
 import { Skeleton } from "../../components/ui/layout";
-import { post, upload, usd, useDealAction, useFacilities, useFacility, useSubmission, type Finding, type SubmissionView } from "../../lib/deals";
+import { post, upload, usd, useDealAction, useFacilities, useFacility, useSubmission, type FacilityView, type Finding, type SubmissionView } from "../../lib/deals";
 import { useRole } from "../../lib/persona";
 import { NoAiBadge } from "../../monitoring/parts";
 import { Badge, DataTable, Kpis, Panel, PageTitle, RecordId, type Column } from "../../monitoring/ui";
@@ -56,6 +57,37 @@ function EditFacility({ open, onOpenChange, facility }: { open: boolean; onOpenC
   );
 }
 
+/** What this facility reused (the bank's rule library, the lender's stored mapping) and what
+ * was set for it alone. */
+function Provenance({ data }: { data: FacilityView }) {
+  const p = data.provenance;
+  if (!p) {
+    return null;
+  }
+  return (
+    <Panel title="Set up from" meta={`${p.library_rules} from ${p.client}'s rule library · ${p.facility_rules} facility-specific`}>
+      <dl className="mb-2 grid grid-cols-[10rem_1fr] gap-x-3 gap-y-1 text-xs">
+        <dt className="text-muted">Data mapping</dt>
+        <dd>{p.mapping.from === "lender_mapping" ? `Reused the lender's stored mapping (layout ${p.mapping.signature}, ${p.mapping.columns} columns)` : `New layout, mapped for this facility and stored for ${p.client} (${p.mapping.columns} columns)`}</dd>
+        <dt className="text-muted">Thresholds</dt>
+        <dd>Facility-specific: taken from this facility's approved terms</dd>
+      </dl>
+      <table className="w-full text-xs">
+        <tbody>
+          {p.rules.map((r) => (
+            <tr key={r.id} className="border-b border-sand last:border-0">
+              <td className="py-1 pr-2 font-mono font-semibold">{r.id}</td>
+              <td className="py-1 pr-2">{r.plain_english}<span className="block font-mono text-[0.6875rem] text-muted">{r.describe}</span></td>
+              <td className="py-1 text-right">{r.from === "bank_library" ? <Badge tone="info">Bank library{r.origin ? ` · from ${r.origin.ref}` : ""}</Badge> : <Badge tone="neutral">Facility-specific</Badge>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {data.bank_library.length > 0 && <p className="mt-2 text-[0.6875rem] text-muted">{p.client}'s library holds {data.bank_library.length} rules from its live facilities; each is reused only where a new agreement states the same clause and threshold.</p>}
+    </Panel>
+  );
+}
+
 export function FacilityPage() {
   const id = Number(useParams().id);
   const { data } = useFacility(id);
@@ -77,7 +109,7 @@ export function FacilityPage() {
         <div className="space-y-3">
           <Panel title="Expected submissions" flush>
             <table className="w-full text-[0.8125rem]">
-              <thead><tr className="border-b border-line text-left text-[0.6875rem] text-muted uppercase"><th className="px-3 py-1.5">Ref</th><th>Period</th><th>Due</th><th>Status</th><th /></tr></thead>
+              <thead><tr className="border-b border-line text-left text-[0.6875rem] text-muted uppercase"><th className="px-3 py-1.5">Ref</th><th>Period</th><th>Due</th><th>Status</th><th>Panorama</th><th /></tr></thead>
               <tbody>
                 {data.submissions.map((s) => (
                   <tr key={s.id} className="border-b border-sand last:border-0">
@@ -85,6 +117,7 @@ export function FacilityPage() {
                     <td className="numeric">{s.period}</td>
                     <td className="numeric">{s.due_date}</td>
                     <td><Badge tone={SUB_TONE[s.status]}>{SUB_LABEL[s.status]}</Badge></td>
+                    <td className="font-mono text-xs">{s.panorama ?? "–"}</td>
                     <td className="pr-3 text-right"><Link to={`/facilities/${id}/submissions/${s.id}`} className="text-xs font-medium text-info hover:underline">Open</Link></td>
                   </tr>
                 ))}
@@ -98,8 +131,10 @@ export function FacilityPage() {
               <dt className="text-muted">Loss trigger</dt><dd>{data.config.thresholds.loss ? `${data.config.thresholds.loss.limit_pct}% (${data.config.thresholds.loss.source})` : "None"}</dd>
               <dt className="text-muted">Stored mapping</dt><dd>{data.config.mapping.headers.length} columns</dd>
               <dt className="text-muted">Advance rate</dt><dd>{data.config.terms.advance_rate?.value} ({data.config.terms.advance_rate?.source})</dd>
+              <dt className="text-muted">Load file in Panorama</dt><dd>{data.panorama ? <span className="font-mono">Sent to Panorama · receipt {data.panorama}</span> : "Not sent"}</dd>
             </dl>
           </Panel>
+          <Provenance data={data} />
         </div>
         <Panel title="Activity"><Activity history={data.history} work={data.work} /></Panel>
       </div>
@@ -200,9 +235,20 @@ export function SubmissionPage() {
           </Panel>
           <Panel title="2. Map" actions={<ActionButton reason={prep ?? (sub.documents.some((d) => d.kind === "loan_tape" && d.status === "active") ? null : "Upload the loan tape first")} onClick={() => void call("map")}>Map tape</ActionButton>}>
             {s.mapping ? <p className="text-xs text-muted">{s.mapping.source === "facility" ? "Layout unchanged: the facility's stored mapping was reused, no AI." : `Layout changed (${s.mapping.changed_columns?.join(", ")}): ${s.mapping.source === "ai" ? "AI suggested the changed columns" : "name matching suggested"}; confirm below.`}</p> : <p className="text-xs text-muted">Not mapped yet.</p>}
+            <p className="mt-1 text-[0.6875rem] text-muted">Once the mapping is confirmed, validation runs, and if no blocking check fails the calculations and covenant tests run automatically. No button to press.</p>
           </Panel>
           {s.mapping && !s.mapping.confirmed && <MappingEditor key={s.mapping.tape_doc} mapping={s.mapping} disabled={prep} errors={form.errors} onConfirm={(columns, status_map) => void call("mapping", { columns, status_map })} />}
-          <Panel title="3. Validate, reconcile and test" actions={<ActionButton reason={prep ?? (s.mapping?.confirmed ? null : "Confirm the mapping first")} onClick={() => void call("process")}>Run the month</ActionButton>}>
+          <Panel
+            title="3. Validate, reconcile and test"
+            meta={s.runs?.length ? `${s.runs[s.runs.length - 1].trigger === "auto" ? "Ran automatically" : `Re-run by ${s.runs[s.runs.length - 1].by}`} · ${when(s.runs[s.runs.length - 1].at)}` : "Runs automatically after validation"}
+            actions={<ActionButton variant="secondary" reason={prep ?? (!s.mapping?.confirmed ? "Confirm the mapping first" : s.validation?.held && !s.hold_released ? "Decide the blocking finding first" : !s.validation ? "Runs automatically once the mapping is confirmed" : null)} onClick={() => void call("process")}>Re-run calculations</ActionButton>}
+          >
+            {s.hold_released && <p role="status" className="mb-2 rounded bg-warn-tint px-2 py-1 text-xs font-medium">Hold released by {s.hold_released.by} ({s.hold_released.ref}, {s.hold_released.rows} rows excluded). Re-run the calculations.</p>}
+            {s.runs && s.runs.length > 0 && (
+              <ol aria-label="Runs" className="mb-2 space-y-0.5 text-xs text-muted">
+                {s.runs.map((r, i) => <li key={i}>{when(r.at)} · {r.trigger === "auto" ? "Automatic after validation" : "Manual re-run"} by {r.by} · {r.held ? "load held by a blocking check" : `borrowing base ${usd(r.borrowing_base_cents)}`}</li>)}
+              </ol>
+            )}
             {s.report_figures && (
               <div className="mb-2 text-xs">
                 <p className="font-semibold">Servicer report figures</p>
@@ -217,7 +263,7 @@ export function SubmissionPage() {
                 )}
               </div>
             )}
-            {s.validation?.held && <p role="alert" className="rounded bg-danger-tint px-2 py-1 text-xs font-medium text-danger">The load is held by a blocking check. Decide the blocking finding below.</p>}
+            {s.validation?.held && !s.hold_released && <p role="alert" className="rounded bg-danger-tint px-2 py-1 text-xs font-medium text-danger">The load is held by a blocking check, so the calculations did not run. Decide the blocking finding below.</p>}
             {e && (
               <Kpis items={[
                 { label: "Pool", value: usd(e.gross_pool_cents) },
@@ -252,7 +298,7 @@ export function SubmissionPage() {
             meta={`${sub.levels.length} levels for ${sub.facility.client.name}`}
             actions={
               <>
-                <ActionButton variant="secondary" reason={prep ?? (e ? null : "Run the month first")} onClick={() => void call("report/draft")}>Draft report</ActionButton>
+                <ActionButton variant="secondary" reason={prep ?? (e ? null : "Calculations have not run yet")} onClick={() => void call("report/draft")}>Draft report</ActionButton>
                 <ActionButton reason={sub.can.approve ?? (s.report ? null : "Draft the report first")} onClick={() => void call("approve")}>{sub.next_level ? `Approve, level ${sub.next_level.level}` : "Approve"}</ActionButton>
               </>
             }
@@ -268,6 +314,8 @@ export function SubmissionPage() {
                   })}
                 </ol>
                 {e && <a href={`/api/deals/submissions/${sid}/report.xlsx`} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-info hover:underline"><Download aria-hidden className="size-3.5" />Lender workbook ({released ? "released" : "provisional"})</a>}
+                <PanoramaReceipt sent={s.panorama} what="the released results" />
+                {released && s.panorama && !s.panorama.ok && <ActionButton variant="secondary" reason={null} onClick={() => void call("panorama")}>Send to Panorama again</ActionButton>}
               </>
             ) : <p className="text-xs text-muted">Not drafted.</p>}
           </Panel>

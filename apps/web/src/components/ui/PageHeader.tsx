@@ -61,7 +61,7 @@ export function NeedsIntake() {
           <FileStack className="size-5" />
         </span>
         <p className="mt-3 text-sm font-semibold text-ink">No documents received yet</p>
-        <p className="mt-1 text-[0.8125rem] text-subtle">Terms appear here once the deal pack is loaded and read.</p>
+        <p className="mt-1 text-[0.8125rem] text-subtle">This step opens once the deal pack has been loaded and read.</p>
         <Link
           to="/intake"
           className="mt-4 inline-flex h-8 items-center rounded-lg bg-accent px-3 text-[0.8125rem] font-medium text-white shadow-[0_1px_2px_rgb(16_24_40/0.05)] hover:bg-accent-strong"

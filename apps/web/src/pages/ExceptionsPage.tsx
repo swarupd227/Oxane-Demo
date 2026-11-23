@@ -25,6 +25,7 @@ const OUTCOMES: Record<ExceptionOutcome, string> = {
 };
 
 const TYPE_LABELS = { missing: "Missing", conflicting: "Conflicting", ambiguous: "Ambiguous" };
+const TYPE_TONES = { missing: "bg-danger-tint text-danger", conflicting: "bg-warn-tint text-warn", ambiguous: "bg-info-tint text-info" };
 
 function QueueRow({
   item,
@@ -44,20 +45,28 @@ function QueueRow({
         aria-current={selected || undefined}
         onClick={onSelect}
         className={clsx(
-          "relative block w-full cursor-pointer border-b border-sand px-4 py-3 text-left transition-colors duration-75",
-          selected ? "bg-sand" : "hover:bg-canvas",
+          "relative block w-full cursor-pointer border-b border-line/70 px-4 py-3.5 text-left transition-colors duration-75",
+          selected ? "bg-accent-tint/60" : "hover:bg-canvas",
         )}
       >
         {selected && <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-accent" />}
-        <div className="flex items-center justify-between gap-2">
-          <span className="numeric text-xs font-semibold text-muted">
-            {item.id} · {TYPE_LABELS[item.type]} · {item.label}
+        <div className="flex items-center gap-2">
+          <span className="numeric font-mono text-[0.6875rem] text-subtle">{item.id}</span>
+          <span className={clsx("inline-flex h-5 items-center rounded-full px-2 text-[0.6875rem] font-medium", TYPE_TONES[item.type])}>
+            {TYPE_LABELS[item.type]}
           </span>
-          {outcome && <StatusPill status="approved" label={OUTCOMES[outcome]} />}
+          {item.blocking && !outcome && (
+            <span className="inline-flex items-center gap-1 text-[0.6875rem] font-medium text-danger">
+              <span aria-hidden className="size-1.5 rounded-full bg-danger" />
+              Blocking
+            </span>
+          )}
+          <span className="ml-auto">{outcome && <StatusPill status="approved" label={OUTCOMES[outcome]} />}</span>
         </div>
-        <p className={clsx("mt-1 text-sm leading-snug", outcome ? "text-muted" : "font-medium")}>
+        <p className={clsx("mt-1.5 text-sm leading-snug", outcome ? "text-subtle" : selected ? "font-medium text-accent-strong" : "font-medium text-ink")}>
           {item.title}
         </p>
+        <p className="mt-0.5 truncate text-xs text-subtle">{item.label}</p>
       </button>
     </li>
   );
@@ -139,6 +148,7 @@ export function ExceptionsPage() {
   }
 
   const outcome = state.exceptions[selected.id];
+  const primary = selected.actions.includes("accept") ? "accept" : selected.actions[0];
   const drill = run?.pool_bridge.lines.find((line) => line.rule_id === selected.drill);
   const matchDone = selected.recalculates && outcome === "accepted" && earlier && run;
 
@@ -156,8 +166,8 @@ export function ExceptionsPage() {
         </SeedNotice>
       )}
 
-      <div className="grid grid-cols-[26rem_minmax(0,1fr)] items-start gap-5">
-        <Card className="sticky top-14 overflow-hidden">
+      <div className="grid grid-cols-[24rem_minmax(0,1fr)] items-start gap-5 2xl:grid-cols-[28rem_minmax(0,1fr)]">
+        <Card className="sticky top-16 overflow-hidden">
           <ul className="max-h-[calc(100vh-17rem)] overflow-y-auto">
             {items.map((item) => (
               <QueueRow
@@ -185,9 +195,9 @@ export function ExceptionsPage() {
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="p-5">
+          <div className="p-6">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="numeric text-xs font-semibold text-muted">{selected.id}</span>
+              <span className="numeric font-mono text-xs text-subtle">{selected.id}</span>
               <StatusPill
                 status={selected.type === "missing" ? "missing" : "review"}
                 label={TYPE_LABELS[selected.type]}
@@ -196,34 +206,34 @@ export function ExceptionsPage() {
               {selected.tier1 && <TierBadge tier={1} />}
               {selected.blocking && <StatusPill status="missing" label="Blocking" />}
               {raised && (
-                <span className="numeric ml-auto text-xs text-muted">Raised {formatDateTime(raised)}</span>
+                <span className="numeric ml-auto text-xs text-subtle">Raised {formatDateTime(raised)}</span>
               )}
             </div>
-            <h2 className="mt-1.5 text-base leading-snug font-semibold">
+            <h2 className="mt-2 text-lg leading-snug font-semibold text-ink">
               {selected.title}
             </h2>
-            <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-              <div>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-lg border border-line px-3 py-2.5">
                 <SectionLabel>Where</SectionLabel>
-                <p className="mt-0.5">{selected.where}</p>
+                <p className="mt-0.5 text-ink-soft">{selected.where}</p>
               </div>
-              <div>
+              <div className="rounded-lg border border-line px-3 py-2.5">
                 <SectionLabel>Owner</SectionLabel>
-                <p className="mt-0.5 flex items-center gap-1.5">
+                <p className="mt-0.5 flex items-center gap-1.5 text-ink-soft">
                   <Avatar name={selected.owner} />
                   {selected.owner}
                 </p>
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-5">
               <SectionLabel>Evidence</SectionLabel>
-              <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm leading-snug">
+              <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm leading-snug text-ink-soft marker:text-stone">
                 {selected.evidence.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
               </ul>
             </div>
-            <div className="mt-3 rounded-md bg-canvas px-3 py-2">
+            <div className="mt-4 rounded-xl border border-accent/20 bg-accent-tint/50 px-4 py-3">
               <p className="flex items-center gap-2">
                 <SectionLabel>Recommended action</SectionLabel>
                 <ProvenanceChip
@@ -231,23 +241,23 @@ export function ExceptionsPage() {
                   tip={selected.evidence[0] ?? selected.where}
                 />
               </p>
-              <p className="mt-0.5 text-sm font-medium">{selected.suggestion}</p>
+              <p className="mt-1 text-sm font-medium text-ink">{selected.suggestion}</p>
             </div>
             <div className="mt-4 flex items-center gap-2">
               {selected.actions.includes("accept") && (
-                <Button disabled={Boolean(outcome)} onClick={() => act("accept")}>
+                <Button variant={primary === "accept" ? "primary" : "secondary"} disabled={Boolean(outcome)} onClick={() => act("accept")}>
                   <Check aria-hidden className="size-4" />
                   Accept
                 </Button>
               )}
               {selected.actions.includes("query") && (
-                <Button disabled={Boolean(outcome)} onClick={() => act("query")}>
+                <Button variant={primary === "query" ? "primary" : "secondary"} disabled={Boolean(outcome)} onClick={() => act("query")}>
                   <Send aria-hidden className="size-4" />
                   Draft query
                 </Button>
               )}
               {selected.actions.includes("escalate") && (
-                <Button disabled={Boolean(outcome)} onClick={() => act("escalate")}>
+                <Button variant={primary === "escalate" ? "primary" : "secondary"} disabled={Boolean(outcome)} onClick={() => act("escalate")}>
                   <ArrowUpRight aria-hidden className="size-4" />
                   Escalate to credit
                 </Button>

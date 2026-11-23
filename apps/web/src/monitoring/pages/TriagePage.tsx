@@ -73,25 +73,21 @@ export function TriagePage() {
   const allColumns: Column<Finding>[] = [
     { key: "ref", header: "Ref", sort: (f) => f.ref, render: (f) => <RecordId>{f.ref}</RecordId> },
     {
-      key: "facility",
-      header: "Facility",
-      sort: (f) => f.facility,
-      render: (f) => <span className="whitespace-nowrap">{f.facility.split(",").map((id) => names[id]).join(", ")}</span>,
-    },
-    {
       key: "title",
       header: "Exception",
       sort: (f) => f.title,
       render: (f) => (
-        <span className="block min-w-44">
-          <span className="line-clamp-1" title={f.title}>
+        <span className="block min-w-56">
+          <span className="line-clamp-2 font-medium text-ink" title={f.title}>
             {f.title}
           </span>
-          <span className="block text-[0.6875rem] text-muted">{f.check}</span>
+          <span className="mt-0.5 block truncate text-xs text-subtle">
+            {f.facility.split(",").map((id) => names[id]).join(", ")} · {f.check}
+          </span>
         </span>
       ),
     },
-    { key: "raised", header: "Raised", sort: (f) => f.raised, render: (f) => <span className="numeric whitespace-nowrap text-muted">{when(f.raised)}</span> },
+    { key: "raised", header: "Raised", sort: (f) => f.raised, render: (f) => <span className="numeric whitespace-nowrap text-subtle">{when(f.raised)}</span> },
     {
       key: "suggested",
       header: "Suggested",

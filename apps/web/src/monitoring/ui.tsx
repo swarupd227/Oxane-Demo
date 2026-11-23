@@ -67,10 +67,10 @@ export function useWide(): boolean {
 
 export function PageTitle({ title, meta, actions }: { title: string; meta?: ReactNode; actions?: ReactNode }) {
   return (
-    <div className="mb-3 flex min-h-9 items-center justify-between gap-4">
-      <div className="flex min-w-0 items-baseline gap-3">
-        <h1 className="text-lg leading-tight font-semibold tracking-tight">{title}</h1>
-        {meta && <span className="truncate text-xs text-muted">{meta}</span>}
+    <div className="mb-5 flex min-h-9 items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="text-xl leading-tight font-semibold tracking-tight text-ink">{title}</h1>
+        {meta && <p className="mt-1 truncate text-[0.8125rem] text-subtle">{meta}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
@@ -79,46 +79,49 @@ export function PageTitle({ title, meta, actions }: { title: string; meta?: Reac
 
 export function Panel({ title, meta, actions, children, className, flush }: { title?: ReactNode; meta?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; flush?: boolean }) {
   return (
-    <section className={clsx("rounded-lg border border-line bg-surface", className)}>
+    <section className={clsx("rounded-xl border border-line bg-surface shadow-card", className)}>
       {(title || actions) && (
-        <header className="flex min-h-10 items-center justify-between gap-3 border-b border-line px-3 py-1.5">
+        <header className="flex min-h-11 items-center justify-between gap-3 border-b border-line px-4 py-2">
           <div className="flex min-w-0 items-baseline gap-2">
-            {title && <h2 className="truncate text-[0.8125rem] font-semibold">{title}</h2>}
-            {meta && <span className="truncate text-xs text-muted">{meta}</span>}
+            {title && <h2 className="truncate text-sm font-semibold text-ink">{title}</h2>}
+            {meta && <span className="truncate text-xs text-subtle">{meta}</span>}
           </div>
           {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={flush ? undefined : "p-3"}>{children}</div>
+      <div className={flush ? undefined : "p-4"}>{children}</div>
     </section>
   );
 }
 
 export function Kpis({ items }: { items: { label: string; value: ReactNode; tone?: "ok" | "warn" | "danger"; onClick?: () => void }[] }) {
+  const dot = { ok: "bg-ok", warn: "bg-warn", danger: "bg-danger" };
   return (
-    <div className="mb-3 grid divide-x divide-line rounded-lg border border-line bg-surface" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+    <div className="mb-5 grid gap-3" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
       {items.map((item) => {
         const body = (
           <>
-            <p className="truncate text-[0.6875rem] font-medium text-muted">{item.label}</p>
+            <p className="flex items-center gap-1.5 truncate text-xs font-medium text-subtle">
+              {item.tone && <span aria-hidden className={clsx("size-1.5 shrink-0 rounded-full", dot[item.tone])} />}
+              {item.label}
+            </p>
             <p
               className={clsx(
-                "numeric text-base font-semibold",
-                item.tone === "danger" && "text-danger",
-                item.tone === "warn" && "text-warn",
-                item.tone === "ok" && "text-ok",
+                "numeric mt-1.5 text-2xl leading-none font-semibold tracking-tight",
+                item.tone === "danger" ? "text-danger" : item.tone === "warn" ? "text-warn" : "text-ink",
               )}
             >
               {item.value}
             </p>
           </>
         );
+        const tile = "rounded-xl border border-line bg-surface px-4 py-3.5 text-left shadow-card";
         return item.onClick ? (
-          <button key={item.label} type="button" onClick={item.onClick} className="cursor-pointer px-3 py-1.5 text-left hover:bg-canvas">
+          <button key={item.label} type="button" onClick={item.onClick} className={clsx(tile, "cursor-pointer transition-colors hover:border-stone")}>
             {body}
           </button>
         ) : (
-          <div key={item.label} className="px-3 py-1.5">
+          <div key={item.label} className={tile}>
             {body}
           </div>
         );
@@ -127,7 +130,7 @@ export function Kpis({ items }: { items: { label: string; value: ReactNode; tone
   );
 }
 
-const avatarTones = ["bg-[#efe3d3] text-[#6b4a1f]", "bg-[#dfe8ef] text-[#2f4b63]", "bg-[#e6e2ef] text-[#4a3f6b]", "bg-[#dcebe3] text-[#2f5a44]", "bg-[#f1e0e0] text-[#6b2f2f]", "bg-[#e9ecd9] text-[#4c5420]"];
+const avatarTones = ["bg-[#e0e7ff] text-[#3730a3]", "bg-[#e0f2fe] text-[#075985]", "bg-[#dcfce7] text-[#166534]", "bg-[#fef3c7] text-[#92400e]", "bg-[#fce7f3] text-[#9d174d]", "bg-[#ede9fe] text-[#5b21b6]"];
 
 export function initials(name: string): string {
   const words = name.replace(/[^A-Za-z ]/g, " ").split(/\s+/).filter(Boolean);
@@ -168,8 +171,8 @@ export function SuggestedChip({ by, detail }: { by: "AI" | "Rule"; detail?: Reac
     <span
       tabIndex={detail ? 0 : undefined}
       className={clsx(
-        "inline-flex h-5 shrink-0 items-center gap-1 rounded px-1.5 text-[0.6875rem] font-medium whitespace-nowrap",
-        by === "AI" ? "bg-info-tint text-info" : "bg-sand text-muted",
+        "inline-flex h-5 shrink-0 items-center gap-1 rounded-full px-2 text-[0.6875rem] font-medium whitespace-nowrap",
+        by === "AI" ? "bg-accent-tint text-accent-strong" : "bg-sand text-muted",
       )}
     >
       {by === "AI" ? <Sparkles aria-hidden className="size-3" /> : <Gavel aria-hidden className="size-3" />}
@@ -188,10 +191,12 @@ const toneClass: Record<Tone, string> = {
   neutral: "bg-sand text-muted",
 };
 
+const toneDot: Record<Tone, string> = { ok: "bg-ok", warn: "bg-warn", danger: "bg-danger", info: "bg-info", neutral: "bg-stone" };
+
 export function Badge({ tone, children, icon }: { tone: Tone; children: ReactNode; icon?: ReactNode }) {
   return (
-    <span className={clsx("inline-flex h-5 shrink-0 items-center gap-1 rounded px-1.5 text-[0.6875rem] font-medium whitespace-nowrap", toneClass[tone])}>
-      {icon}
+    <span className={clsx("inline-flex h-[1.375rem] shrink-0 items-center gap-1.5 rounded-full px-2 text-[0.6875rem] font-medium whitespace-nowrap", toneClass[tone])}>
+      {icon ?? <span aria-hidden className={clsx("size-1.5 rounded-full", toneDot[tone])} />}
       {children}
     </span>
   );
@@ -236,14 +241,14 @@ export interface Column<T> {
 export function SearchBox({ value, onChange, placeholder, label }: { value: string; onChange: (v: string) => void; placeholder: string; label: string }) {
   return (
     <label className="relative flex items-center">
-      <Search aria-hidden className="pointer-events-none absolute left-2 size-3.5 text-muted" />
+      <Search aria-hidden className="pointer-events-none absolute left-2.5 size-3.5 text-subtle" />
       <input
         type="search"
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-7 w-56 rounded-md border border-line bg-surface pr-2 pl-7 text-xs placeholder:text-subtle"
+        className="h-8 w-60 rounded-lg border border-line bg-surface pr-2 pl-8 text-[0.8125rem] shadow-[0_1px_2px_rgb(16_24_40/0.05)] placeholder:text-subtle"
       />
     </label>
   );
@@ -251,7 +256,7 @@ export function SearchBox({ value, onChange, placeholder, label }: { value: stri
 
 export function FilterSelect<V extends string>({ label, value, options, onChange }: { label: string; value: V; options: { value: V; label: string }[]; onChange: (v: V) => void }) {
   return (
-    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value as V)} className="h-7 rounded-md border border-line bg-surface px-2 text-xs">
+    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value as V)} className="h-8 rounded-lg border border-line bg-surface px-2.5 text-[0.8125rem] text-ink-soft shadow-[0_1px_2px_rgb(16_24_40/0.05)]">
       {options.map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}
@@ -315,10 +320,10 @@ export function DataTable<T>({
   const current = Math.min(page, pages - 1);
   const slice = shown.slice(current * pageSize, current * pageSize + pageSize);
   return (
-    <div className="rounded-lg border border-line bg-surface">
+    <div className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
       {(search || toolbar || title) && (
-        <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-1.5">
-          {title && <h2 className="mr-2 text-[0.8125rem] font-semibold">{title}</h2>}
+        <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2.5">
+          {title && <h2 className="mr-2 text-sm font-semibold text-ink">{title}</h2>}
           {search && (
             <SearchBox
               value={query}
@@ -331,7 +336,7 @@ export function DataTable<T>({
             />
           )}
           {toolbar}
-          <span className="numeric ml-auto text-xs text-muted">
+          <span className="numeric ml-auto text-xs text-subtle">
             {shown.length === rows.length ? `${rows.length} records` : `${shown.length} of ${rows.length}`}
           </span>
         </div>
@@ -339,12 +344,12 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[0.8125rem]">
           <thead>
-            <tr className="border-b border-line bg-canvas text-[0.6875rem] font-semibold text-muted">
+            <tr className="border-b border-line bg-canvas text-xs font-medium text-subtle">
               {columns.map((c) => {
                 const active = sort?.key === c.key;
                 const Icon = active ? (sort!.dir === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
                 return (
-                  <th key={c.key} scope="col" aria-sort={active ? (sort!.dir === "asc" ? "ascending" : "descending") : undefined} className={clsx("px-3 py-1.5 font-semibold whitespace-nowrap", c.align === "right" && "text-right")}>
+                  <th key={c.key} scope="col" aria-sort={active ? (sort!.dir === "asc" ? "ascending" : "descending") : undefined} className={clsx("px-3 py-2.5 font-medium whitespace-nowrap first:pl-4 last:pr-4", c.align === "right" && "text-right")}>
                     {c.sort ? (
                       <button
                         type="button"
@@ -371,14 +376,14 @@ export function DataTable<T>({
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   aria-selected={selected !== undefined ? selected === key : undefined}
                   className={clsx(
-                    "border-b border-sand align-middle last:border-0",
+                    "border-b border-line/70 align-middle transition-colors last:border-0",
                     onRowClick && "cursor-pointer hover:bg-canvas",
-                    selected === key && "bg-accent/10 hover:bg-accent/15",
+                    selected === key && "bg-accent-tint/70 hover:bg-accent-tint",
                     rowClassName?.(row),
                   )}
                 >
                   {columns.map((c) => (
-                    <td key={c.key} className={clsx("px-3 py-1.5", c.align === "right" && "text-right", c.className)}>
+                    <td key={c.key} className={clsx("px-3 py-2.5 first:pl-4 last:pr-4", c.align === "right" && "text-right", c.className)}>
                       {c.render(row)}
                     </td>
                   ))}
@@ -396,7 +401,7 @@ export function DataTable<T>({
         </table>
       </div>
       {pages > 1 && (
-        <div className="flex items-center justify-end gap-2 border-t border-line px-3 py-1 text-xs text-muted">
+        <div className="flex items-center justify-end gap-2 border-t border-line px-4 py-2 text-xs text-subtle">
           <span className="numeric">
             {current * pageSize + 1}–{Math.min(shown.length, (current + 1) * pageSize)} of {shown.length}
           </span>

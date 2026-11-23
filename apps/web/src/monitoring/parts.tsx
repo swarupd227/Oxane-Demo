@@ -43,7 +43,7 @@ export function NoAiBadge({ compact }: { compact?: boolean }) {
   return (
     <span
       title="Client policy: no AI processing"
-      className="inline-flex h-5 shrink-0 items-center gap-1 rounded border border-ink/25 bg-surface px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-ink"
+      className="inline-flex h-[1.125rem] shrink-0 items-center gap-1 rounded-full border border-line bg-surface px-1.5 text-[0.625rem] font-medium whitespace-nowrap text-muted"
     >
       <BotOff aria-hidden className="size-3" />
       {compact ? "No AI" : "No AI"}

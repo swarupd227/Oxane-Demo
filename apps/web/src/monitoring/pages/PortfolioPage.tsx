@@ -61,7 +61,7 @@ function Spark({ row }: { row: DeskRow }) {
   return (
     <span aria-hidden className="flex h-4 items-end gap-0.5">
       {values.map((v, i) => (
-        <span key={i} className="w-1.5 rounded-sm bg-subtle/60" style={{ height: `${Math.max(15, (Math.abs(v) / top) * 100)}%` }} />
+        <span key={i} className={clsx("w-1 rounded-full", i === values.length - 1 ? "bg-accent" : "bg-stone/60")} style={{ height: `${Math.max(20, (Math.abs(v) / top) * 100)}%` }} />
       ))}
     </span>
   );
@@ -85,7 +85,7 @@ function Drawer({ row, cycle, session, onClose }: { row: DeskRow; cycle: Cycle; 
     .map((s) => ({ at: s.received!, by: s.channel, text: `Received ${s.label.toLowerCase()} (${s.ref})` }))
     .sort((a, b) => b.at.localeCompare(a.at));
   return (
-    <aside aria-label={`${row.name} details`} className="self-start rounded-lg border border-line bg-surface">
+    <aside aria-label={`${row.name} details`} className="self-start overflow-hidden rounded-xl border border-line bg-surface shadow-card">
       <div className="flex items-start justify-between gap-2 border-b border-line px-3 py-2">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">{row.name}</h2>
@@ -234,16 +234,50 @@ export function PortfolioPage() {
       header: "Facility",
       sort: (r) => r.name,
       render: (r) => (
-        <span className="flex items-center gap-1.5">
-          <span className="font-medium">{r.name}</span>
-          {!r.ai_permitted && <NoAiBadge compact />}
+        <span className="block min-w-0 max-w-72">
+          <span className="block truncate font-medium text-ink" title={r.name}>
+            {r.name}
+          </span>
+          <span className="mt-0.5 flex items-center gap-1.5 text-xs text-subtle">
+            <span className="truncate">
+              {short(r.client_name)} · {r.asset_class}
+            </span>
+            {!r.ai_permitted && <NoAiBadge compact />}
+          </span>
         </span>
       ),
     },
-    { key: "client", header: "Client", sort: (r) => r.client_name, render: (r) => <span className="text-muted">{short(r.client_name)}</span> },
-    { key: "asset", header: "Asset class", sort: (r) => r.asset_class, render: (r) => <span className="whitespace-nowrap">{r.asset_class}</span> },
-    { key: "size", header: "Commitment", sort: (r) => parseFloat(r.size.replace(/[^\d.]/g, "")), align: "right", render: (r) => <span className="numeric">{r.size.replace(" drawn", "")}</span> },
-    { key: "analyst", header: "Analyst", sort: (r) => r.analyst, render: (r) => <Person name={r.analyst} /> },
+    {
+      key: "status",
+      header: "Status",
+      sort: (r) => SEVERITY[r.status],
+      render: (r) => (
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <Badge tone={STATUS[r.status].tone}>{STATUS[r.status].label}</Badge>
+          {r.tests.length > 0 && (
+            <span className="numeric text-xs text-subtle" title="Tests passed">
+              {r.tests.filter((t) => t.passed).length}/{r.tests.length}
+            </span>
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "test",
+      header: "Lead test",
+      render: (r) =>
+        r.trend ? (
+          <span className="block min-w-0">
+            <span className="flex items-center gap-2 whitespace-nowrap">
+              <span className="numeric font-semibold text-ink">{fmtUnit(r.trend.series.at(-1)!.value, r.trend.unit)}</span>
+              <Spark row={r} />
+            </span>
+            <span className="mt-0.5 block max-w-48 truncate text-xs text-subtle">{r.trend.label.replace(", three-month average", " (3m)")}</span>
+          </span>
+        ) : (
+          <span className="text-xs text-subtle">–</span>
+        ),
+    },
     {
       key: "files",
       header: "Files",
@@ -255,43 +289,20 @@ export function PortfolioPage() {
         </span>
       ),
     },
-    {
-      key: "test",
-      header: "Lead test",
-      render: (r) =>
-        r.trend ? (
-          <span className="flex items-center gap-2 whitespace-nowrap">
-            <Spark row={r} />
-            <span className="max-w-44 truncate text-muted">{r.trend.label.replace(", three-month average", " (3m)")}</span>
-            <span className="numeric font-medium">{fmtUnit(r.trend.series.at(-1)!.value, r.trend.unit)}</span>
-          </span>
-        ) : null,
-    },
-    {
-      key: "status",
-      header: "Status",
-      sort: (r) => SEVERITY[r.status],
-      render: (r) => (
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-          <Badge tone={STATUS[r.status].tone}>{STATUS[r.status].label}</Badge>
-          <span className="numeric text-xs text-muted">
-            {r.tests.filter((t) => t.passed).length}/{r.tests.length}
-          </span>
-        </span>
-      ),
-    },
-    { key: "open", header: "Open exc.", sort: (r) => r.open, align: "right", render: (r) => <span className={clsx("numeric", r.open ? "font-semibold" : "text-muted")}>{r.open}</span> },
+    { key: "open", header: "Open", sort: (r) => r.open, align: "right", render: (r) => <span className={clsx("numeric", r.open ? "font-semibold text-ink" : "text-subtle")}>{r.open}</span> },
     {
       key: "report",
       header: "Report",
       sort: (r) => r.report.status,
       render: (r) => (
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+        <span className="block whitespace-nowrap">
           <Badge tone={REPORT_TONE[r.report.status]}>{REPORT_LABEL[r.report.status]}</Badge>
-          {r.report.at && <span className="numeric text-xs text-muted">{when(r.report.at.slice(0, 10))}</span>}
+          {r.report.at && <span className="numeric mt-0.5 block text-xs text-subtle">{when(r.report.at.slice(0, 10))}</span>}
         </span>
       ),
     },
+    { key: "analyst", header: "Analyst", sort: (r) => r.analyst, render: (r) => <Person name={r.analyst} /> },
+    { key: "size", header: "Commitment", sort: (r) => parseFloat(r.size.replace(/[^\d.]/g, "")), align: "right", render: (r) => <span className="numeric text-ink-soft">{r.size.replace(" drawn", "")}</span> },
   ];
   return (
     <>
@@ -306,10 +317,10 @@ export function PortfolioPage() {
           { label: "Reports released", value: `${scoped.filter((r) => r.report.status === "released").length}/${scoped.length}` },
         ]}
       />
-      <div className={clsx("grid gap-3", row ? "grid-cols-[minmax(0,1fr)_22rem]" : "grid-cols-1")}>
+      <div className={clsx("grid gap-4", row ? "grid-cols-[minmax(0,1fr)_24rem]" : "grid-cols-1")}>
         <DataTable
           rows={shown}
-          columns={row ? columns.filter((c) => !["client", "size", "analyst", "test"].includes(c.key)) : wide ? columns : columns.filter((c) => !["client", "size"].includes(c.key))}
+          columns={row ? columns.filter((c) => !["size", "analyst", "test"].includes(c.key)) : wide ? columns : columns.filter((c) => c.key !== "size")}
           rowKey={(r) => r.id}
           search={(r) => `${r.name} ${r.client_name} ${r.asset_class} ${r.analyst} ${r.type}`}
           searchPlaceholder="Filter facilities"

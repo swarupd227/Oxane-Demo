@@ -64,7 +64,7 @@ export function ClientForm({ client, open, onOpenChange }: { client?: ClientRow;
           <Field id="client-ai" label="AI" error={form.errors.ai_permitted}>
             <Select id="client-ai" value={values.ai_permitted ? "yes" : "no"} onChange={(e) => set("ai_permitted", e.target.value === "yes")}>
               <option value="yes">Permitted</option>
-              <option value="no">Not permitted</option>
+              <option value="no">Not permitted: existing process, outside AI scope</option>
             </Select>
           </Field>
           <Field id="client-levels" label="Approval levels" error={form.errors.approval_levels}>
@@ -248,7 +248,7 @@ export function NewCaseDialog({ open, onOpenChange, clientId }: { open: boolean;
             {(clients ?? []).map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
-                {c.ai_permitted ? "" : " (no AI)"}
+                {c.ai_permitted ? "" : " (existing process, outside AI scope)"}
               </option>
             ))}
           </Select>

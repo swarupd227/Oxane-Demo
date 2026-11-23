@@ -15,8 +15,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app import panorama
 from app.db import get_session
-from app.deals import audit, files, handoffs, monitor, onboard, workbook
+from app.deals import audit, files, handoffs, monitor, onboard, setup, workbook
 from app.deals.guard import check_access, check_upload, cost_of, status
 from app.deals.models import Client, DealCase, Document, Facility, Submission
 from app.personas import ROLES, Persona, acting, all_personas, require
@@ -328,6 +329,8 @@ def case_view(db: Session, case: DealCase, persona: Persona | None) -> dict[str,
         "work": handoffs.for_subject(db, onboard.subject(case)),
         "can": _can(persona, case, client, db),
         "stages": list(onboard.STAGES),
+        "setup": setup.setup_view(db, case),
+        "panorama": state.get("panorama"),
     }
 
 
@@ -626,9 +629,34 @@ def post_draft_rules(case_id: int, request: Request, db: SessionDep) -> dict[str
 def post_rules(case_id: int, body: dict[str, Any], request: Request, db: SessionDep
                ) -> dict[str, Any]:
     case, client, persona = _case_step(case_id, request, db)
-    onboard.rule_action(db, case, client, persona, body)
+    if body.get("action") == "library":
+        setup.add_library_rules(db, case, client, persona)
+    else:
+        onboard.rule_action(db, case, client, persona, body)
     db.commit()
     return case_view(db, case, persona)
+
+
+@router.post("/api/deals/cases/{case_id}/reporting")
+def post_reporting(case_id: int, body: dict[str, Any], request: Request, db: SessionDep
+                   ) -> dict[str, Any]:
+    case, client, persona = _case_step(case_id, request, db)
+    setup.capture_reporting(db, case, client, persona, body)
+    db.commit()
+    return case_view(db, case, persona)
+
+
+@router.post("/api/deals/cases/{case_id}/client-model/build")
+def post_build_model(case_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
+    case, client, persona = _case_step(case_id, request, db, _case_ai(db, case_id))
+    setup.build_model(db, case, client, persona)
+    db.commit()
+    return case_view(db, case, persona)
+
+
+def _case_ai(db: Session, case_id: int) -> bool:
+    case = db.get(DealCase, case_id)
+    return bool(case and db.get(Client, case.client_id).ai_permitted)
 
 
 @router.post("/api/deals/cases/{case_id}/mapping/suggest")
@@ -672,6 +700,7 @@ def post_exception(case_id: int, ref: str, body: dict[str, Any], request: Reques
 
 class Answer(BaseModel):
     text: str
+    outcome: str | None = None
 
 
 @router.post("/api/deals/cases/{case_id}/exceptions/{ref}/decide")
@@ -691,9 +720,26 @@ def post_answer(case_id: int, ref: str, body: Answer, request: Request, db: Sess
     case, client = _case(db, case_id)
     if persona.client != f"deal:{client.id}":
         raise HTTPException(status_code=404, detail="No such query")
-    onboard.answer(db, case, client, persona, ref, body.text, "client")
+    onboard.answer(db, case, client, persona, ref, body.text, "client", body.outcome)
     db.commit()
     return portal_view(db, persona)
+
+
+@router.get("/api/deals/queries/{case_id}/{ref}/model.xlsx")
+def get_query_model(case_id: int, ref: str, request: Request, db: SessionDep) -> RawResponse:
+    """The model sent with a validation query: the client it was sent to, and staff, only."""
+    persona = acting(request, db)
+    case, client = _case(db, case_id)
+    if persona is not None and persona.role == "client" and \
+            persona.client != f"deal:{client.id}":
+        raise HTTPException(status_code=404, detail="No such query")
+    item = next((e for e in (case.state or {}).get("exceptions", []) if e["ref"] == ref), None)
+    doc_id = ((item or {}).get("query") or {}).get("model_doc")
+    if not doc_id:
+        raise HTTPException(status_code=404, detail="No model with this query")
+    doc = _get(db, Document, doc_id, "document")
+    return RawResponse(doc.content, media_type=XLSX, headers={
+        "Content-Disposition": f'attachment; filename="{doc.name}"'})
 
 
 @router.post("/api/deals/cases/{case_id}/submit-qc")
@@ -757,6 +803,52 @@ def post_go_live(case_id: int, request: Request, db: SessionDep) -> dict[str, An
     persona = require(request, db, "reviewer")
     case, client = _case(db, case_id)
     onboard.go_live(db, case, client, persona)
+    db.flush()
+    send_load_file(db, case, persona)
+    db.commit()
+    return case_view(db, case, persona)
+
+
+def _record_send(db: Session, chain: str, persona: Persona, sent: dict[str, Any],
+                 what: str) -> dict[str, Any]:
+    """Write a Panorama attempt, request and response, to the record's audit chain."""
+    text = (f"Sent {what} to Panorama: receipt {sent['receipt']}" if sent["ok"] else
+            f"Panorama did not accept {what} (status {sent['response']['status']})")
+    event = audit.append(db, chain, persona.name, "panorama-sent" if sent["ok"]
+                         else "panorama-failed", text,
+                         {"request": sent["request"], "response": sent["response"],
+                          "receipt": sent["receipt"]})
+    return {**sent, "audit_hash": event.hash, "by": persona.name}
+
+
+def send_load_file(db: Session, case: DealCase, persona: Persona) -> dict[str, Any]:
+    payload = json.loads(json.dumps(_load_file(db, case), default=str))
+    sent = _record_send(db, case.audit_id, persona, panorama.send("onboarding-load", payload),
+                        "the approved load file")
+    state = dict(case.state or {})
+    state["panorama"] = sent
+    case.state = state
+    if case.facility_id:
+        facility = db.get(Facility, case.facility_id)
+        facility.config = {**facility.config, "panorama": {
+            k: sent[k] for k in ("receipt", "ok", "request", "kind")}}
+        if sent["ok"]:
+            audit.append(db, facility.audit_id, persona.name, "panorama-sent",
+                         f"Load file in Panorama: receipt {sent['receipt']}",
+                         {"receipt": sent["receipt"]})
+    return sent
+
+
+@router.post("/api/deals/cases/{case_id}/panorama")
+def post_case_panorama(case_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
+    """Send the approved load file again, after a failed hand-off."""
+    persona = require(request, db, "reviewer", "onboarding_analyst")
+    case, _ = _case(db, case_id)
+    if not (case.state or {}).get("live_at"):
+        raise HTTPException(status_code=409, detail="The load file goes to Panorama at go-live")
+    if ((case.state or {}).get("panorama") or {}).get("ok"):
+        raise HTTPException(status_code=409, detail="Panorama already has this load file")
+    send_load_file(db, case, persona)
     db.commit()
     return case_view(db, case, persona)
 
@@ -820,7 +912,10 @@ def facility_summary(db: Session, facility: Facility) -> dict[str, Any]:
         "reporting_day": facility.config.get("reporting_day"),
         "submissions": [{"id": s.id, "ref": monitor.sub_ref(s), "period": s.period,
                          "period_end": s.period_end.isoformat(), "due_date": s.due_date.isoformat(),
-                         "status": s.status} for s in subs],
+                         "status": s.status,
+                         "panorama": ((s.state or {}).get("panorama") or {}).get("receipt")}
+                        for s in subs],
+        "panorama": (facility.config.get("panorama") or {}).get("receipt"),
         "latest": {"period": latest.period, "status": latest.status,
                    "borrowing_base_cents": tests.get("borrowing_base_cents"),
                    "delinquency_average": tests.get("delinquency_average"),
@@ -844,7 +939,13 @@ def get_facility(facility_id: int, request: Request, db: SessionDep) -> dict[str
     _internal(request, db)
     facility = _get(db, Facility, facility_id, "facility")
     case = db.get(DealCase, facility.case_id) if facility.case_id else None
+    client = db.get(Client, facility.client_id)
+    provenance = facility.config.get("provenance") or (
+        setup.provenance(db, client, case.state or {}) if case else None)
     return {**facility_summary(db, facility), "config": facility.config,
+            "provenance": provenance, "bank_library": [
+                {"describe": r["describe"], "kind": r["kind"], "origin": r["origin"]}
+                for r in setup.library(db, client)],
             "case_ref": onboard.case_ref(case) if case else None,
             "history": audit.history(db, facility.audit_id),
             "work": handoffs.for_subject(db, f"facility:{facility.id}")}
@@ -1011,8 +1112,8 @@ def post_sub_map(sub_id: int, request: Request, db: SessionDep) -> dict[str, Any
 @router.post("/api/deals/submissions/{sub_id}/mapping")
 def post_sub_mapping(sub_id: int, body: dict[str, Any], request: Request, db: SessionDep
                      ) -> dict[str, Any]:
-    sub, facility, client, persona = _sub_step(sub_id, request, db)
-    monitor.confirm(db, sub, client, persona, body)
+    sub, facility, client, persona = _sub_step(sub_id, request, db, client_ai(db, sub_id))
+    monitor.confirm(db, sub, client, persona, body, facility)
     db.commit()
     return sub_view(db, sub, persona)
 
@@ -1044,10 +1145,7 @@ def post_triage(sub_id: int, ref: str, body: Triage, request: Request, db: Sessi
                 ) -> dict[str, Any]:
     sub, facility, client, persona = _sub_step(sub_id, request, db)
     monitor.triage(db, sub, facility, persona, ref, body.outcome, body.note)
-    if body.outcome in ("confirmed", "logged") and ref.split("-")[0] == "EXC":
-        held = (sub.state.get("validation") or {}).get("held")
-        if held:
-            monitor.process(db, sub, facility, client, persona)
+    # Releasing a held load is a decision; the re-run that follows is the analyst's own step.
     db.commit()
     return sub_view(db, sub, persona)
 
@@ -1083,6 +1181,37 @@ def post_sub_approve(sub_id: int, request: Request, db: SessionDep) -> dict[str,
     persona = require(request, db, "monitoring_analyst", "reviewer", "head")
     sub, facility, client = _sub(db, sub_id)
     monitor.approve(db, sub, facility, client, persona)
+    if sub.status == "released":
+        db.flush()
+        send_results(db, sub, facility, persona)
+    db.commit()
+    return sub_view(db, sub, persona)
+
+
+def send_results(db: Session, sub: Submission, facility: Facility, persona: Persona
+                 ) -> dict[str, Any]:
+    summary = facility_summary(db, facility)
+    payload = panorama.results_payload(
+        {"ref": summary["ref"], "name": facility.name, "client": summary["client"]["name"]},
+        {"period": sub.period, "state": sub.state})
+    sent = _record_send(db, sub.audit_id, persona, panorama.send("monitoring-results", payload),
+                        f"the released {sub.period} results")
+    state = dict(sub.state or {})
+    state["panorama"] = sent
+    sub.state = state
+    return sent
+
+
+@router.post("/api/deals/submissions/{sub_id}/panorama")
+def post_sub_panorama(sub_id: int, request: Request, db: SessionDep) -> dict[str, Any]:
+    """Send released results again, after a failed hand-off."""
+    persona = require(request, db, "monitoring_analyst", "reviewer", "head")
+    sub, facility, _ = _sub(db, sub_id)
+    if sub.status != "released":
+        raise HTTPException(status_code=409, detail="Results go to Panorama once released")
+    if ((sub.state or {}).get("panorama") or {}).get("ok"):
+        raise HTTPException(status_code=409, detail="Panorama already has these results")
+    send_results(db, sub, facility, persona)
     db.commit()
     return sub_view(db, sub, persona)
 
@@ -1125,7 +1254,12 @@ def portal_view(db: Session, persona: Persona) -> dict[str, Any]:
                         "asked_by": item["query"]["by"], "asked_at": item["query"]["sent_at"],
                         "answer": (item.get("answer") or {}).get("text"),
                         "status": "waiting" if item["status"] == "with_client" else "answered",
-                        "scripted": False})
+                        "scripted": False,
+                        "model": f"/api/deals/queries/{case.id}/{item['ref']}/model.xlsx"
+                        if item["query"].get("model_doc") else None,
+                        "outcome": (((case.state or {}).get("built_model") or {})
+                                    .get("validation") or {}).get("outcome")
+                        if item["query"].get("model_doc") else None})
         for facility in db.scalars(select(Facility).where(Facility.client_id == client_id)):
             for sub in db.scalars(select(Submission).where(Submission.facility_id == facility.id,
                                                            Submission.status == "released")):

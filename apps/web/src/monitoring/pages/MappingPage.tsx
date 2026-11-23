@@ -21,6 +21,7 @@ import { FacilityTag, NoAiBadge } from "../parts";
 import { useScope } from "../desk";
 import { PageTitle, SuggestedChip } from "../ui";
 import { MappingLibrary } from "./MappingLibrary";
+import { ReuseView } from "./ReuseView";
 
 const ENTITY_ORDER = [
   "portfolio",
@@ -37,7 +38,7 @@ export function MappingPage() {
   const [selected, setSelected] = useState<FacilityId>("bramble");
   const [params, setParams] = useSearchParams();
   const { client } = useScope();
-  const view = params.get("view") === "library" ? "library" : "files";
+  const view = params.get("view") === "library" ? "library" : params.get("view") === "reuse" ? "reuse" : "files";
   if (!cycle) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -56,7 +57,7 @@ export function MappingPage() {
         aria-label="Mapping view"
         className="mb-3 flex gap-1 border-b border-line"
       >
-        {(["files", "library"] as const).map((v) => (
+        {(["files", "library", "reuse"] as const).map((v) => (
           <button
             key={v}
             type="button"
@@ -72,11 +73,12 @@ export function MappingPage() {
                 : "border-transparent text-muted hover:text-ink",
             )}
           >
-            {v === "files" ? "This cycle's files" : "Layout library"}
+            {v === "files" ? "This cycle's files" : v === "library" ? "Layout library" : "Reuse by bank and sender"}
           </button>
         ))}
       </div>
       {view === "library" && <MappingLibrary cycle={cycle} client={client} />}
+      {view === "reuse" && <ReuseView client={client} />}
       {view === "files" && (
         <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-3">
           <div className="space-y-3">

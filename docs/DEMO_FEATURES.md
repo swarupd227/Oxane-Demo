@@ -19,7 +19,7 @@ Prepared for the Oxane AI partner pitch (Use Case 2 first, then Use Case 1). Eve
 - **Four-eyes**: whoever prepared work can't approve it; per-client approval levels (two or three).
 - **Hash-chained audit trail** of every action, with the person and time.
 - **No pooling of data across clients**; mapping memory is kept per client.
-- **Clients that don't permit AI** run entirely on code and templates, with zero model calls.
+- **Clients that don't permit AI are outside the AI scope** and stay on the existing process, labelled *Existing process — outside AI scope*. The workbench still handles them (code checks and templates), and no model call is ever made for them.
 - Live AI on the hosted app sits behind an access code and a **US$10 daily spend cap**.
 
 ## Personas and hand-offs
@@ -32,13 +32,13 @@ Prepared for the Oxane AI partner pitch (Use Case 2 first, then Use Case 1). Eve
 
 ## Use Case 2: ongoing ingestion and monitoring
 
-**Portfolio**: 26 facilities across two banks (Calderwood: AI permitted, two approval levels; Thornbury: no AI, three levels) and five asset classes: auto ABF, consumer and equipment ABF, fund finance (NAV and subscription line), CLO / broadly syndicated, and middle-market back-leverage.
+**Portfolio**: 26 facilities across two banks (Calderwood: AI permitted, two approval levels; Thornbury: existing process, outside AI scope, three levels) and five asset classes: auto ABF, consumer and equipment ABF, fund finance (NAV and subscription line), CLO / broadly syndicated, and middle-market back-leverage.
 
 1. **Expect and receive**
    - Expected-documents schedule per facility from its asset-class template (document, format, frequency, channel, internal deadline).
    - Channel per submission (email, SFTP, API, data room, upload); late files chased; prior-period data reused only with recorded client consent.
    - CLO daily feeds (positions, prices, ratings) checked day by day: a missing price day and a late position file are flagged.
-2. **Map and ingest**
+2. **Map and ingest** (partial reuse: Mapping › *Reuse by bank and sender* shows, per facility, the rules taken from its bank's compliance rule library, the layouts reused from each sender, and what was set for the facility alone)
    - Stored mapping reused when the layout is unchanged (no AI); the AI maps only what changed.
    - Oxane standard model (portfolio, facility, loan, test, stratification); raw data kept; client master-field overrides.
    - **Mapping library**: 22 layouts with counts, version history and which facilities use each.
@@ -48,7 +48,7 @@ Prepared for the Oxane AI partner pitch (Use Case 2 first, then Use Case 1). Eve
 4. **Review and resolve**
    - One exceptions queue with IDs, owners and history; the AI (or a rule, for no-AI clients) suggests, the analyst decides; harmless differences logged with a reason.
    - Reports stay **provisional** until every approval level is complete.
-5. **Calculate and report**
+5. **Calculate and report** (no manual trigger: once a load passes validation with no blocking failure, calculations and covenant tests run automatically, logged as *Workbench (automatic)*; after a held load is released the analyst re-runs it)
    - Borrowing base, triggers, covenants, concentration, NAV LTV, CCC excess, obligor leverage and interest cover, investor eligibility: all computed by the engine.
    - Lender **Excel workbook with live formulas** and a source note on every input; compared with an **independent QC workbook**, variances classed as presentation (blank vs dash, rounding, sign, per cent vs decimal) or genuine; a genuine variance blocks release.
 6. **Monitor and alert**
@@ -66,9 +66,9 @@ Prepared for the Oxane AI partner pitch (Use Case 2 first, then Use Case 1). Eve
 
 **Cases list**: 15 onboarding cases across five clients and deal types (auto ABF, consumer, SME, fund finance, CLO warehouse), Intake to Live, plus a four-deal backbook.
 
-1. **Receive**: documents classified by type, version and effective date; a missing schedule found; the client's own model and reporting requirements included.
+1. **Receive**: documents classified by type, version and effective date; a missing schedule found; the client's own model included. New cases record **the reporting the client needs** (report lines, frequency, format, due day) as their own step, which feeds the configuration workbook's Report sheet.
 2. **Interpret**: key terms with tier, confidence and source; amendment applied; **nested definitions** traced through 23 terms to the borrowing base, reproduced to the cent.
-3. **Clarify**: the **client's model compared with the agreement**, each difference costed (e.g. a stale 85% advance rate overstates the base by US$1.48m) and turned into a client query; **query tracker** splitting analyst time (9.5 h) from client waiting time (74 h).
+3. **Clarify**: the **client's model compared with the agreement**, each difference costed (e.g. a stale 85% advance rate overstates the base by US$1.48m) and turned into a client query; **query tracker** splitting analyst time (9.5 h) from client waiting time (74 h). **Where the client has no model**, Oxane builds one in code from the approved terms and rule set (the AI may word the covering notes only), sends it through the portal for the client to confirm or change, and tracks the wait like any other query; QC waits until the model is agreed.
 4. **Codify**: rules drafted from the agreement with impact preview and four-eyes; **configuration workbook** export (source field → loader field → expected output); every threshold checked against its source quote.
 5. **Map and load**: tape mapped to the bank's fields; **backbook** batch loaded with the stored mapping, exceptions only where a deal differs.
 6. **Configure**: thresholds taken from the validated configuration, not typed.
@@ -78,8 +78,10 @@ Prepared for the Oxane AI partner pitch (Use Case 2 first, then Use Case 1). Eve
 
 - **Create** clients (AI permitted or not, approval levels, master-field overrides), facilities and onboarding cases; upload, replace and remove documents; edit and archive.
 - **New onboarding with live AI**: upload the agreement, amendments, tape and client model → the AI classifies and extracts terms with quotes, checked by code → analyst approves or edits with a reason → rules drafted and validated → tape mapped (stored per client) → engine validates the tape → exceptions → QC → four-eyes approval → load file and configuration workbook → **Go live** creates the monitoring facility.
-- **First monitoring month** for that facility: upload → mapping reused → validation → reconciliation → triggers → triage → report and Excel workbook → approval levels → released to the client portal.
-- **No-AI client**: terms entered by hand with page references (code checks them), name-matching mapping, zero model calls.
+- **First monitoring month** for that facility: upload → mapping reused → validation → reconciliation and triggers run automatically → triage → report and Excel workbook → approval levels → released to the client portal.
+- **Panorama hand-off (stub)**: at go-live the approved load file, and on release each month's results, are posted to a mock Panorama endpoint inside the app; the request, response and receipt (*Sent to Panorama · receipt PNR-…*) go into the audit trail. The real endpoint and key are configuration only (`PANORAMA_BASE_URL`, `PANORAMA_API_KEY`).
+- **Bank rule library**: a bank's second facility can reuse rules from its first; each is re-checked against the new agreement's own clause.
+- **Clients outside the AI scope**: the same steps on the existing process: terms entered by hand with page references (code checks them), name-matching mapping, template notes, no model calls.
 
 ## Agents console
 

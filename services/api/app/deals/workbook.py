@@ -83,6 +83,106 @@ def configuration(case: dict[str, Any], final: bool) -> bytes:
         run.append(["Borrowing base", "=(B3-B4)*B5/100-B6", "Formula"])
         run.append(["Facility limit", engine["facility_limit_cents"] / 100, "Terms"])
         run.append(["Availability", "=MIN(B7,B8)", "Formula"])
+    report_section(book, state)
+    return _bytes(book)
+
+
+def report_section(book: Workbook, state: dict[str, Any]) -> None:
+    """The reporting the client asked for at intake: lines, frequency, format and day."""
+    from app.deals.setup import REPORT_LINES
+
+    sheet = book.create_sheet("Report")
+    reporting = state.get("reporting") or {}
+    if not reporting.get("lines"):
+        sheet.append(["Reporting requirements not captured yet"])
+        return
+    for label, value in (("Frequency", reporting["frequency"]), ("Format", reporting["format"]),
+                         ("Due by day", reporting.get("day") or "Not stated"),
+                         ("Captured by", reporting.get("captured_by")),
+                         ("Client note", reporting.get("note") or "")):
+        sheet.append([label, value])
+    sheet.append([])
+    _head(sheet, ["Report line", "How it is produced", "Loader output"])
+    for key in reporting["lines"]:
+        label, how = REPORT_LINES[key]
+        sheet.append([label, how, key])
+
+
+def client_model(meta: dict[str, Any], state: dict[str, Any], notes: list[str],
+                 notes_by: str) -> bytes:
+    """The client's borrowing base model, built by Oxane where the client has none. Inputs come
+    from the approved terms, each noting its page; results are live formulas."""
+    terms = state.get("terms") or {}
+    rules = state.get("rules") or {}
+    engine = (state.get("validation") or {}).get("engine") or {}
+    book = Workbook()
+    cover = book.active
+    cover.title = "Read me"
+    cover.append([f"{meta['facility_name']} - borrowing base model v{meta['version']} "
+                  "(for client validation)"])
+    cover["A1"].font = Font(bold=True, size=13)
+    for label, value in (("Client", meta["client"]), ("Case", meta["ref"]),
+                         ("Built by", f"Oxane ({meta['built_by']}) from the approved terms and "
+                          f"rule set v{rules.get('version', 1)}"),
+                         ("Status", "Draft until the client confirms it"),
+                         ("Notes drafted by", "AI wording, every figure filled by code"
+                          if notes_by == "ai" else "Code template")):
+        cover.append([label, value])
+    cover.append([])
+    for paragraph in notes:
+        cover.append([paragraph])
+    inputs = book.create_sheet("Inputs")
+    _head(inputs, ["Input", "Value", "Source"])
+
+    def term_value(key: str) -> Any:
+        typed = (terms.get(key) or {}).get("typed")
+        try:
+            return float(typed) if typed is not None else None
+        except (TypeError, ValueError):
+            return typed
+
+    def source(key: str) -> str:
+        t = terms.get(key) or {}
+        return f"{t.get('doc_name')} p.{t.get('page')}" if t.get("page") else "Not stated"
+
+    rows = [("Facility amount (US$)", term_value("commitment"), source("commitment")),
+            ("Advance rate in force on the tape date (%)",
+             float(engine["advance_rate_pct"]) if engine.get("advance_rate_pct")
+             else term_value("advance_rate"),
+             engine.get("advance_rate_source") or source("advance_rate")),
+            ("Reserve (%)", term_value("reserve") or 0, source("reserve")),
+            ("Delinquency trigger (%)", term_value("delinquency_trigger"),
+             source("delinquency_trigger"))]
+    for label, value, src in rows:
+        inputs.append([label, value, src])
+        cell = inputs.cell(row=inputs.max_row, column=2)
+        cell.font, cell.comment = INPUT, Comment(src, "Oxane")
+    elig = book.create_sheet("Eligibility")
+    _head(elig, ["Rule", "Criterion", "Test", "Clause", "Document", "Page"])
+    for r in rules.get("eligibility", []):
+        elig.append([r["id"], r.get("plain_english"), r.get("describe"), r.get("ref"),
+                     r.get("document"), r.get("page")])
+    conc = book.create_sheet("Concentration")
+    _head(conc, ["Limit", "Criterion", "Test", "Clause", "Document", "Page"])
+    for r in rules.get("concentration", []):
+        conc.append([r["id"], r.get("plain_english"), r.get("describe"), r.get("ref"),
+                     r.get("document"), r.get("page")])
+    base = book.create_sheet("Borrowing base")
+    _head(base, ["Line", "Value (US$)", "How"])
+    tape = (state.get("validation") or {}).get("as_of") or ""
+    base.append(["Gross pool", engine.get("gross_pool_cents", 0) / 100, f"Tape as of {tape}"])
+    base.append(["Eligible pool", engine.get("eligible_pool_cents", 0) / 100,
+                 "Loans passing every eligibility rule"])
+    base.append(["Excess concentration", engine.get("excess_cents", 0) / 100,
+                 "Amount over the concentration limits"])
+    base.append(["Advance rate (%)", "=Inputs!B3", "Inputs"])
+    base.append(["Reserve", "=B3*Inputs!B4/100", "Reserve % of the eligible pool"])
+    base.append(["Borrowing base", "=(B3-B4)*B5/100-B6", "Formula"])
+    base.append(["Facility amount", "=Inputs!B2", "Inputs"])
+    base.append(["Availability", "=MIN(B7,B8)", "Formula"])
+    for row in range(2, 5):
+        base.cell(row=row, column=2).font = INPUT
+    report_section(book, state)
     return _bytes(book)
 
 

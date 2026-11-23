@@ -474,6 +474,74 @@ mapping_library:
      files: [BAF_Collection_Account_Statement_May_2026.pdf, NMC_Collection_Account_Statement_May_2026.pdf],
      versions: [{version: 1, date: 2025-09-18, by: Hannah Cole, change: "Onboarded: closing balance and collections"}]}
 
+# Partial reuse. Each bank keeps one compliance rule library, set up once and reused across
+# its facilities; each facility takes the library rules for its asset class and sets only its
+# own thresholds and clauses, plus any rule its agreement alone has. Data layouts are reused per
+# sender (servicer, administrator, pricing vendor) through the mapping library above; facilities
+# that report summary figures only use their bank's summary template. Libraries never cross
+# from one bank to another.
+rule_libraries:
+  calderwood:
+    name: Calderwood Bank compliance rule library
+    version: 4
+    owner: Hannah Cole
+    updated: 2026-04-14
+    summary_template: Calderwood monthly summary figures template
+    rules:
+      - {id: CWL-01, rule: "60+ day delinquency, three-month average, against the trigger", kinds: [auto, consumer, equipment, trade], test: "60+ day delinquency, three-month average"}
+      - {id: CWL-02, rule: "Excess spread, three-month average, against the floor", kinds: [auto, consumer, equipment, trade], test: "Excess spread, three-month average"}
+      - {id: CWL-03, rule: "Availability: borrowing base capped at the commitment, less drawn", kinds: [auto, consumer, equipment, trade, subscription, middle_market], test: Availability}
+      - {id: CWL-04, rule: "Coverage ratio: eligible uncalled commitments over drawn", kinds: [subscription], test: Coverage ratio}
+      - {id: CWL-05, rule: Loan-to-value against the maximum, kinds: [nav], test: Loan-to-value}
+      - {id: CWL-06, rule: Largest investment against the single-position limit, kinds: [nav], test: Largest investment}
+      - {id: CWL-07, rule: Valuations no older than the agreement allows, kinds: [nav]}
+      - {id: CWL-08, rule: "Obligor leverage and interest cover against each loan's covenant", kinds: [middle_market]}
+      - {id: CWL-09, rule: Single obligor and sector concentration limits, kinds: [middle_market]}
+    validation_sets: {auto_tape: [auto, consumer, equipment], mm_portfolio: [middle_market]}
+  thornbury:
+    name: Thornbury Bank compliance rule library
+    version: 2
+    owner: Daniel Okafor
+    updated: 2026-02-16
+    summary_template: Thornbury monthly summary figures template
+    rules:
+      - {id: TBL-01, rule: "CCC share against the limit, excess haircut at market value", kinds: [clo], test: CCC share}
+      - {id: TBL-02, rule: Weighted average spread against the minimum, kinds: [clo], test: Weighted average spread}
+      - {id: TBL-03, rule: "Ratings read as the lower of Moody's and S&P (Thornbury's master field)", kinds: [clo, subscription]}
+      - {id: TBL-04, rule: "60+ day delinquency, three-month average, against the trigger", kinds: [auto, equipment], test: "60+ day delinquency, three-month average"}
+      - {id: TBL-05, rule: "Excess spread, three-month average, against the floor", kinds: [auto, equipment], test: "Excess spread, three-month average"}
+      - {id: TBL-06, rule: "Availability: borrowing base capped at the commitment, less drawn", kinds: [clo, auto, equipment, subscription], test: Availability}
+      - {id: TBL-07, rule: "Investor eligibility: rating floor and exclusion events", kinds: [subscription]}
+      - {id: TBL-08, rule: Single investor and designated investor concentration, kinds: [subscription]}
+    validation_sets: {clo_positions: [clo], investor_register: [subscription], auto_tape: [auto, equipment]}
+# The scripted facilities' kind, the thresholds their own agreements set for the library rules,
+# and the rules only their agreement has. The book's thresholds come from its facility record.
+reuse:
+  bramble:
+    kind: auto
+    parameters: {CWL-01: "Trigger from Amendment No. 1, Section 7.1(a)", CWL-02: "Floor, Section 7.1(b)", CWL-03: "Commitment US$250m (US$300m from 1 Jun 2026)"}
+    specific: ["Eligibility criteria and concentration limits read from Bramble's own agreement (onboarding case 0412, rule set v2)", "Dealer concentration limit on the total pool, from Amendment No. 1"]
+  northmoor:
+    kind: auto
+    parameters: {CWL-01: "6.0%, Section 7.1(a)", CWL-02: "3.0%, Section 7.1(b)", CWL-03: Commitment US$180m}
+    specific: []
+  kestrel:
+    kind: nav
+    parameters: {CWL-05: "35%, Section 7.1", CWL-06: "15% single position, 55% top five, Section 6.3", CWL-07: "90 days, Section 6.2"}
+    specific: ["Top-five concentration limit of 55%, Section 6.3"]
+  larkspur:
+    kind: clo
+    parameters: {TBL-01: "7.5%, Section 1.1", TBL-03: Lower of Moody's and S&P, TBL-06: "Commitment US$400m, advance rate 70%"}
+    specific: ["Price move early warning at 10 points, Section 6.5"]
+  ravenglass:
+    kind: middle_market
+    parameters: {CWL-03: "Commitment US$200m; advance rates 65% first lien, 55% unitranche, 30% second lien", CWL-08: "Each underlying loan's own covenant levels", CWL-09: "7.5% single obligor, 20% sector"}
+    specific: ["EBITDA add-backs capped at 20% of Consolidated EBITDA (Covenant EBITDA definition)", "Material Obligor Event exclusions"]
+  wharfedale:
+    kind: subscription
+    parameters: {TBL-03: Lower of Moody's and S&P, TBL-06: "Commitment US$250m; advance rates 90% included, 65% designated", TBL-07: "Included at A- or better; excluded below BBB-", TBL-08: "15% single investor, 30% designated"}
+    specific: ["Prepayment of any excess within two Business Days"]
+
 # The platform's standard data model. Each master field feeds one entity; the fields that
 # stratify a pool are listed apart.
 standard_model:

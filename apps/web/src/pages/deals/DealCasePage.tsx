@@ -4,6 +4,7 @@ import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ActionButton, Activity, EXC_LABEL, Field, FormMessage, Select, STATUS_TONE, Tabs, TextInput, useForm, when } from "../../components/deals/parts";
+import { PanoramaReceipt } from "../../components/deals/Panorama";
 import { HandOffHint } from "../../components/shell/Persona";
 import { Button } from "../../components/ui/Button";
 import { Dialog } from "../../components/ui/Dialog";
@@ -237,7 +238,7 @@ function Terms({ view, act }: { view: CaseView; act: Act }) {
   if (!terms.length) {
     return (
       <Panel title="Terms">
-        <p className="mb-3 text-sm text-muted">{view.client.ai_permitted ? "The model reads the agreement and amendments; code finds every quote on its page." : `${view.client.name} does not permit AI. Enter each term with its page.`}</p>
+        <p className="mb-3 text-sm text-muted">{view.client.ai_permitted ? "The model reads the agreement and amendments; code finds every quote on its page." : `${view.client.name} is outside AI scope and stays on the existing process: enter each term with its page.`}</p>
         {view.client.ai_permitted ? (
           <ActionButton reason={view.can.prepare} onClick={() => void act.call("extract")}>Extract terms</ActionButton>
         ) : (
@@ -328,7 +329,7 @@ function RuleTable({ rules, kind, view, act }: { rules: Rule[]; kind: "eligibili
               <q>{r.clause_text}</q>
               {r.problem && <span className="block font-medium text-danger">{r.problem}</span>}
             </td>
-            <td className="py-2">{r.verified ? <Badge tone="ok">Checked</Badge> : <Badge tone="danger">Failed</Badge>} <span className="text-[0.6875rem] text-muted">{r.source === "ai" ? "AI draft" : "Analyst"}</span></td>
+            <td className="py-2">{r.verified ? <Badge tone="ok">Checked</Badge> : <Badge tone="danger">Failed</Badge>} <span className="text-[0.6875rem] text-muted">{r.source === "ai" ? "AI draft" : r.source === "library" ? `Bank library${r.origin ? ` · ${r.origin.ref}` : ""}` : "Analyst"}</span></td>
             <td className="py-2 text-right">
               {!locked && <ActionButton variant="ghost" reason={view.can.prepare} onClick={() => void act.call("rules", { action: "remove", kind, id: r.id, reason: r.verified ? "Not a criterion of this facility" : `Failed code check: ${r.problem}` })}>Remove</ActionButton>}
             </td>
@@ -351,6 +352,7 @@ function Rules({ view, act }: { view: CaseView; act: Act }) {
         meta={rules ? `v${rules.version} · ${locked ? `approved by ${rules.approved_by}` : "draft"}` : "Thresholds come from the approved terms"}
         actions={
           <>
+            {!locked && <ActionButton variant="secondary" reason={view.can.prepare ?? (view.setup.rule_library.length ? null : `${view.client.name} has no live facility yet, so its rule library is empty`)} onClick={() => void act.call("rules", { action: "library" })}>Reuse bank library</ActionButton>}
             {view.client.ai_permitted && !locked && <ActionButton variant="secondary" reason={view.can.prepare ?? (view.readiness.terms_approved ? null : "Approve the Tier 1 terms first")} onClick={() => void act.call("rules/draft")}>Draft with AI</ActionButton>}
             {locked ? (
               <ActionButton variant="secondary" reason={view.can.prepare} onClick={() => void act.call("rules", { action: "reopen" })}>Reopen</ActionButton>
@@ -362,6 +364,10 @@ function Rules({ view, act }: { view: CaseView; act: Act }) {
       >
         <p className="text-xs text-muted">Advance rate, reserve and facility limit are taken from the approved terms. Every rule's clause is found on its page and each threshold must be a figure the clause states.</p>
         {rules?.not_codable && rules.not_codable.length > 0 && <p className="mt-2 text-xs text-warn">Not codable on the tape: {rules.not_codable.join("; ")}</p>}
+        <p className="mt-2 text-xs text-muted">{view.client.name}'s rule library: {view.setup.rule_library.length} rules from its live facilities. A library rule is reused only where this agreement states the same clause and threshold; the rest of the rule set is specific to this facility.</p>
+        {rules?.library_checked && (
+          <p className="mt-1 text-xs">Library check: {rules.library_checked.added.length} reused{rules.library_checked.skipped.map((x) => `; ${x.describe}: ${x.why}`).join("")}</p>
+        )}
       </Panel>
       {(["eligibility", "concentration"] as const).map((kind) => (
         <Panel key={kind} title={kind === "eligibility" ? "Eligibility" : "Concentration limits"} actions={!locked && <ActionButton variant="secondary" reason={view.can.prepare} onClick={() => setAdding(kind)}>Add rule</ActionButton>}>
@@ -428,7 +434,7 @@ function MappingTab({ view, act }: { view: CaseView; act: Act }) {
   return (
     <div className="space-y-3">
       <Panel title="Suggest" actions={<ActionButton reason={view.can.prepare} onClick={() => void act.call("mapping/suggest")}>{mapping ? "Suggest again" : "Suggest mapping"}</ActionButton>}>
-        <p className="text-xs text-muted">The client's stored mapping is used when the layout matches; otherwise {view.client.ai_permitted ? "the model suggests and code checks each column against the tape" : "name matching suggests (AI not permitted)"}. The confirmed mapping is stored for this client only.</p>
+        <p className="text-xs text-muted">The client's stored mapping is used when the layout matches; otherwise {view.client.ai_permitted ? "the model suggests and code checks each column against the tape" : "name matching suggests (existing process, outside AI scope)"}. The confirmed mapping is stored for this client only.</p>
       </Panel>
       {mapping && <MappingEditor key={`${mapping.source}-${mapping.confirmed}`} mapping={mapping} disabled={view.can.prepare} errors={act.form.errors} onConfirm={(columns, status_map) => void act.call("mapping", { columns, status_map })} />}
     </div>
@@ -578,6 +584,7 @@ function Exceptions({ view, act }: { view: CaseView; act: Act }) {
         </Select>
       }
     >
+      <QueryTracker view={view} />
       {view.state.client_model && view.state.client_model.length > 0 && (
         <p className="mb-2 text-xs text-muted">Client model compared cell by cell: {view.state.client_model.map((c) => `${c.label} ${c.model} (${c.cell})`).join("; ")}</p>
       )}
@@ -648,6 +655,9 @@ function Approval({ view, act }: { view: CaseView; act: Act }) {
         )}
         {s.approved_at && !s.live_at && <ActionButton reason={view.can.review} onClick={() => void act.call("go-live")}>Go live</ActionButton>}
         {s.live_at && view.facility_id && <p className="text-sm">Live since {when(s.live_at)} · <Link to={`/facilities/${view.facility_id}`} className="font-medium text-info hover:underline">Open facility</Link></p>}
+        <PanoramaReceipt sent={view.panorama} what="the load file" />
+        {s.live_at && view.panorama && !view.panorama.ok && <ActionButton variant="secondary" reason={view.can.review} onClick={() => void act.call("panorama")}>Send to Panorama again</ActionButton>}
+        {!s.live_at && <p className="mt-2 text-xs text-muted">At go-live the approved load file is posted to Panorama and the receipt kept in the audit trail.</p>}
       </Panel>
       <Panel title="Outputs">
         <ul className="space-y-2 text-sm">
@@ -723,6 +733,142 @@ function ArchiveCase({ view, open, onOpenChange }: { view: CaseView; open: boole
   );
 }
 
+function hours(h: number | null): string {
+  if (h === null) {
+    return "–";
+  }
+  return h < 1 ? `${Math.round(h * 60)} min` : `${h.toFixed(1)} h`;
+}
+
+function QueryTracker({ view }: { view: CaseView }) {
+  const q = view.setup.queries;
+  if (!q.queries.length) {
+    return null;
+  }
+  return (
+    <div className="mb-3 rounded-md border border-line">
+      <p className="flex items-center justify-between border-b border-line px-3 py-1.5 text-xs font-semibold">
+        <span>Query tracker</span>
+        <span className="font-normal text-muted">{q.open} waiting on the client · client waiting time {hours(q.client_wait_hours)}, kept apart from analyst time</span>
+      </p>
+      <table className="w-full text-xs">
+        <thead><tr className="text-left text-[0.6875rem] text-muted uppercase"><th className="px-3 py-1">Ref</th><th>Query</th><th>Sent</th><th>Answered</th><th className="pr-3 text-right">Client waiting</th></tr></thead>
+        <tbody>
+          {q.queries.map((r) => (
+            <tr key={r.ref} className="border-t border-sand">
+              <td className="px-3 py-1 font-mono">{r.ref}</td>
+              <td>{r.title}{r.model_check && <Badge tone="info">Model validation</Badge>}</td>
+              <td className="numeric">{when(r.sent_at)} · {r.sent_by}</td>
+              <td className="numeric">{r.answered_at ? when(r.answered_at) : <Badge tone="warn">Waiting</Badge>}</td>
+              <td className="numeric pr-3 text-right">{hours(r.client_wait_hours)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const FREQUENCIES = ["Monthly", "Quarterly", "Weekly"];
+const FORMATS = ["XLSX", "PDF", "CSV"];
+
+function ReportingTab({ view, act }: { view: CaseView; act: Act }) {
+  const current = view.state.reporting;
+  const termDay = view.state.terms?.reporting_day?.typed;
+  const [lines, setLines] = useState<string[]>(current?.lines ?? ["gross_pool", "eligible_pool", "excess_concentration", "advance_rate", "borrowing_base", "availability", "delinquency_ratio"]);
+  const [v, setV] = useState({ frequency: current?.frequency ?? "Monthly", format: current?.format ?? "XLSX", day: current?.day ? String(current.day) : termDay ? String(termDay) : "", note: current?.note ?? "" });
+  const toggle = (key: string) => setLines((l) => (l.includes(key) ? l.filter((k) => k !== key) : [...l, key]));
+  return (
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <Panel
+        title="Reporting the client needs"
+        meta={current ? `v${current.version} · recorded by ${current.captured_by} · ${when(current.captured_at)}` : "Not recorded yet"}
+        actions={<ActionButton reason={view.can.prepare} onClick={() => void act.call("reporting", { lines, frequency: v.frequency, format: v.format, day: v.day ? Number(v.day) : null, note: v.note })}>{current ? "Save changes" : "Record requirements"}</ActionButton>}
+      >
+        <p className="mb-2 text-xs text-muted">Captured at intake with the client. It feeds the Report sheet of the configuration workbook and the monthly lender workbook. Code produces every line.</p>
+        <fieldset aria-label="Report lines" className="mb-3 grid gap-1 sm:grid-cols-2">
+          {view.setup.report_catalogue.map((line) => (
+            <label key={line.key} className="flex items-start gap-2 rounded px-1 py-0.5 text-xs hover:bg-sand">
+              <input type="checkbox" checked={lines.includes(line.key)} disabled={Boolean(view.can.prepare)} onChange={() => toggle(line.key)} className="mt-0.5" />
+              <span><span className="font-medium">{line.label}</span><span className="block text-muted">{line.how}</span></span>
+            </label>
+          ))}
+        </fieldset>
+        {act.form.errors.lines && <p role="alert" className="mb-2 text-xs text-danger">{act.form.errors.lines}</p>}
+        <div className="grid grid-cols-3 gap-2">
+          <Field id="rep-frequency" label="Frequency" error={act.form.errors.frequency}><Select id="rep-frequency" value={v.frequency} onChange={(e) => setV({ ...v, frequency: e.target.value })}>{FREQUENCIES.map((f) => <option key={f}>{f}</option>)}</Select></Field>
+          <Field id="rep-format" label="Format" error={act.form.errors.format}><Select id="rep-format" value={v.format} onChange={(e) => setV({ ...v, format: e.target.value })}>{FORMATS.map((f) => <option key={f}>{f}</option>)}</Select></Field>
+          <Field id="rep-day" label={termDay ? `Due by day (agreement: ${termDay})` : "Due by day"} error={act.form.errors.day}><TextInput id="rep-day" inputMode="numeric" value={v.day} onChange={(e) => setV({ ...v, day: e.target.value })} invalid={Boolean(act.form.errors.day)} /></Field>
+        </div>
+        <Field id="rep-note" label="Client's note (optional)"><TextInput id="rep-note" value={v.note} onChange={(e) => setV({ ...v, note: e.target.value })} /></Field>
+      </Panel>
+      <Panel title="Feeds">
+        <ul className="space-y-1 text-xs">
+          <li>Configuration workbook › Report sheet ({view.state.approved_at ? "final" : "provisional"})</li>
+          <li>Client model › Report sheet, where Oxane builds the model</li>
+          <li>Facility record at go-live: the monthly report follows these lines</li>
+        </ul>
+        {current && <p className="mt-2 text-xs">{current.lines.length} lines · {current.frequency} · {current.format}{current.day ? ` · by day ${current.day}` : ""}</p>}
+      </Panel>
+    </div>
+  );
+}
+
+const MODEL_STATUS: Record<string, string> = { built: "Built, not sent", with_client: "With the client", confirmed: "Confirmed by the client", changes_requested: "Client asked for changes" };
+
+function ClientModelTab({ view, act }: { view: CaseView; act: Act }) {
+  const built = view.state.built_model;
+  const diffs = view.state.client_model ?? [];
+  const [note, setNote] = useState("Please review the borrowing base model we built from the agreement, and confirm it or tell us what to change.");
+  if (view.setup.own_client_model) {
+    return (
+      <Panel title="Client's own model" meta="Compared with the agreement, cell by cell">
+        {diffs.length ? (
+          <ul className="space-y-1 text-xs">{diffs.map((d) => <li key={d.term}>{d.label} ({d.cell}): model {d.model}, agreement {d.agreed} {d.differs ? <Badge tone="warn">Differs: query raised</Badge> : <Badge tone="ok">Agrees</Badge>}</li>)}</ul>
+        ) : <p className="text-xs text-muted">Run validation to compare the model with the approved terms.</p>}
+      </Panel>
+    );
+  }
+  const item = built ? (view.state.exceptions ?? []).find((e) => e.key === `model:validation:v${built.version}`) : undefined;
+  return (
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <Panel
+        title="Client model built by Oxane"
+        meta={built ? `v${built.version} · ${MODEL_STATUS[built.status]}` : "The client has no model of its own"}
+        actions={<ActionButton variant={built ? "secondary" : "primary"} reason={view.can.prepare ?? (!view.readiness.rules_approved ? "Approve the rule set first" : !view.readiness.validation_run ? "Run validation first" : built && built.status !== "changes_requested" && built.status !== "built" ? "Waiting on the client" : null)} onClick={() => void act.call("client-model/build")}>{built ? "Rebuild" : "Build client model"}</ActionButton>}
+      >
+        <p className="mb-2 text-xs text-muted">No client model was provided, so Oxane builds one from the approved terms and rule set and validates it with the client. Code builds the workbook and every figure; {view.client.ai_permitted ? "AI may draft the covering notes, with every figure filled by code" : "the notes are a code template (existing process, outside AI scope)"}.</p>
+        {built ? (
+          <>
+            <p className="text-sm">
+              <a href={`/api/deals/documents/${built.doc_id}/file`} className="inline-flex items-center gap-1 font-medium text-info hover:underline"><Download aria-hidden className="size-3.5" />{built.name}</a>
+              <span className="ml-2 text-xs text-muted">built by {built.built_by} · {when(built.built_at)} · rule set v{built.rules_version}</span>
+            </p>
+            <div className="mt-2 rounded bg-canvas p-2 text-xs">{built.notes.map((n, i) => <p key={i} className="mb-1">{n}</p>)}<p className="text-[0.6875rem] text-muted">{built.notes_by === "ai" ? "Notes worded by AI; every figure filled by code." : "Notes from the code template."}</p></div>
+            {built.validation && <p className="mt-2 rounded bg-info-tint px-2 py-1 text-xs">Client ({built.validation.by}, {when(built.validation.at)}): {built.validation.outcome === "confirmed" ? "confirmed the model" : "asked for changes"}. {built.validation.text}</p>}
+            {item?.status === "open" && (
+              <div className="mt-2 flex items-end gap-2">
+                <div className="flex-1"><Field id="model-note" label="Message to the client"><TextInput id="model-note" value={note} onChange={(e) => setNote(e.target.value)} /></Field></div>
+                <div className="pb-3"><ActionButton reason={view.can.prepare} onClick={() => void act.call(`exceptions/${item.ref}`, { action: "query", note })}>Send to client for validation</ActionButton></div>
+              </div>
+            )}
+            {item?.status === "answered" && built.status === "confirmed" && <div className="mt-2"><ActionButton reason={view.can.prepare} onClick={() => void act.call(`exceptions/${item.ref}`, { action: "close" })}>Close: model agreed</ActionButton></div>}
+          </>
+        ) : <p className="text-xs text-muted">Not built yet.</p>}
+      </Panel>
+      <Panel title="Validation with the client">
+        <ol className="space-y-1 text-xs">
+          <li><Badge tone={built ? "ok" : "neutral"}>1</Badge> Built from the approved terms</li>
+          <li><Badge tone={built?.sent_at ? "ok" : "neutral"}>2</Badge> Sent to the client through the portal{built?.sent_at ? ` · ${when(built.sent_at)}` : ""}</li>
+          <li><Badge tone={built?.validation ? "ok" : "neutral"}>3</Badge> Client confirms or asks for changes</li>
+          <li><Badge tone={view.readiness.client_model_agreed ? "ok" : "neutral"}>4</Badge> Agreed: the case can go to QC</li>
+        </ol>
+        <p className="mt-2 text-[0.6875rem] text-muted">The wait is tracked as client waiting time, like any other query.</p>
+      </Panel>
+    </div>
+  );
+}
+
 export function DealCasePage() {
   const params = useParams();
   const id = Number(params.id);
@@ -742,9 +888,11 @@ export function DealCasePage() {
     { id: "overview", label: "Overview" },
     { id: "documents", label: "Documents", count: view.documents },
     { id: "terms", label: "Terms", count: terms.length ? `${view.terms.approved}/${terms.length}` : "" },
+    { id: "reporting", label: "Reporting", count: view.state.reporting ? view.state.reporting.lines.length : "" },
     { id: "rules", label: "Rules", count: (view.state.rules?.eligibility.length ?? 0) + (view.state.rules?.concentration.length ?? 0) },
     { id: "mapping", label: "Mapping" },
     { id: "validation", label: "Validation" },
+    { id: "client-model", label: "Client model" },
     { id: "exceptions", label: "Exceptions", count: open },
     { id: "qc", label: "QC" },
     { id: "approval", label: "Approval" },
@@ -785,6 +933,14 @@ export function DealCasePage() {
               <li className="flex items-center gap-2"><Badge tone={view.state.approved_at ? "ok" : "warn"}>{view.state.approved_at ? "Done" : "Open"}</Badge>four-eyes approval</li>
             </ul>
           </Panel>
+          <Panel title="Client model and reporting">
+            <ul className="space-y-1 text-xs">
+              <li>Reporting: {view.state.reporting ? `${view.state.reporting.lines.length} lines, ${view.state.reporting.frequency.toLowerCase()}, ${view.state.reporting.format}` : "not recorded"}</li>
+              <li>Client model: {view.setup.own_client_model ? "the client's own, compared with the agreement" : view.state.built_model ? `built by Oxane, v${view.state.built_model.version}: ${MODEL_STATUS[view.state.built_model.status].toLowerCase()}` : "none provided: Oxane builds one"}</li>
+              <li>Queries: {view.setup.queries.queries.length} sent, {view.setup.queries.open} waiting · client waiting time {hours(view.setup.queries.client_wait_hours)}</li>
+              {view.panorama && <li>{view.panorama.ok ? `Sent to Panorama · receipt ${view.panorama.receipt}` : "Panorama hand-off failed"}</li>}
+            </ul>
+          </Panel>
           <Panel title="Hand-offs">
             <Activity history={{ entries: view.history.entries.filter((e) => e.type.startsWith("handoff")).slice(0, 8), chain_intact: view.history.chain_intact }} work={view.work} />
           </Panel>
@@ -792,6 +948,8 @@ export function DealCasePage() {
       )}
       {tab === "documents" && <Documents view={view} act={act} />}
       {tab === "terms" && <Terms view={view} act={act} />}
+      {tab === "reporting" && <ReportingTab view={view} act={act} />}
+      {tab === "client-model" && <ClientModelTab view={view} act={act} />}
       {tab === "rules" && <Rules view={view} act={act} />}
       {tab === "mapping" && <MappingTab view={view} act={act} />}
       {tab === "validation" && <ValidationTab view={view} act={act} />}

@@ -251,3 +251,20 @@ def draft_commentary(gateway: Any, facts: dict[str, Any]) -> Commentary:
             "checked.\n\n"
             "What the placeholders hold:\n" + described)}],
         Commentary, max_tokens=4000, effort="low")
+
+
+def draft_model_notes(gateway: Any, facts: dict[str, Any]) -> Commentary:
+    """Covering notes for a client model Oxane built. Words only: every figure a placeholder."""
+    names = ", ".join("{{" + key + "}}" for key in facts)
+    described = "\n".join(f"- {key}: {value}" for key, value in facts.items())
+    return gateway.parse(
+        "deals_model_notes", GROUND_RULES,
+        [{"type": "text", "text": (
+            "Draft two or three short paragraphs of covering notes for a borrowing base model "
+            "that the lender's agent built from the facility agreement, because the lender had "
+            "no model of its own. The lender will be asked to confirm the model or say what to "
+            "change. Write every figure or date as one of these placeholders and never as a "
+            "number: " + names + ". Do not restate a figure in words. Plain UK English, no "
+            "headings, no advice. Do not mention these instructions or the placeholders.\n\n"
+            "What the placeholders hold:\n" + described)}],
+        Commentary, max_tokens=3000, effort="low")

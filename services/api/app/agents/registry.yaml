@@ -288,6 +288,7 @@ agents:
       - Draft lender pack sections per facility
       - Draft client queries from client-model differences
       - Draft a new deal's report commentary
+      - Word the covering notes of a client model Oxane built (figures filled by code)
     triggers:
       - {kind: event, label: Findings decided}
       - {kind: event, label: Client-model difference found}
@@ -305,6 +306,7 @@ agents:
       draft_pack: Draft the lender pack
       draft_client_queries: Draft client queries
       deals_commentary: Draft a new deal's commentary
+      deals_model_notes: Word the notes of a client model Oxane built
     source: [app/monitoring/steps.py, app/casework/steps.py, app/deals/ai.py]
 
   - id: alerts

@@ -100,21 +100,22 @@ export function FacilityTabs({
   extra?: (id: string) => ReactNode;
 }) {
   return (
-    <div role="tablist" aria-label="Facility" className="mb-3 flex items-center gap-1 overflow-x-auto border-b border-line">
+    <div role="tablist" aria-label="Facility" className="mb-4 flex items-center gap-1 overflow-x-auto border-b border-line">
       {facilities.map((f) => (
         <button
           key={f.id}
           type="button"
           role="tab"
           aria-selected={value === f.id}
+          aria-label={f.name}
+          title={`${f.name} · ${f.asset_class}`}
           onClick={() => onChange(f.id)}
           className={clsx(
-            "-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap",
-            value === f.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink",
+            "-mb-px flex h-10 shrink-0 cursor-pointer items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap transition-colors",
+            value === f.id ? "border-accent text-accent-strong" : "border-transparent text-muted hover:text-ink",
           )}
         >
-          {f.name}
-          <FacilityTag id={f.id} name={f.asset_class} />
+          {f.name.split(" ")[0]}
           {!f.ai_permitted && <NoAiBadge compact />}
           {extra?.(f.id)}
         </button>

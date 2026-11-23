@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { CheckCircle2, Circle, Code2, FileSpreadsheet, Lock, Send, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { Check, CheckCircle2, Code2, Download, FileSpreadsheet, Lock, Send, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
@@ -150,6 +150,31 @@ function QcCard({ facility }: { facility: FacilityId }) {
   );
 }
 
+/** One approval level: done (green), next to sign (accent ring) or waiting. */
+function SignStep({ state, level, name, title, at }: { state: "done" | "next" | "waiting"; level: number; name: string; title: string; at?: string }) {
+  return (
+    <li className="relative flex items-center gap-3">
+      <span
+        aria-hidden
+        className={clsx(
+          "relative z-10 grid size-6 shrink-0 place-items-center rounded-full",
+          state === "done" ? "bg-ok text-white" : state === "next" ? "bg-surface ring-2 ring-accent" : "bg-surface ring-1 ring-line",
+        )}
+      >
+        {state === "done" ? <Check className="size-3.5" /> : <span className={clsx("size-1.5 rounded-full", state === "next" ? "bg-accent" : "bg-stone")} />}
+      </span>
+      <Avatar name={name} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium text-ink">{name}</span>
+        <span className="block text-xs text-subtle">
+          Level {level} · {title}
+        </span>
+      </span>
+      {at ? <span className="numeric text-xs text-subtle">{when(at)}</span> : state === "next" ? <span className="text-xs font-medium text-accent-strong">Next</span> : null}
+    </li>
+  );
+}
+
 export function PackPage() {
   const { data: cycle } = useCycle();
   const { data: session } = useCycleSession();
@@ -162,18 +187,18 @@ export function PackPage() {
     return <Skeleton className="h-96 w-full" />;
   }
   const tabs = (
-    <div role="tablist" aria-label="Report" className="mb-3 flex items-center gap-1 border-b border-line">
+    <div role="tablist" aria-label="Report" className="mb-4 flex items-center gap-1 border-b border-line">
       <button
         type="button"
         role="tab"
         aria-selected={tab === "queue"}
         onClick={() => setTab("queue")}
-        className={`-mb-px flex h-9 cursor-pointer items-center border-b-2 px-3 text-[0.8125rem] font-medium ${tab === "queue" ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"}`}
+        className={`-mb-px flex h-10 cursor-pointer items-center border-b-2 px-3 text-[0.8125rem] font-medium transition-colors ${tab === "queue" ? "border-accent text-accent-strong" : "border-transparent text-muted hover:text-ink"}`}
       >
         All reports
       </button>
       <span aria-hidden className="mx-1 h-4 w-px bg-line" />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 [&>div]:mb-0 [&>div]:border-b-0">
         <FacilityTabs
           facilities={cycle.facilities}
           value={tab}
@@ -221,14 +246,14 @@ export function PackPage() {
     <>
       <PageTitle title="Reports" meta={`${facility.name} · ${cycle.cycle.label}`} />
       {tabs}
-      <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-3">
-        <div className="space-y-3">
-          <Card className="p-4">
-            <div className="flex items-start justify-between gap-4 border-b border-sand pb-2.5">
+      <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-4">
+        <div className="space-y-4">
+          <Card className="p-6">
+            <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
               <div>
                 <SectionLabel>Monthly monitoring pack · {cycle.cycle.label}</SectionLabel>
-                <h2 className="mt-0.5 text-base font-semibold">{facility.name}</h2>
-                <p className="mt-0.5 flex items-center gap-2 text-xs text-muted">
+                <h2 className="mt-1 text-lg font-semibold text-ink">{facility.name}</h2>
+                <p className="mt-1 flex items-center gap-2 text-xs text-subtle">
                   <FacilityTag id={facility.id} name={facility.asset_class} />
                   {facility.role} · {facility.client_name}
                 </p>
@@ -262,13 +287,13 @@ export function PackPage() {
                 )}
               </div>
             </div>
-            <p className="mt-3 text-[0.875rem] leading-relaxed font-medium">
+            <p className="mt-4 text-[0.9375rem] leading-relaxed font-medium text-ink">
               <Filled text={pack.summary} figures={pack.figures} onSource={setSource} />
             </p>
             {pack.sections.map((section) => (
-              <section key={section.heading} className="mt-3">
-                <h3 className="text-[0.8125rem] font-semibold">{section.heading}</h3>
-                <p className="mt-0.5 text-[0.8125rem] leading-relaxed">
+              <section key={section.heading} className="mt-5">
+                <h3 className="text-sm font-semibold text-ink">{section.heading}</h3>
+                <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
                   <Filled text={section.text} figures={pack.figures} onSource={setSource} />
                 </p>
               </section>
@@ -277,85 +302,108 @@ export function PackPage() {
           <QcCard facility={tab} />
         </div>
 
-        <div className="space-y-3 self-start">
-          <Card className="p-3">
+        <div className="space-y-4 self-start">
+          <Card className="p-5">
             <div className="flex items-center justify-between gap-3">
-              <p className="flex items-center gap-2 text-[0.8125rem] font-semibold">
-                <FileSpreadsheet aria-hidden className="size-4 text-ok" />
-                Lender workbook
-                <span className="font-normal text-muted">· Inputs, Calculation, QC</span>
+              <p className="flex items-center gap-2.5 text-sm font-semibold text-ink">
+                <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-ok-tint text-ok">
+                  <FileSpreadsheet className="size-4" />
+                </span>
+                <span>
+                  Lender workbook
+                  <span className="block text-xs font-normal text-subtle">Inputs, Calculation, QC</span>
+                </span>
               </p>
-              <a href={workbookUrl(tab)} className="inline-flex h-7 items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 text-xs font-medium hover:border-stone" download>
+              <a
+                href={workbookUrl(tab)}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-[0.8125rem] font-medium text-ink-soft shadow-[0_1px_2px_rgb(16_24_40/0.05)] hover:bg-canvas hover:text-ink"
+                download
+              >
+                <Download aria-hidden className="size-3.5" />
                 Download .xlsx
               </a>
             </div>
-            <dl className="mt-2 grid grid-cols-3 gap-2 text-xs">
+            <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-4 text-xs">
               <div>
-                <dt className="text-muted">Figures</dt>
-                <dd className="numeric font-semibold">{Object.keys(pack.figures).length}</dd>
+                <dt className="text-subtle">Figures</dt>
+                <dd className="numeric mt-0.5 text-lg font-semibold text-ink">{Object.keys(pack.figures).length}</dd>
               </div>
               <div>
-                <dt className="text-muted">Linked to source</dt>
-                <dd className="numeric font-semibold">{sourced}</dd>
+                <dt className="text-subtle">Linked to source</dt>
+                <dd className="numeric mt-0.5 text-lg font-semibold text-ink">{sourced}</dd>
               </div>
               <div>
-                <dt className="text-muted">Number check</dt>
-                <dd className={clsx("flex items-center gap-1 font-semibold", clean ? "text-ok" : "text-danger")}>
+                <dt className="text-subtle">Number check</dt>
+                <dd className={clsx("mt-1 flex items-center gap-1 text-[0.8125rem] font-semibold", clean ? "text-ok" : "text-danger")}>
                   <ShieldCheck aria-hidden className="size-3.5" />
                   {clean ? "Passed" : [...pack.numbers_in_text, ...pack.unknown_placeholders].join(", ")}
                 </dd>
               </div>
             </dl>
           </Card>
-          <Card className="p-3">
+          <Card className="p-5">
             <div className="flex items-center justify-between">
-              <SectionLabel>Sign-off · {facility.client_name}</SectionLabel>
+              <p className="text-sm font-semibold text-ink">
+                Sign-off <span className="font-normal text-subtle">· {facility.client_name}</span>
+              </p>
               <RecordId>
                 RPT-{cycle.cycle.id.replace("M-", "")}-{facility.id.slice(0, 3).toUpperCase()}
               </RecordId>
             </div>
-            <ol className="mt-2 space-y-1 text-[0.8125rem]">
-              <li className="flex items-center gap-2">
-                {approvals.length || !pending.length ? <CheckCircle2 aria-hidden className="size-4 text-ok" /> : <Circle aria-hidden className="size-4 text-stone" />}
-                <span className="w-14 text-xs text-muted">Level 1</span>
-                <Person name={preparer} sub="Preparer" />
-              </li>
-              {levels.map((level) => {
+            <ol className="relative mt-4 space-y-4 text-[0.8125rem] before:absolute before:top-3 before:bottom-3 before:left-[0.6875rem] before:w-px before:bg-line">
+              <SignStep state={approvals.length || !pending.length ? "done" : "next"} level={1} name={preparer} title="Preparer" />
+              {levels.map((level, index) => {
                 const done = approvals.find((a) => a.level === level.level);
                 const signer = cycle.team?.[level.actor];
+                const previousDone = index === 0 ? approvals.length > 0 || !pending.length : Boolean(approvals.find((a) => a.level === levels[index - 1].level));
                 return (
-                  <li key={level.level} className="flex items-center gap-2">
-                    {done ? <CheckCircle2 aria-hidden className="size-4 text-ok" /> : <Circle aria-hidden className="size-4 text-stone" />}
-                    <span className="w-14 text-xs text-muted">Level {level.level}</span>
-                    <Person name={signer?.name ?? level.title} sub={level.title} />
-                    {done && <span className="numeric ml-auto text-xs text-muted">{when(done.at)}</span>}
-                  </li>
+                  <SignStep
+                    key={level.level}
+                    state={done ? "done" : previousDone ? "next" : "waiting"}
+                    level={level.level}
+                    name={signer?.name ?? level.title}
+                    title={level.title}
+                    at={done?.at}
+                  />
                 );
               })}
             </ol>
             {released ? (
-              <p className="mt-2 flex items-center gap-2 text-xs font-medium text-ok">
+              <p className="mt-4 flex items-center gap-2 rounded-lg bg-ok-tint px-3 py-2 text-[0.8125rem] font-medium text-ok">
                 <Lock aria-hidden className="size-3.5" />
                 Released {when(released.at)}
               </p>
             ) : (
               <>
                 {blockers.length > 0 && (
-                  <ul className="mt-2 space-y-0.5 text-xs text-warn">
-                    {blockers.map((b) => (
-                      <li key={b} className="flex items-center gap-1">
-                        <TriangleAlert aria-hidden className="size-3" />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
+                  <div role="status" className="mt-4 rounded-lg border border-warn/25 bg-warn-tint px-3 py-2.5">
+                    <p className="flex items-center gap-1.5 text-[0.8125rem] font-semibold text-warn">
+                      <TriangleAlert aria-hidden className="size-3.5" />
+                      Approval is blocked
+                    </p>
+                    <ul className="mt-1 space-y-0.5 pl-5 text-xs text-warn">
+                      {blockers.map((b) => (
+                        <li key={b} className="list-disc">
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-                <div className="mt-2.5 flex items-center justify-between gap-3 border-t border-sand pt-2.5">
-                  <span className="flex items-center gap-1.5 text-xs text-muted">
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-4">
+                  <span className="flex items-center gap-2 text-xs text-subtle">
                     <Avatar name={me?.name ?? actor} />
-                    {me?.name} · {me?.title}
+                    <span>
+                      <span className="block font-medium text-ink-soft">{me?.name}</span>
+                      {me?.title}
+                    </span>
                   </span>
-                  <Button size="sm" onClick={approve} disabled={action.isPending}>
+                  <Button
+                    size="sm"
+                    onClick={approve}
+                    disabled={action.isPending || blockers.length > 0}
+                    title={blockers.length ? `Resolve first: ${blockers.join(", ")}` : undefined}
+                  >
                     <Send aria-hidden className="size-3.5" />
                     Approve
                   </Button>
@@ -369,9 +417,9 @@ export function PackPage() {
             )}
           </Card>
           <SourcePanel source={source === undefined ? firstSourced : source} emptyText="Calculated figure; no source page." />
-          <Card className="p-3">
+          <Card className="p-5">
             <div className="flex items-center justify-between">
-              <SectionLabel>Activity</SectionLabel>
+              <p className="text-sm font-semibold text-ink">Activity</p>
               <span className={clsx("text-[0.6875rem]", session?.chainIntact ? "text-ok" : "text-danger")}>
                 {session?.chainIntact ? "Chain verified" : "Chain broken"} · <span className="font-mono">{session?.chainHead.slice(0, 10)}</span>
               </span>

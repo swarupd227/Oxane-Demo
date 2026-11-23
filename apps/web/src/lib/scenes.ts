@@ -5,9 +5,12 @@ export interface Scene {
   parent?: string;
 }
 
+/** The working case's overview. The app root is each persona's home, never a case. */
+export const CASE_HOME = "/overview";
+
 // In walkthrough order: [ and ] move through every scene, sub-steps included.
 export const scenes: Scene[] = [
-  { path: "/", label: "Deal" },
+  { path: CASE_HOME, label: "Deal" },
   { path: "/intake", label: "Intake" },
   { path: "/terms", label: "Terms" },
   { path: "/definitions", label: "Definitions", parent: "/terms" },
@@ -50,7 +53,7 @@ export interface Section {
 }
 
 export const sections: Section[] = [
-  { id: "overview", label: "Overview", path: "/", children: [] },
+  { id: "overview", label: "Overview", path: CASE_HOME, children: [] },
   { id: "documents", label: "Documents", path: "/intake", children: [] },
   {
     id: "terms",

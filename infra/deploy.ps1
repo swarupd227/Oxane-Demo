@@ -26,6 +26,8 @@ param(
     [switch] $LocalBuild,
     # Deploy the image already in the registry under -Tag, without building.
     [switch] $SkipBuild,
+    # Database on the server; a new name gives the app a fresh, empty database.
+    [string] $DatabaseName = "oxane",
     # Demo mode: no Entra sign-in, so anyone with the address can open it and pick who they act as
     # in the app, as when it runs locally. Only for synthetic demo data.
     [switch] $NoSignIn,
@@ -38,7 +40,10 @@ param(
     [switch] $LiveAi,
     [string] $LiveDailyCapUsd = "10",
     [string] $FoundryResource = "",
-    [string] $FoundryApiKey = ""
+    [string] $FoundryApiKey = "",
+    # After deploying, run the browser suite's Azure project (tests/e2e, `--project=azure`) against
+    # the new app. Needs Node.js and the e2e packages; demo mode (-NoSignIn) only.
+    [switch] $SmokeTest
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,7 +56,7 @@ $sub = if ($Subscription) { @("--subscription", $Subscription) } else { @() }
 
 function Deploy-Template([string[]] $Extra) {
     $result = az deployment group create @sub --resource-group $ResourceGroup --template-file $template `
-        --parameters postgresPassword=$postgresPassword postgresLocation=$databaseLocation $Extra --query properties.outputs --output json
+        --parameters postgresPassword=$postgresPassword postgresLocation=$databaseLocation databaseName=$DatabaseName $Extra --query properties.outputs --output json
     return ($result | ConvertFrom-Json)
 }
 
@@ -169,3 +174,32 @@ $appParams = @(
 ) + $liveParams
 $outputs = Deploy-Template $appParams
 Write-Host "Done: $($outputs.appUrl.value)"
+
+if ($SmokeTest) {
+    if (-not $NoSignIn) {
+        Write-Warning "Skipping the smoke test: it acts as each persona, which needs demo mode (-NoSignIn)."
+    } else {
+        Write-Host "Smoke test: the browser suite's Azure project against $($outputs.appUrl.value)"
+        $e2e = Join-Path $root "tests/e2e"
+        $env:BASE_URL = $outputs.appUrl.value
+        $env:NEWDEALS_DIR = Join-Path $root "deal-kit/output/newdeals"
+        if (-not $env:DEMO_ACCESS_CODE) {
+            $env:DEMO_ACCESS_CODE = if ($accessCode) { $accessCode } else { Read-EnvValue $passwordFile "OXANE_DEMO_ACCESS_CODE" }
+        }
+        Push-Location $e2e
+        try {
+            if (-not (Test-Path (Join-Path $e2e "node_modules/@playwright/test"))) { npm ci }
+            npx playwright install chromium
+            # A new revision can take a minute to serve; wait for its health check first.
+            $healthy = $false
+            for ($i = 0; $i -lt 30 -and -not $healthy; $i++) {
+                try { $healthy = (Invoke-WebRequest "$($env:BASE_URL)/api/health" -UseBasicParsing -TimeoutSec 10).StatusCode -eq 200 } catch { Start-Sleep -Seconds 10 }
+            }
+            if (-not $healthy) { throw "The app did not answer $($env:BASE_URL)/api/health" }
+            npx playwright test --project=azure
+        } finally {
+            Pop-Location
+        }
+        Write-Host "Smoke test passed."
+    }
+}

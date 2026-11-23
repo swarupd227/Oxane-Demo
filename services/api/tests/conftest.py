@@ -1,9 +1,17 @@
+import os
 from pathlib import Path
 
 import pytest
 
-from app import engine_service
-from app.config import settings
+from app.admin import testdb
+
+# The tests write clients, cases, sessions and work items. They run against their own database
+# (`oxane_test`, created and migrated here), never the demo's, so nothing they create shows up
+# in the demo. This runs before app.config reads DATABASE_URL.
+os.environ["DATABASE_URL"] = testdb.prepare(os.environ.get("DATABASE_URL"))
+
+from app import engine_service  # noqa: E402
+from app.config import settings  # noqa: E402
 
 RECORDED_RUN = settings.pipeline_dir
 RECORDED_RESPONSES = settings.llm_fixtures

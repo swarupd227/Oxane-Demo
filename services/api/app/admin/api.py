@@ -1,11 +1,10 @@
 """Settings › AI provider: the administrator sets the model key the workbench uses.
 
-Every endpoint needs the Administrator persona and the demo access code: the demo is public with
+Every endpoint needs the Administrator persona: the demo is public with
 no sign-in, so the persona alone proves nothing. No response, log line, audit event or error
 message ever contains the key; a request body is never echoed back in a validation error.
 """
 
-import hmac
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
@@ -17,7 +16,6 @@ from app.admin.models import AppSetting
 from app.config import settings
 from app.db import get_session
 from app.deals import audit
-from app.deals.guard import ACCESS_HEADER, access_configured
 from app.personas import ROLES, Persona, acting
 
 router = APIRouter(prefix="/api/admin")
@@ -35,12 +33,6 @@ def _admin(request: Request, db: Session) -> Persona:
         who = f" You are acting as {persona.name}, {ROLES[persona.role].lower()}." if persona \
             else ""
         raise _refuse("not_admin", f"Only the administrator can change settings.{who}")
-    if not access_configured():
-        raise _refuse("access_off", "Settings are switched off on this environment: "
-                      "DEMO_ACCESS_CODE is not set")
-    given = request.headers.get(ACCESS_HEADER, "").strip().encode()
-    if not hmac.compare_digest(given, settings.demo_access_code.strip().encode()):
-        raise _refuse("access_code", "Enter the access code to change settings")
     return persona
 
 
@@ -215,4 +207,22 @@ async def test_ai_provider(request: Request, db: SessionDep) -> dict[str, Any]:
     row.last_test = {k: v for k, v in result.items() if k != "models"} | {
         "model_count": len(result["models"])}
     db.commit()
+    return result
+
+
+@router.post("/purge-test-data")
+def purge_test_data(request: Request, db: SessionDep, apply: bool = False) -> dict[str, Any]:
+    """Remove what tests left in this database (see app.admin.purge). A dry run unless
+    ?apply=true. Administrator only, as for the AI provider."""
+    from app.admin import purge
+
+    persona = _admin(request, db)
+    result = purge.purge_test_data(db, apply=apply)
+    if apply:
+        _record(db, persona, "purge-test-data",
+                f"Purged test data: {result['clients']} clients, {result['cases']} cases, "
+                f"{result['facilities']} facilities; rebuilt {result['scripted_rebuilt']} "
+                "scripted hand-offs", {k: v for k, v in result.items()
+                                       if isinstance(v, int) and not isinstance(v, bool)})
+        db.commit()
     return result

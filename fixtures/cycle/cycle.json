@@ -14920,8 +14920,10 @@
     {
      "heading": "Missing financials",
      "points": [
-      "Nothing is outstanding: Bramble's Q1 statements and compliance certificate arrived before the due date."
-     ]
+      "Bramble: Q1 statements and compliance certificate arrived before the due date",
+      "Ravenglass: Ashlar Packaging Group's Q1 financials have not arrived and have been chased; its loan is out of the borrowing base until they do"
+     ],
+     "by": "Code"
     },
     {
      "heading": "Waiting on an expert",
@@ -14990,7 +14992,7 @@
      "source": null
     },
     "northmoor_due": {
-     "value": "2026-06-22",
+     "value": "22 Jun 2026",
      "means": "date Northmoor's report was due",
      "source": null
     },
@@ -15066,8 +15068,8 @@
     {
      "heading": "Missing data",
      "points": [
-      "The collateral report arrived by SFTP and the bid prices by API, both on time.",
-      "Larkspur: daily prices for 21 May 2026 not received; the pricing service has been asked to resend it"
+      "Larkspur: daily prices for 21 May 2026 not received; the pricing service has been asked to resend it",
+      "Everything else arrived on time: the collateral report by SFTP and the other daily bid prices by API."
      ]
     },
     {
@@ -15145,6 +15147,266 @@
    },
    "unknown_placeholders": [],
    "numbers_in_text": []
+  }
+ ],
+ "client_summaries": [
+  {
+   "client": "calderwood",
+   "title": "May 2026 monitoring summary",
+   "greeting": "Dear James,",
+   "opening": "Here is where your facilities stand for the May 2026 cycle, ahead of our status call in the week of 22 Jun 2026. Figures are as calculated by our checks; anything that needs your decision is marked.",
+   "sections": [
+    {
+     "heading": "Missing data",
+     "points": [
+      "Northmoor's May servicer report, due 22 Jun 2026, has not arrived; we have chased it and escalated it.",
+      "Bramble's May dealer list was not resent, so with your consent we used the April 2026 dealer list.",
+      "Northmoor's May tape repeats one loan's row ({{duplicate_loan}}); we are holding the load until the servicer confirms it."
+     ]
+    },
+    {
+     "heading": "Open questions",
+     "points": [
+      "Northmoor: May servicer report not received; reminder and escalation sent.",
+      "Bramble: Loans missing from the May tape, found by the roll-forward.",
+      "Bramble: Charge-offs higher in the servicer report than on the tape.",
+      "Kestrel: One investment's valuation older than the agreement allows.",
+      "Northmoor: May tape repeats one loan's row, so the load is held until the servicer confirms it."
+     ]
+    },
+    {
+     "heading": "Exclusions",
+     "points": [
+      "Bramble: {{ineligible_loans}} receivables worth {{ineligible}} excluded as not eligible, and {{concentration_excess}} of dealer concentration excess deducted.",
+      "Bramble: {{missing_loans}} loans missing from the tape are out of the pool until the servicer explains them."
+     ]
+    },
+    {
+     "heading": "Identifier changes",
+     "points": [
+      "None on your facilities this month."
+     ]
+    },
+    {
+     "heading": "Missing financials",
+     "points": [
+      "Bramble: Q1 statements and compliance certificate arrived before the due date.",
+      "Ravenglass: Ashlar Packaging Group's Q1 financials have not arrived and have been chased; its loan is out of the borrowing base until they do."
+     ]
+    },
+    {
+     "heading": "Waiting on an expert view",
+     "points": [
+      "Bramble: Leverage over its maximum only if an affiliate guarantee counts; a credit expert is reviewing it and we will tell you the outcome.",
+      "Kestrel: Loan-to-value with and without a post-quarter markdown; a credit expert is reviewing it and we will tell you the outcome."
+     ]
+    },
+    {
+     "heading": "Ravenglass Direct Lending Fund I",
+     "points": [
+      "Ravenglass: {{rvg_received}} of {{rvg_obligors}} obligors reported for Q1; Ashlar Packaging Group's financials are missing and have been chased.",
+      "Ravenglass: excluded loans take {{rvg_excluded_value}} off the borrowing base, which is {{rvg_borrowing_base}}; the fund's certificate still includes them.",
+      "Ravenglass: Hexby Precision Engineering's leverage of {{rvg_breach_0}} is over its {{rvg_breach_max_0}} maximum, so its loan is out of the base; we have told you.",
+      "Ravenglass: Calloway Veterinary Partners's add-backs of {{rvg_addbacks_0}} of EBITDA are above the cap; whether leverage passes is with a credit expert."
+     ]
+    }
+   ],
+   "figures": {
+    "missing_loans": {
+     "value": "27",
+     "means": "loans missing from Bramble's May tape",
+     "source": null
+    },
+    "gap": {
+     "value": "US$412,004.04",
+     "means": "Bramble roll-forward gap",
+     "source": null
+    },
+    "charge_off_loans": {
+     "value": "9",
+     "means": "Bramble loans charged off in the report but live on the tape",
+     "source": null
+    },
+    "charge_off_difference": {
+     "value": "US$140,112.77",
+     "means": "charge-offs in the servicer report above the tape",
+     "source": {
+      "document": "bramble/BAF_Servicer_Report_May_2026.pdf",
+      "page": 2,
+      "rects": [
+       {
+        "x0": 0.13988234326730367,
+        "x1": 0.8598398445478452,
+        "top": 0.2024437490135732,
+        "bottom": 0.21270389749546248
+       }
+      ]
+     }
+    },
+    "ineligible": {
+     "value": "US$3,322,752.07",
+     "means": "Bramble receivables excluded as not eligible",
+     "source": null
+    },
+    "ineligible_loans": {
+     "value": "106",
+     "means": "number of Bramble receivables excluded as not eligible",
+     "source": null
+    },
+    "concentration_excess": {
+     "value": "US$74,952.69",
+     "means": "Bramble dealer concentration excess deducted",
+     "source": null
+    },
+    "northmoor_due": {
+     "value": "22 Jun 2026",
+     "means": "date Northmoor's report was due",
+     "source": null
+    },
+    "duplicate_loan": {
+     "value": "NMC301112",
+     "means": "Northmoor loan whose row the May tape repeats",
+     "source": null
+    },
+    "stale_days": {
+     "value": "106",
+     "means": "age in days of Kestrel's oldest valuation",
+     "source": null
+    },
+    "ltv_with_markdown": {
+     "value": "32.2%",
+     "means": "Kestrel loan-to-value counting the markdown",
+     "source": null
+    },
+    "leverage_with_guarantee": {
+     "value": "6.20x",
+     "means": "Bramble leverage if the guarantee counts",
+     "source": null
+    },
+    "delinquency_average": {
+     "value": "5.77%",
+     "means": "Northmoor three-month 60+ day average",
+     "source": null
+    },
+    "rvg_received": {
+     "value": "39",
+     "means": "Ravenglass obligors reported",
+     "source": null
+    },
+    "rvg_obligors": {
+     "value": "40",
+     "means": "Ravenglass obligors",
+     "source": null
+    },
+    "rvg_excluded_value": {
+     "value": "US$10,200,000.00",
+     "means": "Ravenglass borrowing base value of excluded loans",
+     "source": null
+    },
+    "rvg_borrowing_base": {
+     "value": "US$149,955,000.00",
+     "means": "Ravenglass borrowing base, recomputed",
+     "source": null
+    },
+    "rvg_breach_0": {
+     "value": "6.43x",
+     "means": "Hexby Precision Engineering leverage",
+     "source": null
+    },
+    "rvg_breach_max_0": {
+     "value": "6.00x",
+     "means": "Hexby Precision Engineering maximum leverage",
+     "source": null
+    },
+    "rvg_addbacks_0": {
+     "value": "34%",
+     "means": "Calloway Veterinary Partners add-backs as a share of EBITDA",
+     "source": null
+    }
+   },
+   "week_of": "2026-06-22"
+  },
+  {
+   "client": "thornbury",
+   "title": "May 2026 monitoring summary",
+   "greeting": "Dear Laura,",
+   "opening": "Here is where your facilities stand for the May 2026 cycle, ahead of our status call in the week of 22 Jun 2026. Figures are as calculated by our checks; anything that needs your decision is marked.",
+   "sections": [
+    {
+     "heading": "Missing data",
+     "points": [
+      "Larkspur: daily prices for 21 May 2026 not received; we have asked the pricing service to resend it.",
+      "Everything else arrived on time: the collateral report by SFTP and the other daily bid prices by API."
+     ]
+    },
+    {
+     "heading": "Open questions",
+     "points": [
+      "No S&P rating on 1 position (LX331056), so the lower-of rule uses Moody's alone. No action needed from you.",
+      "Wharfedale: the register has not posted capital call 7 or distribution 4 for Thirlmere Family Office; we have asked the administrator to correct it."
+     ]
+    },
+    {
+     "heading": "Exclusions",
+     "points": [
+      "CCC share is {{ccc_pct}} against a {{ccc_limit}} limit. {{ccc_excess}} of CCC excess is carried at market value, taken from Embsay Fitness at a bid of 71.25, so the CCC excess adjustment of {{haircut}} comes off the borrowing base.",
+      "Wharfedale: Brackley Mutual Insurance downgraded to BB+ and excluded; borrowing base US$214,746,000.00 against loans of US$228,000,000.00, so US$13,254,000.00 is to be prepaid."
+     ]
+    },
+    {
+     "heading": "Identifier changes",
+     "points": [
+      "Langdale Education: LoanX LX301245 is now LX318806 and CUSIP 51475HAB7 is now 51475HAD3. Matched on issuer, facility, maturity and spread, with no trade, so its history carries over. It is not a sale and a new purchase."
+     ]
+    },
+    {
+     "heading": "Early warnings",
+     "points": [
+      "Kettlewell Auto Parts downgraded from B3/B- to Caa2/CCC.",
+      "Denholme Chemicals bid fell 14.75 points to 81.50."
+     ]
+    }
+   ],
+   "figures": {
+    "ccc_pct": {
+     "value": "8.41%",
+     "means": "CCC share of par",
+     "source": {
+      "document": "larkspur/Larkspur_Warehouse_Credit_Agreement.pdf",
+      "page": 2,
+      "rects": [
+       {
+        "x0": 0.1287720624138327,
+        "x1": 0.27508824167687906,
+        "top": 0.21161867392183553,
+        "bottom": 0.2207531399197049
+       }
+      ],
+      "label": "Credit Agreement 1.1, CCC Excess"
+     }
+    },
+    "ccc_limit": {
+     "value": "7.5%",
+     "means": "CCC limit",
+     "source": null
+    },
+    "ccc_excess": {
+     "value": "US$4,168,750.00",
+     "means": "CCC excess",
+     "source": null
+    },
+    "haircut": {
+     "value": "US$1,198,515.63",
+     "means": "CCC excess adjustment",
+     "source": null
+    },
+    "borrowing_base": {
+     "value": "US$319,586,039.06",
+     "means": "borrowing base",
+     "source": null
+    }
+   },
+   "week_of": "2026-06-22"
   }
  ],
  "pending_recording": [

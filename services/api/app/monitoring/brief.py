@@ -6,6 +6,7 @@ code writes the brief from a fixed template: the existing process, with no model
 """
 
 import re
+from datetime import date
 from typing import Any
 
 from app.monitoring import steps
@@ -16,6 +17,41 @@ HEADINGS = ["Missing data", "Open questions", "Exclusions", "Identifier changes"
 
 def _fig(value: str, means: str, source: Any = None) -> dict[str, Any]:
     return {"value": value, "means": means, "source": source}
+
+
+def _day(iso: str) -> str:
+    """A date as the brief writes it in prose: 22 Jun 2026, never 2026-06-22."""
+    if not iso:
+        return ""
+    day = date.fromisoformat(iso)
+    return f"{day.day} {day:%b %Y}"
+
+
+def missing_financials(missing: list[str]) -> list[str]:
+    """Calderwood's "Missing financials", by facility, written by code. Bramble's Q1 pack
+    arrived; any review facility obligor whose financials did not is named."""
+    return ["Bramble: Q1 statements and compliance certificate arrived before the due date"] + [
+        f"Ravenglass: {name}'s Q1 financials have not arrived and have been chased; its loan is "
+        "out of the borrowing base until they do" for name in missing]
+
+
+def _doc(label: str) -> str:
+    """"Servicer report, May" as prose: "May servicer report"."""
+    kind, _, when = label.partition(", ")
+    return f"{when} {kind.lower()}" if when else kind.lower()
+
+
+def client_missing_data(cycle: dict[str, Any]) -> list[str]:
+    """Calderwood's missing data written to the client, from the same facts as the brief."""
+    late = [s for s in cycle["submissions"] if s["status"] == "late"]
+    reused = [s for s in cycle["submissions"] if s.get("reused")]
+    held = [v for v in cycle["validation"]["feeds"] if v["held"]]
+    return [f"{s['facility'].title()}'s {_doc(s['label'])}, due {_day(s['due'])}, has not "
+            "arrived; we have chased it and escalated it" for s in late] + [
+        f"{s['facility'].title()}'s {_doc(s['label'])} was not resent, so with your consent we "
+        f"used the {_doc(s['reused']['from'])}" for s in reused] + [
+        f"{v['facility'].title()}'s May tape repeats one loan's row ({{{{duplicate_loan}}}}); we "
+        "are holding the load until the servicer confirms it" for v in held]
 
 
 def calderwood_facts(cycle: dict[str, Any], items: list[dict[str, Any]]) -> tuple[
@@ -41,7 +77,8 @@ def calderwood_facts(cycle: dict[str, Any], items: list[dict[str, Any]]) -> tupl
                                  "number of Bramble receivables excluded as not eligible"),
         "concentration_excess": _fig(f"US${system['excess']:,.2f}",
                                      "Bramble dealer concentration excess deducted"),
-        "northmoor_due": _fig(late[0]["due"] if late else "", "date Northmoor's report was due"),
+        "northmoor_due": _fig(_day(late[0]["due"]) if late else "",
+                              "date Northmoor's report was due"),
         "duplicate_loan": _fig(held[0]["resolution"]["collapsed"][0] if held and
                                held[0]["resolution"]["collapsed"] else "",
                                "Northmoor loan whose row the May tape repeats"),

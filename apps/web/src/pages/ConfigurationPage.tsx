@@ -76,7 +76,7 @@ export function ConfigurationPage() {
         actions={
           <a
             href="/api/casework/config-workbook.xlsx"
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-white hover:bg-ink-soft"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white hover:bg-accent-strong"
           >
             <Download aria-hidden className="size-4" />
             Export .xlsx
@@ -113,7 +113,7 @@ export function ConfigurationPage() {
             onClick={() => setTab(item.id)}
             className={clsx(
               "cursor-pointer rounded-md px-3 py-1.5 text-sm",
-              tab === item.id ? "bg-ink text-white" : "text-muted hover:bg-sand",
+              tab === item.id ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:bg-sand",
             )}
           >
             {item.label}

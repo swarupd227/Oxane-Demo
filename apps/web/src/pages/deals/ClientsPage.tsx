@@ -216,7 +216,7 @@ export function ClientPage() {
   );
 }
 
-const DEAL_TYPES = ["Consumer instalment", "SME loans", "Auto ABS", "Equipment finance", "Fund finance", "Other"];
+export const DEAL_TYPES = ["Consumer instalment", "SME loans", "Auto ABS", "Equipment finance", "Fund finance", "Other"];
 
 export function NewCaseDialog({ open, onOpenChange, clientId }: { open: boolean; onOpenChange: (open: boolean) => void; clientId?: number }) {
   const { data: clients } = useClients();

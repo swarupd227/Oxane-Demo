@@ -34,7 +34,7 @@ export function WalkthroughToggle() {
         aria-label="Presenter mode"
         aria-pressed={enabled}
         onClick={toggle}
-        className={clsx(iconButton, enabled && "bg-accent text-ink hover:bg-accent hover:text-ink")}
+        className={clsx(iconButton, enabled && "bg-accent text-white hover:bg-accent-strong hover:text-white")}
       >
         <Presentation aria-hidden className="size-4" />
       </button>

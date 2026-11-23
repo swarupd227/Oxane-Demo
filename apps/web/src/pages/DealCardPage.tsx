@@ -48,7 +48,7 @@ function Progress() {
             </td>
             <td className="w-1/3 py-1.5">
               <div className="h-1.5 rounded bg-sand" aria-hidden>
-                <div className="h-full rounded bg-ink" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
+                <div className="h-full rounded bg-accent" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
               </div>
             </td>
           </tr>

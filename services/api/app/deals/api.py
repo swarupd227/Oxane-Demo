@@ -1145,10 +1145,10 @@ def portal_view(db: Session, persona: Persona) -> dict[str, Any]:
         queries += scripted["queries"]
         reports += scripted["reports"]
         return {"persona": persona.view(), "client_name": name, "queries": queries,
-                "reports": reports, "brief": scripted["brief"], "alerts": scripted["alerts"],
+                "reports": reports, "summary": scripted["summary"], "alerts": scripted["alerts"],
                 "work": handoffs.mine(db, persona)["waiting"]}
     return {"persona": persona.view(), "client_name": name, "queries": queries,
-            "reports": reports, "brief": None, "alerts": [],
+            "reports": reports, "summary": None, "alerts": [],
             "work": handoffs.mine(db, persona)["waiting"]}
 
 

@@ -52,7 +52,7 @@ export function TermsTimelinePage() {
                     role="radio"
                     aria-checked={p.id === period.id}
                     onClick={() => setPeriod(p)}
-                    className={clsx("h-8 cursor-pointer rounded-md px-3 text-sm font-medium", p.id === period.id ? "bg-ink text-white" : "text-muted hover:text-ink")}
+                    className={clsx("h-8 cursor-pointer rounded-md px-3 text-sm font-medium", p.id === period.id ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:text-ink")}
                   >
                     {p.label}
                   </button>
@@ -96,7 +96,7 @@ export function TermsTimelinePage() {
                               title={`${version.label}, from ${formatDate(version.effective_from)}`}
                               className={clsx(
                                 "absolute top-0 flex h-9 cursor-pointer items-center overflow-hidden rounded-md border px-2 text-left text-xs font-medium transition-colors",
-                                active ? "border-ink bg-ink text-white" : "border-line bg-surface text-muted hover:border-stone",
+                                active ? "border-accent bg-accent-tint text-accent-strong" : "border-line bg-surface text-muted hover:border-stone",
                               )}
                               style={{ left: `${left}%`, width: `calc(${right - left}% - 3px)` }}
                             >

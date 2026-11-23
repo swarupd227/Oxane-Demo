@@ -1,10 +1,77 @@
 import clsx from "clsx";
-import { CalendarClock, Code2, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarClock, Code2, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
+import { useRole } from "../../lib/persona";
 import { Badge, PageTitle, Person, when } from "../ui";
-import { useCycle, type ClientId, type Source } from "../cycle";
+import { useCycle, useCycleAction, useCycleSession, type ClientId, type ClientSummary, type Source } from "../cycle";
 import { FacilityTag, Filled, NoAiBadge, SourcePanel } from "../parts";
+
+/** The Monday of the week an ISO date falls in, so the page and the call day agree. */
+function weekOf(iso: string): string {
+  const day = new Date(`${iso}T00:00:00Z`);
+  day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7));
+  return day.toISOString().slice(0, 10);
+}
+
+/** The summary written to the client: internal until the monitoring analyst releases it. */
+function ClientSummaryCard({ summary, contact }: { summary: ClientSummary; contact: string }) {
+  const { data: session } = useCycleSession();
+  const action = useCycleAction();
+  const role = useRole();
+  const [open, setOpen] = useState(false);
+  const released = session?.summaries?.[summary.client];
+  const figures = Object.fromEntries(Object.entries(summary.figures).map(([k, f]) => [k, { ...f, source: f.source ?? null }]));
+  return (
+    <Card className="p-3">
+      <div className="flex items-center justify-between gap-2">
+        <SectionLabel>Client summary</SectionLabel>
+        {released ? <Badge tone="ok">Released {when(released.at)}</Badge> : <Badge tone="neutral">Not released</Badge>}
+      </div>
+      <p className="mt-1.5 text-xs text-muted">
+        Written to {contact} by code from the same facts, with no internal notes. {released ? `Released by ${released.by}; it shows in their portal.` : "It shows in their portal only once you release it."}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Button size="sm" variant="secondary" onClick={() => setOpen((v) => !v)}>
+          {open ? "Hide preview" : "Preview"}
+        </Button>
+        {!released && role === "monitoring_analyst" && (
+          <Button size="sm" disabled={action.isPending} onClick={() => action.mutate({ type: "release-summary", as: "analyst", payload: { client: summary.client } })}>
+            <Send aria-hidden className="size-3.5" />
+            Release to {contact}
+          </Button>
+        )}
+      </div>
+      {action.error && (
+        <p role="alert" className="mt-1.5 text-xs text-danger">
+          {action.error.message}
+        </p>
+      )}
+      {open && (
+        <div className="mt-3 border-t border-sand pt-2 text-[0.8125rem]">
+          <p className="font-semibold">{summary.title}</p>
+          <p className="mt-1">{summary.greeting}</p>
+          <p className="mt-1">
+            <Filled text={summary.opening} figures={figures} onSource={() => undefined} />
+          </p>
+          {summary.sections.map((s) => (
+            <div key={s.heading} className="mt-2">
+              <p className="text-xs font-semibold">{s.heading}</p>
+              <ul className="ml-4 list-disc text-xs">
+                {s.points.map((p) => (
+                  <li key={p}>
+                    <Filled text={p} figures={figures} onSource={() => undefined} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export function StatusCallPage() {
   const { data: cycle } = useCycle();
@@ -18,9 +85,10 @@ export function StatusCallPage() {
   const facilities = cycle.facilities.filter((f) => f.client === clientId);
   const clean = brief.unknown_placeholders.length === 0 && brief.numbers_in_text.length === 0;
   const firstSourced = Object.values(brief.figures).find((f) => f.source)?.source ?? null;
+  const summary = cycle.client_summaries?.find((s) => s.client === clientId);
   return (
     <>
-      <PageTitle title="Status calls" meta={`Week of ${when(cycle.cycle.as_of)}`} />
+      <PageTitle title="Status calls" meta={`Week of ${when(weekOf(cycle.cycle.as_of))}`} />
       <div role="tablist" aria-label="Client" className="mb-3 flex items-center gap-1 border-b border-line">
         {cycle.clients.map((c) => (
           <button
@@ -96,6 +164,7 @@ export function StatusCallPage() {
               </li>
             </ul>
           </Card>
+          {summary && <ClientSummaryCard summary={summary} contact={client.client_contact.name} />}
           <Card className="p-3">
             <SectionLabel>Checks</SectionLabel>
             <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">

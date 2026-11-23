@@ -26,7 +26,7 @@ services:
   api:
     build: ./services/api
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    environment:
+    environment: &api-env
       DATABASE_URL: postgresql+psycopg://oxane:${POSTGRES_PASSWORD:-oxane_dev}@db:5432/oxane
       DEAL_FILE: /deal-kit/deal.yaml
       LLM_MODE: ${LLM_MODE:-replay}
@@ -83,6 +83,53 @@ services:
       api:
         condition: service_healthy
 
+  # The end-to-end stack: the same API and web app on their own database (oxane_test), so a
+  # test run never writes clients, cases or work items into the demo's. `docker compose
+  # --profile tools run --rm e2e ...` starts it; the demo stack above is left alone.
+  api-test:
+    profiles: [tools]
+    build: ./services/api
+    image: oxane-api
+    command: sh -c "python -m app.admin.testdb && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      <<: *api-env
+      DATABASE_URL: postgresql+psycopg://oxane:${POSTGRES_PASSWORD:-oxane_dev}@db:5432/oxane_test
+      # A test never writes the repo's .env.
+      LOCAL_ENV_FILE: ""
+    ports:
+      - "127.0.0.1:${API_TEST_PORT:-8011}:8000"
+    volumes:
+      - ./services/api:/app
+      - ./deal-kit:/deal-kit:ro
+      - ./packages/engine:/packages/engine:ro
+      - ./fixtures:/fixtures
+    depends_on:
+      db:
+        condition: service_healthy
+      pack:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/api/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  web-test:
+    profiles: [tools]
+    build: ./apps/web
+    image: oxane-web
+    environment:
+      API_TARGET: http://api-test:8000
+      VITE_USE_POLLING: "true"
+    ports:
+      - "127.0.0.1:${WEB_TEST_PORT:-5181}:5173"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    depends_on:
+      api-test:
+        condition: service_healthy
+
   deal-kit:
     profiles: [tools]
     build: ./deal-kit
@@ -94,7 +141,8 @@ services:
     image: mcr.microsoft.com/playwright:v1.64.1-noble
     working_dir: /e2e
     environment:
-      BASE_URL: http://web:5173
+      # The e2e stack on the test database (web-test), never the demo stack (web).
+      BASE_URL: ${E2E_BASE_URL:-http://web-test:5173}
       DEMO_ACCESS_CODE: ${DEMO_ACCESS_CODE:-}
       E2E_LIVE: ${E2E_LIVE:-}
     volumes:
@@ -102,7 +150,7 @@ services:
       - /e2e/node_modules
       - ./deal-kit/output/newdeals:/newdeals:ro
     depends_on:
-      - web
+      - web-test
 
   engine:
     profiles: [tools]

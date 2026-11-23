@@ -251,7 +251,7 @@ export function TermsPage() {
                 onClick={() => setFilter(item.id)}
                 className={clsx(
                   "h-8 cursor-pointer rounded-md px-3 text-[0.8125rem] font-medium",
-                  filter === item.id ? "bg-ink text-white" : "text-muted hover:bg-sand",
+                  filter === item.id ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:bg-sand",
                 )}
               >
                 {item.label}

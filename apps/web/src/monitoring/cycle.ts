@@ -200,10 +200,21 @@ export interface Brief {
   client: ClientId;
   ai: boolean;
   opening: string;
-  sections: { heading: string; points: string[]; by?: "AI" | "Template"; pending_recording?: boolean }[];
+  sections: { heading: string; points: string[]; by?: "AI" | "Template" | "Code"; pending_recording?: boolean }[];
   figures: Record<string, PackFigure>;
   unknown_placeholders: string[];
   numbers_in_text: string[];
+}
+
+/** The status-call summary written to the client, by code; it reaches the portal once released. */
+export interface ClientSummary {
+  client: ClientId;
+  title: string;
+  greeting: string;
+  opening: string;
+  sections: { heading: string; points: string[] }[];
+  figures: Record<string, PackFigure>;
+  week_of: string;
 }
 
 export interface Position {
@@ -612,6 +623,7 @@ export interface Cycle {
     { ai_permitted: boolean; catalogue: Record<string, { label: string; unit: string }>; history: Record<string, [string, number][]>; presets: AlertDraft[] }
   >;
   briefs: Brief[];
+  client_summaries?: ClientSummary[];
   submissions: Submission[];
   layout: {
     facility: FacilityId;
@@ -765,6 +777,7 @@ export interface CycleSession {
   layoutConfirmed: boolean;
   triage: Record<string, { outcome: Outcome; note: string | null; at: string; overrode: boolean }>;
   packs: Partial<Record<FacilityId, { at: string; by: string }>>;
+  summaries?: Partial<Record<ClientId, { at: string; by: string }>>;
   blocks: Partial<Record<FacilityId, { note: string; at: string; by: string }>>;
   qcResolved: Partial<Record<FacilityId, Record<string, { note: string; at: string; by: string }>>>;
   approvals: Partial<Record<FacilityId, { level: number; title: string; by: string; actor: CycleActor; at: string }[]>>;

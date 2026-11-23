@@ -2,10 +2,9 @@
  * now, and a form that tests a typed key before saving it. The API enforces the persona and the
  * access code whatever this screen shows. */
 import clsx from "clsx";
-import { CircleCheck, CircleX, Eye, EyeOff, KeyRound, Lock, PlugZap, ShieldAlert } from "lucide-react";
+import { CircleCheck, CircleX, Eye, EyeOff, Lock, PlugZap, ShieldAlert } from "lucide-react";
 import { useReducer, useState, type ReactNode } from "react";
 import { Field, Select, TextInput, when } from "../../components/deals/parts";
-import { AccessCodeDialog } from "../../components/shell/Persona";
 import { Button } from "../../components/ui/Button";
 import { Skeleton } from "../../components/ui/layout";
 import { Tooltip } from "../../components/ui/Tooltip";
@@ -50,11 +49,9 @@ function TestLine({ result }: { result: TestResult }) {
   );
 }
 
-function Blocked({ reason, onCode }: { reason: "access_code" | "not_admin" | "access_off"; onCode: () => void }) {
+function Blocked({ reason }: { reason: "not_admin" }) {
   const copy = {
-    access_code: { title: "Access code needed", text: "Settings need the demo access code as well as the administrator persona.", icon: KeyRound },
     not_admin: { title: "Administrator only", text: "Switch to Alex Morgan, administrator, to change the AI provider.", icon: Lock },
-    access_off: { title: "Settings are switched off", text: "This environment has no DEMO_ACCESS_CODE, so settings cannot be changed here.", icon: ShieldAlert },
   }[reason];
   const Icon = copy.icon;
   return (
@@ -63,11 +60,6 @@ function Blocked({ reason, onCode }: { reason: "access_code" | "not_admin" | "ac
         <Icon aria-hidden className="mx-auto size-5 text-muted" />
         <p className="mt-2 text-sm font-medium">{copy.title}</p>
         <p className="mt-1 text-[0.8125rem] text-muted">{copy.text}</p>
-        {reason === "access_code" && (
-          <Button size="sm" className="mt-3" onClick={onCode}>
-            Enter access code
-          </Button>
-        )}
       </div>
     </div>
   );
@@ -282,11 +274,10 @@ function ProviderForm({ view }: { view: ProviderView }) {
 }
 
 export function AiProviderPage() {
-  const { persona, accessCode } = usePersona();
+  const { persona } = usePersona();
   const isAdmin = persona?.role === "admin";
-  const { data, error, isLoading } = useAiProvider(Boolean(persona) && isAdmin, accessCode);
-  const [codeOpen, setCodeOpen] = useState(false);
-  const blocked = persona && !isAdmin ? "not_admin" : blockedBy(error);
+  const { data, error, isLoading } = useAiProvider(Boolean(persona) && isAdmin, "");
+  const blocked = (persona && !isAdmin) || blockedBy(error) ? "not_admin" : null;
 
   return (
     <>
@@ -297,7 +288,7 @@ export function AiProviderPage() {
           <Skeleton className="h-72" />
         </div>
       ) : blocked ? (
-        <Blocked reason={blocked} onCode={() => setCodeOpen(true)} />
+        <Blocked reason={blocked} />
       ) : error || !data ? (
         <p role="alert" className="rounded-md bg-danger-tint px-3 py-2 text-[0.8125rem] font-medium text-danger">
           {error instanceof Error ? error.message : "Settings did not load"}
@@ -308,7 +299,6 @@ export function AiProviderPage() {
           <ProviderForm view={data} />
         </div>
       )}
-      <AccessCodeDialog open={codeOpen} onOpenChange={setCodeOpen} />
     </>
   );
 }

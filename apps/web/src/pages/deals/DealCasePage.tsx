@@ -6,6 +6,7 @@ import { Link, useParams } from "react-router-dom";
 import { ActionButton, Activity, EXC_LABEL, Field, FormMessage, Select, STATUS_TONE, Tabs, TextInput, useForm, when } from "../../components/deals/parts";
 import { HandOffHint } from "../../components/shell/Persona";
 import { Button } from "../../components/ui/Button";
+import { Dialog } from "../../components/ui/Dialog";
 import { Skeleton } from "../../components/ui/layout";
 import {
   KIND_LABEL,
@@ -23,6 +24,7 @@ import {
 } from "../../lib/deals";
 import { NoAiBadge } from "../../monitoring/parts";
 import { Badge, Kpis, Panel, PageTitle, RecordId } from "../../monitoring/ui";
+import { DEAL_TYPES } from "./ClientsPage";
 
 type Act = ReturnType<typeof useActions>;
 
@@ -38,7 +40,7 @@ function Stages({ view }: { view: CaseView }) {
   return (
     <ol aria-label="Stage" className="mb-3 flex flex-wrap gap-1 text-[0.6875rem]">
       {view.stages.map((s, i) => (
-        <li key={s} className={clsx("rounded px-1.5 py-0.5", i < at ? "bg-ok-tint text-ok" : i === at ? "bg-ink font-semibold text-white" : "bg-sand text-muted")} aria-current={i === at ? "step" : undefined}>
+        <li key={s} className={clsx("rounded px-1.5 py-0.5", i < at ? "bg-ok-tint text-ok" : i === at ? "bg-accent font-semibold text-white" : "bg-sand text-muted")} aria-current={i === at ? "step" : undefined}>
           {STAGE_LABEL[s]}
         </li>
       ))}
@@ -665,12 +667,69 @@ function Approval({ view, act }: { view: CaseView; act: Act }) {
   );
 }
 
+/** Edit the case's own fields, or archive it with a reason. Both land in the case's history. */
+function EditCase({ view, open, onOpenChange }: { view: CaseView; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const form = useForm();
+  const action = useDealAction<CaseView>();
+  const [v, setV] = useState({ facility_name: view.facility_name, deal_type: view.deal_type, commitment: String(view.commitment_cents / 100) });
+  const submit = () =>
+    void form
+      .run(() => action.mutateAsync(() => post<CaseView>(`/api/deals/cases/${view.id}`, { facility_name: v.facility_name, deal_type: v.deal_type, commitment: v.commitment ? Number(v.commitment.replace(/[^\d.]/g, "")) : null }, "PATCH")))
+      .then((saved) => saved && onOpenChange(false));
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} title="Edit case">
+      <form noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <FormMessage message={form.message} />
+        <Field id="edit-facility" label="Facility name" error={form.errors.facility_name}>
+          <TextInput id="edit-facility" value={v.facility_name} onChange={(e) => setV({ ...v, facility_name: e.target.value })} invalid={Boolean(form.errors.facility_name)} />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field id="edit-type" label="Deal type" error={form.errors.deal_type}>
+            <Select id="edit-type" value={v.deal_type} onChange={(e) => setV({ ...v, deal_type: e.target.value })} invalid={Boolean(form.errors.deal_type)}>
+              {DEAL_TYPES.map((t) => <option key={t}>{t}</option>)}
+            </Select>
+          </Field>
+          <Field id="edit-commitment" label="Commitment (US$)" error={form.errors.commitment}>
+            <TextInput id="edit-commitment" inputMode="decimal" value={v.commitment} onChange={(e) => setV({ ...v, commitment: e.target.value })} invalid={Boolean(form.errors.commitment)} />
+          </Field>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button size="sm" type="submit" disabled={form.busy}>Save changes</Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+function ArchiveCase({ view, open, onOpenChange }: { view: CaseView; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const form = useForm();
+  const action = useDealAction<CaseView>();
+  const [note, setNote] = useState("");
+  const submit = () => void form.run(() => action.mutateAsync(() => post<CaseView>(`/api/deals/cases/${view.id}/archive`, { note }))).then((saved) => saved && onOpenChange(false));
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} title={`Archive ${view.ref}`}>
+      <form noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <FormMessage message={form.message} />
+        <Field id="archive-note" label="Reason" error={form.errors.note}>
+          <TextInput id="archive-note" value={note} onChange={(e) => setNote(e.target.value)} invalid={Boolean(form.errors.note)} />
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button size="sm" type="submit" disabled={form.busy}>Archive case</Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
 export function DealCasePage() {
   const params = useParams();
   const id = Number(params.id);
   const tab = params.tab ?? "overview";
   const { data: view, isError } = useDealCase(id);
   const act = useActions(id);
+  const [dialog, setDialog] = useState<"edit" | "archive" | null>(null);
   if (isError) {
     return <p role="alert" className="text-sm text-danger">This case could not be loaded.</p>;
   }
@@ -701,9 +760,18 @@ export function DealCasePage() {
             <Link to={`/clients/${view.client.id}`} className="hover:underline">{view.client.name}</Link> · {view.deal_type} · {usd(view.commitment_cents)}
             {!view.client.ai_permitted && <NoAiBadge compact />}
             <span title={`${view.cost.calls} model calls, ${view.cost.tokens.toLocaleString()} tokens`}>· model cost US${view.cost.cost_usd.toFixed(2)}</span>
+            {view.archived_at && <Badge tone="neutral">Archived</Badge>}
           </span>
         }
+        actions={
+          <>
+            <ActionButton variant="secondary" reason={view.archived_at ? "Archived" : view.can.prepare} onClick={() => setDialog("edit")}>Edit case</ActionButton>
+            <ActionButton variant="secondary" reason={view.archived_at ? "Archived" : view.facility_id ? "Live: archive the facility instead" : view.can.prepare} onClick={() => setDialog("archive")}>Archive case</ActionButton>
+          </>
+        }
       />
+      {dialog === "edit" && <EditCase view={view} open onOpenChange={(o) => setDialog(o ? "edit" : null)} />}
+      {dialog === "archive" && <ArchiveCase view={view} open onOpenChange={(o) => setDialog(o ? "archive" : null)} />}
       <Stages view={view} />
       <HandOffHint items={view.work} />
       {act.form.message && !Object.keys(act.form.errors).length && <FormMessage message={act.form.message} />}

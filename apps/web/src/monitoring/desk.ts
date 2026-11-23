@@ -46,6 +46,13 @@ export const REPORT_LABEL: Record<ReportStatus, string> = {
   held: "Load held",
 };
 
+/** The last quarter completed by a month-end period end: 2026-05-31 gives "Q1 2026". */
+export function lastQuarter(periodEnd: string): string {
+  const year = Number(periodEnd.slice(0, 4));
+  const quarter = Math.floor(Number(periodEnd.slice(5, 7)) / 3);
+  return quarter === 0 ? `Q4 ${year - 1}` : `Q${quarter} ${year}`;
+}
+
 function statusOf(tests: TestRow[], open: number): DeskRow["status"] {
   if (tests.some((t) => !t.passed)) {
     return "breach";
@@ -84,7 +91,7 @@ export function deskRows(cycle: Cycle, session: CycleSession | undefined): DeskR
       size: f.size,
       analyst: client.contact.name,
       reporting: f.reporting.startsWith("Quarterly") ? "Quarterly" : "Monthly",
-      period: f.id === "kestrel" ? "Q1 2026" : cycle.cycle.label,
+      period: f.reporting.startsWith("Quarterly") ? lastQuarter(cycle.cycle.period_end) : cycle.cycle.label,
       worked: true,
       documents: {
         received: subs.filter((s) => s.received || s.reused).length,

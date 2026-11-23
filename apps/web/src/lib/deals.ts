@@ -92,6 +92,8 @@ export interface DealsStatus {
   spent_today_usd: number;
   cap_usd: number;
   cap_reached: boolean;
+  /** The key in use passed (true) or failed (false) its last connection test; null if untested. */
+  key_ok?: boolean | null;
   max_upload_mb: number;
   upload_types: string[];
 }

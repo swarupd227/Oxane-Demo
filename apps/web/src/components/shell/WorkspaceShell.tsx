@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { Building2, FolderKanban, Landmark, ListTodo, Settings, type LucideIcon } from "lucide-react";
 import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useDealsStatus, useWork } from "../../lib/deals";
-import { MONITORING_ROLES, ONBOARDING_ROLES, usePersona, type Role } from "../../lib/persona";
+import { NAV_ROLES, usePersona, type Role } from "../../lib/persona";
 import { WorkbenchSwitch } from "../../monitoring/parts";
 import { EnvironmentFooter } from "./AppShell";
 import { EnvironmentLabel, NotificationBell, WalkthroughToggle } from "./HeaderControls";
@@ -17,11 +17,11 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: "/work", label: "My work", icon: ListTodo, roles: ["onboarding_analyst", "expert", "qc", "reviewer", "monitoring_analyst", "head", "admin"] },
-  { to: "/cases", label: "Onboarding cases", icon: FolderKanban, roles: ONBOARDING_ROLES },
-  { to: "/facilities", label: "Facilities", icon: Landmark, roles: MONITORING_ROLES },
-  { to: "/clients", label: "Clients", icon: Building2, roles: ["admin", "onboarding_analyst", "reviewer", "head"] },
-  { to: "/settings/ai-provider", label: "Settings", icon: Settings, roles: ["admin"] },
+  { to: "/work", label: "My work", icon: ListTodo, roles: NAV_ROLES["/work"] },
+  { to: "/cases", label: "Onboarding cases", icon: FolderKanban, roles: NAV_ROLES["/cases"] },
+  { to: "/facilities", label: "Facilities", icon: Landmark, roles: NAV_ROLES["/facilities"] },
+  { to: "/clients", label: "Clients", icon: Building2, roles: NAV_ROLES["/clients"] },
+  { to: "/settings/ai-provider", label: "Settings", icon: Settings, roles: NAV_ROLES["/settings/ai-provider"] },
 ];
 
 export function visibleNav(role: Role | undefined): NavItem[] {
@@ -30,19 +30,19 @@ export function visibleNav(role: Role | undefined): NavItem[] {
 
 function LiveState() {
   const { data } = useDealsStatus();
-  const { accessCode } = usePersona();
   if (!data) {
     return null;
   }
-  let text = data.mode === "live" ? "Live AI" : data.mode === "stub" ? "Test model" : "Recorded AI";
+  let text = data.mode === "live" ? "Live AI" : data.mode === "stub" ? "Test model" : "AI replay";
   let tone = "border-line text-muted";
   if (!data.access_configured) {
     text = "Uploads off";
   } else if (data.cap_reached) {
     text = "Daily AI limit reached";
     tone = "border-danger/40 bg-danger-tint text-danger";
-  } else if (!accessCode) {
-    text = "Access code needed";
+  } else if (data.mode === "live" && data.key_ok === false) {
+    // The key's last connection test failed (Settings › AI provider), so live calls will too.
+    text = "Live AI · key failing";
     tone = "border-warn/40 bg-warn-tint text-warn";
   }
   return (

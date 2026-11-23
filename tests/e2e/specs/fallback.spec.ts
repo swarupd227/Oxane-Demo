@@ -18,7 +18,7 @@ test.afterEach(async ({ page }, info) => {
 
 test("1-deal", async ({ page, request }) => {
   await resetCase(request);
-  await page.goto("/");
+  await page.goto("/overview");
   await pause(page, 5);
 });
 

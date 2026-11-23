@@ -164,6 +164,28 @@ def effective(db: Session | None = None, env_provider: str | None = None) -> Eff
         return _resolve(None, env_provider)
 
 
+def key_health(db: Session) -> bool | None:
+    """Whether the key in use passed its last connection test: True or False, or None when it
+    has not been tested since it was set. Only a test of that same key counts (not a typed one),
+    and nothing about the key itself is returned."""
+    try:
+        row = _row(db)
+    except SQLAlchemyError:
+        return None
+    current = _resolve(row, None)
+    test = (row.last_test if row is not None else None) or {}
+    if not current.configured or not test or test.get("subject") != current.source \
+            or test.get("provider") != current.provider:
+        return None
+    if current.source == "db" and row is not None and row.updated_at is not None:
+        try:
+            if datetime.fromisoformat(test.get("at", "")) < row.updated_at:
+                return None
+        except (TypeError, ValueError):
+            return None
+    return bool(test.get("ok"))
+
+
 def sdk_client(current: Effective) -> Any:
     """A fresh SDK client for the resolved key. Built per key, so nothing outlives a change."""
     key = current.key or None

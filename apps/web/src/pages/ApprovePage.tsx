@@ -315,7 +315,7 @@ export function ApprovePage() {
                 onClick={() => dispatch({ type: "set-actor", actor })}
                 className={clsx(
                   "flex h-9 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md text-[0.8125rem] font-medium",
-                  state.actor === actor ? "bg-ink text-white" : "text-muted hover:bg-sand",
+                  state.actor === actor ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:bg-sand",
                 )}
               >
                 <UserRound aria-hidden className="size-3.5" />

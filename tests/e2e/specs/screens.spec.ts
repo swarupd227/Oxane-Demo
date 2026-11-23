@@ -4,7 +4,7 @@ import { prepare, resetCase } from "./helpers";
 
 const SCREENS = [
   { path: "/cases", name: "cases", stage: "loaded", heading: "Onboarding cases" },
-  { path: "/", name: "overview", stage: "loaded", heading: /Bramble Auto Receivables/ },
+  { path: "/overview", name: "overview", stage: "loaded", heading: /Bramble Auto Receivables/ },
   { path: "/intake", name: "intake", stage: "loaded", heading: "Documents" },
   { path: "/terms", name: "terms", stage: "loaded", heading: "Facility terms" },
   { path: "/rules", name: "rules", stage: "loaded", heading: "Eligibility and concentration rules" },

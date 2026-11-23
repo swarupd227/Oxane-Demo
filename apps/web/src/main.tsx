@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AgentsConsole } from "./agents/AgentsConsole";
 import { AppShell } from "./components/shell/AppShell";
+import { HomeRedirect } from "./components/shell/Persona";
 import { WorkspaceShell } from "./components/shell/WorkspaceShell";
 import { PersonaProvider } from "./lib/persona";
 import { ClientPage, ClientsPage } from "./pages/deals/ClientsPage";
@@ -63,8 +64,9 @@ createRoot(document.getElementById("root")!).render(
           <SessionProvider>
           <BrowserRouter>
             <Routes>
+              <Route index element={<HomeRedirect />} />
               <Route element={<AppShell />}>
-                <Route index element={<DealCardPage />} />
+                <Route path="/overview" element={<DealCardPage />} />
                 <Route path="/intake" element={<IntakePage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/rules" element={<RulesPage />} />

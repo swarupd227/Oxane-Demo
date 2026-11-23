@@ -161,7 +161,7 @@ export function TriagePage() {
                     role="tab"
                     aria-selected={view === v}
                     onClick={() => setView(v)}
-                    className={clsx("h-6 cursor-pointer rounded px-2 text-xs capitalize", view === v ? "bg-ink text-white" : "text-muted hover:text-ink")}
+                    className={clsx("h-6 cursor-pointer rounded px-2 text-xs capitalize", view === v ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:text-ink")}
                   >
                     {v === "logged" ? "Logged" : v}
                   </button>

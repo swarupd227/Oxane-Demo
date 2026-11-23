@@ -291,6 +291,7 @@ test("(c) a client that does not permit AI onboards by hand, with page reference
 });
 
 test("(d) the scripted case 0412 hands an escalation to the credit expert and back", async ({ page, request }) => {
+  test.skip(test.info().project.name === "azure", "Resets the shared scripted case, so it runs locally only");
   await prepare(request, "worked");
   await page.addInitScript(() => window.localStorage.setItem("oxane.persona", "ruth"));
   await page.goto("/work");

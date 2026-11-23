@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "playwright test --project=stage",
-    "fallback": "playwright test --project=fallback"
+    "fallback": "playwright test --project=fallback",
+    "azure": "playwright test --project=azure"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.0",

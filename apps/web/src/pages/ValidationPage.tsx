@@ -265,7 +265,7 @@ export function ValidationPage() {
                     onClick={() => setTab(name)}
                     className={clsx(
                       "h-8 flex-1 cursor-pointer rounded-md text-[0.8125rem] font-medium",
-                      tab === name ? "bg-ink text-white" : "text-muted hover:bg-sand",
+                      tab === name ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:bg-sand",
                     )}
                   >
                     {name}

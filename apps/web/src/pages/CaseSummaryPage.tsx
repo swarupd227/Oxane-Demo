@@ -65,7 +65,7 @@ export function CaseSummaryPage() {
             className={clsx(
               "flex h-8 flex-1 items-center justify-center border-r border-line last:border-0",
               index < reached && "bg-sand text-muted",
-              index === reached && "bg-ink font-semibold text-white",
+              index === reached && "bg-accent font-semibold text-white",
               index > reached && "text-muted",
             )}
           >
@@ -92,7 +92,7 @@ export function CaseSummaryPage() {
                   <td className="numeric py-2 pr-3 text-right text-muted">{total}</td>
                   <td className="py-2 pr-4">
                     <div className="h-1.5 rounded bg-sand" aria-hidden>
-                      <div className="h-full rounded bg-ink" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
+                      <div className="h-full rounded bg-accent" style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
                     </div>
                   </td>
                 </tr>

@@ -106,23 +106,27 @@ def lender_report(facility: dict[str, Any], sub: dict[str, Any]) -> bytes:
         ("Advance rate (%)", float(engine["advance_rate_pct"]), engine["advance_rate_source"]),
         ("Reserve (US$)", engine["reserve_cents"] / 100, "Engine"),
     ]
-    for label, value, source in rows:
+    def put(label: str, value: Any, source: str) -> None:
+        """An input: its value, and its source as a note on the cell."""
         sheet.append([label, value, source])
         sheet.cell(row=sheet.max_row, column=2).font = INPUT
         sheet.cell(row=sheet.max_row, column=2).comment = Comment(source, "Oxane")
+
+    for label, value, source in rows:
+        put(label, value, source)
     sheet.append(["Borrowing base (US$)", "=(B4-B5)*B6/100-B7", "Formula"])
-    sheet.append(["Facility limit (US$)", facility["commitment_cents"] / 100, "Agreement"])
+    put("Facility limit (US$)", facility["commitment_cents"] / 100, "Agreement")
     sheet.append(["Availability (US$)", "=MIN(B8,B9)", "Formula"])
     if tests.get("delinquency_months"):
         sheet.append([])
         _head(sheet, ["Delinquency, month", "Ratio (%)", "Source"])
         start = sheet.max_row + 1
         for month in tests["delinquency_months"]:
-            sheet.append([month["period"], float(month["value"]), "Engine, from tape"])
+            put(month["period"], float(month["value"]), "Engine, from tape")
         end = sheet.max_row
         sheet.append(["Rolling average (%)", f"=ROUND(AVERAGE(B{start}:B{end}),2)", "Formula"])
-        sheet.append(["Trigger (%)", float(tests["delinquency_limit"]),
-                      tests.get("delinquency_source") or "Agreement"])
+        put("Trigger (%)", float(tests["delinquency_limit"]),
+            tests.get("delinquency_source") or "Agreement")
         sheet.append(["Breached", f"=IF(B{end + 1}>B{end + 2},\"Yes\",\"No\")", "Formula"])
     text = book.create_sheet("Commentary")
     for paragraph in report.get("text", []):

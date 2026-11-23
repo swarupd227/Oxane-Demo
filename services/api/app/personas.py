@@ -122,7 +122,10 @@ ONBOARDING_EVENTS: dict[str, dict[str, str]] = {
 CYCLE_EVENTS: dict[str, dict[str, str]] = {
     "monitoring_analyst": {kind: "analyst" for kind in (
         "open-cycle", "confirm-layout", "triage", "send-chase", "resolve-block", "approve-alert",
-        "approve-pack")},
+        "approve-pack", "release-summary")} | {
+        # The analyst relays a client's alert request from the Alerts screen. It is recorded as
+        # the client's, as it is with sign-in on, and the analyst then approves it separately.
+        "request-alert": "client"},
     "qc": {"resolve-qc": "analyst", "open-cycle": "analyst"},
     "reviewer": {"approve-pack": "approver", "open-cycle": "analyst"},
     "head": {"approve-pack": "senior", "open-cycle": "analyst"},
@@ -153,3 +156,12 @@ def client_may_reach(path: str) -> bool:
         return True
     return (path.startswith("/api/deals/submissions/") and path.endswith("/report.xlsx")) or \
         path.startswith("/api/monitoring/workbook/")
+
+
+def for_actor(table: dict[str, dict[str, str]], kind: str, actor: str) -> Persona | None:
+    """The persona a session actor stands for when a request names none (the API used directly
+    with only the scripted actor), so hand-offs are never attributed to a blank."""
+    for role, kinds in table.items():
+        if kinds.get(kind) == actor:
+            return next((p for p in STATIC if p.role == role), None)
+    return None

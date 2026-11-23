@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "./session";
+import { CASE_HOME } from "./scenes";
 
 export type Stage = "Intake" | "Interpretation" | "Clarification" | "QC" | "Live";
 
@@ -66,7 +67,7 @@ export function useCases() {
 }
 
 export function casePath(item: CaseSummary): string {
-  return item.active ? "/" : `/cases/${item.number}`;
+  return item.active ? CASE_HOME : `/cases/${item.number}`;
 }
 
 export const STAGE_TONES: Record<Stage, string> = {

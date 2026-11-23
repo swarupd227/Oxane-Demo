@@ -1,4 +1,5 @@
-/* What a lender contact sees: queries to answer, released reports, the weekly brief and alerts. */
+/* What a lender contact sees: queries to answer, released reports, the status-call summary Oxane
+ * released to them, and alerts. Oxane's internal status-call brief never reaches this page. */
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useState } from "react";
@@ -13,7 +14,7 @@ interface Portal {
   client_name: string;
   queries: { case_id: number | null; case: string; facility: string; ref: string; title: string; question: string; asked_by: string; asked_at: string; answer: string | null; status: "waiting" | "answered"; scripted: boolean }[];
   reports: { facility: string; period: string; released_at: string; text: string[]; download: string; scripted: boolean }[];
-  brief: { opening: string; sections: { heading: string; points: string[] }[] } | null;
+  summary: { title: string; greeting: string; opening: string; sections: { heading: string; points: string[] }[]; released_at: string } | null;
   alerts: { id: number; request: string; summary: string | null; status: string; requestedAt: string }[];
   alert_examples?: string[];
 }
@@ -107,10 +108,14 @@ export function PortalPage() {
             </ul>
           )}
         </Panel>
-        {data.brief && (
-          <Panel title="Weekly status call">
-            <p className="text-[0.8125rem]">{data.brief.opening}</p>
-            {data.brief.sections.map((s) => (
+        {data.summary && (
+          <Panel title="Status-call summary">
+            <p className="text-xs text-muted">
+              {data.summary.title} · released {when(data.summary.released_at)}
+            </p>
+            <p className="mt-1 text-[0.8125rem]">{data.summary.greeting}</p>
+            <p className="mt-1 text-[0.8125rem]">{data.summary.opening}</p>
+            {data.summary.sections.map((s) => (
               <div key={s.heading} className="mt-2">
                 <p className="text-xs font-semibold">{s.heading}</p>
                 <ul className="ml-4 list-disc text-xs">

@@ -85,6 +85,15 @@ installHeaders();
 export const ONBOARDING_ROLES: Role[] = ["onboarding_analyst", "expert", "qc", "reviewer", "admin"];
 export const MONITORING_ROLES: Role[] = ["monitoring_analyst", "head", "reviewer", "expert", "qc", "admin"];
 
+/** Who gets each global navigation item. Every shell reads this, so they never disagree. */
+export const NAV_ROLES: Record<"/work" | "/cases" | "/facilities" | "/clients" | "/settings/ai-provider", Role[]> = {
+  "/work": ["onboarding_analyst", "expert", "qc", "reviewer", "monitoring_analyst", "head", "admin"],
+  "/cases": ONBOARDING_ROLES,
+  "/facilities": MONITORING_ROLES,
+  "/clients": ["admin", "onboarding_analyst", "reviewer", "head"],
+  "/settings/ai-provider": ["admin"],
+};
+
 /** The scripted scenarios' own session actors, worked out from the persona. */
 export function onboardingActor(role: Role | undefined): "analyst" | "approver" {
   return role === "reviewer" ? "approver" : "analyst";

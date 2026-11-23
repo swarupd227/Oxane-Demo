@@ -289,7 +289,7 @@ export function DefinitionsPage() {
                     onClick={() => setShowAmendment(amendment)}
                     className={clsx(
                       "cursor-pointer rounded-md px-2 py-1",
-                      showAmendment === amendment ? "bg-ink text-white" : "bg-sand text-muted",
+                      showAmendment === amendment ? "bg-accent-tint text-accent-strong font-medium" : "bg-sand text-muted",
                     )}
                   >
                     {amendment ? "Amendment" : "Agreement"}

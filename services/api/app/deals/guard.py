@@ -8,7 +8,6 @@ calls work. A client that does not permit AI never reaches this gateway at all.
 """
 
 import hashlib
-import hmac
 import json
 import time
 from dataclasses import asdict
@@ -52,17 +51,13 @@ class ModelUnavailable(RuntimeError):
 
 
 def access_configured() -> bool:
-    return bool(settings.demo_access_code.strip())
+    # There is no access code: uploads and live AI are open, and the daily spend cap is the guard.
+    return True
 
 
 def check_access(request: Request) -> None:
-    """Uploads and anything that may call the model need the demo access code."""
-    if not access_configured():
-        raise HTTPException(status_code=403, detail="Uploads and live AI are switched off on "
-                            "this environment")
-    given = request.headers.get(ACCESS_HEADER, "")
-    if not hmac.compare_digest(given.strip().encode(), settings.demo_access_code.strip().encode()):
-        raise HTTPException(status_code=403, detail="Enter the access code to work on new deals")
+    """Uploads and model calls are open to every working persona; the daily cap limits spend."""
+    return None
 
 
 def spent_today(db: Session) -> float:
@@ -83,6 +78,9 @@ def status(db: Session) -> dict[str, Any]:
         "spent_today_usd": round(spent, 4),
         "cap_usd": cap,
         "cap_reached": spent >= cap,
+        # The key in use: True if its last connection test passed, False if it failed, None
+        # if it has not been tested since it was set. Never anything about the key itself.
+        "key_ok": ai_provider.key_health(db) if key_set else None,
         "max_upload_mb": settings.max_upload_mb,
         "upload_types": sorted(UPLOAD_TYPES),
     }

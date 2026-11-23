@@ -228,7 +228,7 @@ def _fill(text: str, figures: dict[str, Any]) -> str:
 
 def scripted_portal(db: Session, client: str) -> dict[str, Any]:
     """The scripted scenarios as their client sees them: queries, released packs, the brief."""
-    queries, reports, brief, alerts = [], [], None, []
+    queries, reports, summary, alerts = [], [], None, []
     if client == "calderwood":
         state = case_session.view(db, current_workbench())
         try:
@@ -247,7 +247,7 @@ def scripted_portal(db: Session, client: str) -> dict[str, Any]:
     try:
         cycle = current_cycle()
     except HTTPException:
-        return {"queries": queries, "reports": reports, "brief": brief, "alerts": alerts}
+        return {"queries": queries, "reports": reports, "summary": summary, "alerts": alerts}
     view = cycle_session.view(db, cycle)
     names = {f["id"]: f for f in cycle["facilities"]}
     for pack in cycle["packs"]:
@@ -260,15 +260,20 @@ def scripted_portal(db: Session, client: str) -> dict[str, Any]:
                                 for s in pack["sections"]],
                             "download": f"/api/monitoring/workbook/{pack['facility']}.xlsx",
                             "scripted": True})
-    for item in cycle["briefs"]:
-        if item["client"] == client:
-            brief = {"opening": _fill(item["opening"], item["figures"]),
-                     "sections": [{"heading": s["heading"],
-                                   "points": [_fill(p, item["figures"]) for p in s["points"]]}
-                                  for s in item["sections"]]}
+    # The status-call brief is internal and never reaches the portal. The client sees only the
+    # summary written to them, and only once the analyst has released it.
+    released = view.get("summaries", {}).get(client)
+    for item in cycle.get("client_summaries", []):
+        if item["client"] == client and released:
+            summary = {"title": item["title"], "greeting": item["greeting"],
+                       "opening": _fill(item["opening"], item["figures"]),
+                       "sections": [{"heading": s["heading"],
+                                     "points": [_fill(p, item["figures"]) for p in s["points"]]}
+                                    for s in item["sections"]],
+                       "released_at": released["at"]}
     alerts = [a for a in view["alerts"] if a["client"] == client]
     presets = (cycle["alerts"].get(client) or {}).get("presets", [])
-    return {"queries": queries, "reports": reports, "brief": brief,
+    return {"queries": queries, "reports": reports, "summary": summary,
             "alerts": alerts, "alert_examples": [p["request"] for p in presets]}
 
 
@@ -286,7 +291,8 @@ def post_event(event: SessionEvent, request: Request, session: SessionDep) -> di
         case_session.record(session, run, actor, event.type, payload)
     except case_session.Refused as refused:
         raise HTTPException(status_code=409, detail=str(refused)) from refused
-    sync_scripted(session, persona, "onboarding")
+    sync_scripted(session, persona or personas.for_actor(personas.ONBOARDING_EVENTS, event.type,
+                                                         actor), "onboarding")
     session.commit()
     if persona is not None and persona.role == "client":
         return {"ok": True}
@@ -473,7 +479,8 @@ def post_cycle_event(event: SessionEvent, request: Request, session: SessionDep)
         cycle_session.record(session, cycle, actor, event.type, payload)
     except case_session.Refused as refused:
         raise HTTPException(status_code=409, detail=str(refused)) from refused
-    sync_scripted(session, persona, "cycle")
+    sync_scripted(session, persona or personas.for_actor(personas.CYCLE_EVENTS, event.type,
+                                                         actor), "cycle")
     session.commit()
     if persona is not None and persona.role == "client":
         return {"ok": True}

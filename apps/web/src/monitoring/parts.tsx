@@ -30,12 +30,12 @@ export function OutcomePill({ outcome, pending }: { outcome: Outcome | null; pen
 
 // One tone per worked facility, in the cycle's own order; any other facility stays neutral.
 const facilityTones = [
-  "bg-[#efe3d3] text-[#6b4a1f]",
-  "bg-[#dfe8ef] text-[#2f4b63]",
-  "bg-[#e6e2ef] text-[#4a3f6b]",
-  "bg-[#dcebe3] text-[#2f5a44]",
-  "bg-[#f0e0dc] text-[#6b2f24]",
-  "bg-[#e2ebe0] text-[#3d5a2f]",
+  "bg-[#e0e7ff] text-[#3730a3]",
+  "bg-[#e0f2fe] text-[#075985]",
+  "bg-[#ede9fe] text-[#5b21b6]",
+  "bg-[#dcfce7] text-[#166534]",
+  "bg-[#fce7f3] text-[#9d174d]",
+  "bg-[#fef3c7] text-[#92400e]",
 ];
 
 /** A client that does not permit AI runs on code checks only. Said plainly wherever it shows. */
@@ -130,7 +130,7 @@ export function FacilityTag({ id, name }: { id: string; name: string }) {
   return (
     <span
       className={clsx(
-        "inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap",
+        "inline-flex h-5 items-center rounded-full px-2 text-[0.6875rem] font-medium whitespace-nowrap",
         (index >= 0 && facilityTones[index]) || "bg-sand text-muted",
       )}
     >

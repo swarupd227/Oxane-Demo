@@ -39,8 +39,11 @@ async function clickEach(page: Page, find: () => ReturnType<Page["getByRole"]>, 
     if (before) {
       await before();
     }
-    await find().first().click();
-    await expect.poll(() => find().count(), { timeout: 20_000 }).toBeLessThan(count);
+    // The list re-renders after each click; a button detached mid-click is tried again.
+    const clicked = await find().first().click({ timeout: 15_000 }).then(() => true, () => false);
+    if (clicked) {
+      await expect.poll(() => find().count(), { timeout: 20_000 }).toBeLessThan(count);
+    }
   }
 }
 

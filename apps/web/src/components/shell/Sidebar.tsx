@@ -22,6 +22,7 @@ import { useCase, type CaseStatus } from "../../lib/api";
 import { useCasework } from "../../lib/casework";
 import { NAV_ROLES, useRole } from "../../lib/persona";
 import { useCases } from "../../lib/cases";
+import { useDealCases } from "../../lib/deals";
 import { sectionOf, sections } from "../../lib/scenes";
 import { termStatus, useSession } from "../../lib/session";
 import { useWorkbench } from "../../lib/workbench";
@@ -106,6 +107,8 @@ export function Sidebar() {
   const status = CASE_STATUSES[useCaseStatus()];
   const { data: caseView } = useCase();
   const { data: pipeline } = useCases();
+  const { data: platform } = useDealCases();
+  const caseCount = pipeline ? pipeline.summary.cases + (platform ?? []).filter((c) => !c.archived_at).length : undefined;
   const current = sectionOf(pathname);
   // The case's own sections show only while that case is open: on its section pages or its
   // summary. Lists, My work, clients and settings belong to no case.
@@ -170,7 +173,7 @@ export function Sidebar() {
           <NavLink to="/cases" end className={navItem(casesActive)}>
             <NavIcon icon={FolderKanban} active={casesActive} />
             Onboarding cases
-            <NavCount value={pipeline?.summary.cases} active={casesActive} />
+            <NavCount value={caseCount} active={casesActive} />
           </NavLink>
         </NavSection>
       </nav>

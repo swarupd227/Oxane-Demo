@@ -48,7 +48,7 @@ test("other personas cannot see Settings, and the API refuses them", async ({ pa
   await expect(page.getByRole("link", { name: "Settings" })).toHaveCount(0);
   expect(await personaMenuHasSettings(page)).toBe(false);
   await page.goto("/settings/ai-provider");
-  await expect(page.getByText("Administrator only")).toBeVisible();
+  await expect(page.getByText("Administrator only", { exact: true })).toBeVisible();
   await shot(page, "not-admin");
   const refused = await request.get("/api/admin/ai-provider", { headers: { "X-Acting-User": "hannah", "X-Demo-Access-Code": CODE } });
   expect(refused.status()).toBe(403);

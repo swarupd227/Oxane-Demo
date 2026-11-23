@@ -32,8 +32,10 @@ export interface CaseView {
   deal: Deal;
 }
 
-// A stalled request must become a visible error, not an endless skeleton on stage.
-const REQUEST_TIMEOUT_MS = 2500;
+// A stalled request must become a visible error, not an endless skeleton on stage. The limit
+// matches the other workbench requests: a page's first load can queue this call behind its
+// scripts and the other requests, and 2.5 s was short enough to fail a healthy page.
+const REQUEST_TIMEOUT_MS = 15_000;
 
 async function fetchCase(): Promise<CaseView> {
   const response = await fetch("/api/case", { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });

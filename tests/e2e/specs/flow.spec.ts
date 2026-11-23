@@ -6,7 +6,7 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
 
   await test.step("Deal", async () => {
     // Walkthrough mode shows the next-step buttons this test follows.
-    await page.goto("/?presenter=1");
+    await page.goto("/overview?presenter=1");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Bramble Auto Receivables");
     await expect(page.getByText(/UAT environment/)).toBeVisible();
     await page.getByRole("button", { name: "Start onboarding" }).click();

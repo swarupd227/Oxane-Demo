@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Cycle, CycleSession } from "./cycle";
-import { deskRows, notices } from "./desk";
+import { deskRows, lastQuarter, notices } from "./desk";
 
 const test = (passed: boolean, early = false) => ({
   test: "CCC share",
@@ -61,5 +61,13 @@ describe("notices", () => {
     const session = { decisions: {}, held: {}, qcOpen: {}, alerts: [] } as unknown as CycleSession;
     const titles = notices(cycle, session, "analyst").map((n) => n.title);
     expect(titles).toEqual(["Collateral report, May overdue", "CCC share over limit", "1 exception to decide"]);
+  });
+});
+
+describe("lastQuarter", () => {
+  it("names the last quarter a month-end period end has completed", () => {
+    expect(lastQuarter("2026-05-31")).toBe("Q1 2026");
+    expect(lastQuarter("2026-06-30")).toBe("Q2 2026");
+    expect(lastQuarter("2026-02-28")).toBe("Q4 2025");
   });
 });

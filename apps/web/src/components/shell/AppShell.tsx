@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ONBOARDING_ROLES, usePersona } from "../../lib/persona";
 import { useLargeText, usePresenterMode } from "../../lib/presenter";
-import { scenes } from "../../lib/scenes";
+import { CASE_HOME, scenes } from "../../lib/scenes";
 import { useSession } from "../../lib/session";
 import { useWorkbench } from "../../lib/workbench";
 import { Button } from "../ui/Button";
@@ -49,7 +49,7 @@ export function AppShell() {
       if (event.altKey && event.key.toLowerCase() === "r") {
         event.preventDefault();
         dispatch({ type: "reset" });
-        navigate("/");
+        navigate(CASE_HOME);
         return;
       }
       if (event.altKey && event.key.toLowerCase() === "p") {

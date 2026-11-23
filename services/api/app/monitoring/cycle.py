@@ -46,8 +46,8 @@ from app.config import settings
 from app.monitoring import alerts as client_alerts
 from app.monitoring import book as desk_book
 from app.monitoring import brief as status_brief
+from app.monitoring import client_summary, clo, qc, schedules, steps, subline
 from app.monitoring import clients as policy
-from app.monitoring import clo, qc, schedules, steps, subline
 from app.monitoring import middle_market as mm
 from app.monitoring import validate as validation
 from app.pipeline.catalogue import PLATFORM_FIELDS
@@ -1884,6 +1884,7 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
         else status_brief.template_brief(c, result)
         for c in meta["clients"]
     ]
+    summaries: list[dict[str, Any]] = []
     for brief in result["briefs"]:
         if brief["client"] == "calderwood":
             client = next(c for c in meta["clients"] if c["id"] == "calderwood")
@@ -1893,8 +1894,31 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
                                                     *section.pop("unknown_placeholders")})
             brief["numbers_in_text"] = sorted({*brief["numbers_in_text"],
                                                *section.pop("numbers_in_text")})
+            rvg_facts, rvg_missing = section.pop("facts"), section.pop("missing_financials")
             brief["sections"].append(section)
             brief["figures"] |= figures
+            # The drafted "Missing financials" covers Bramble only; with a review facility's
+            # financials missing it would read "nothing outstanding" above them. Code writes
+            # that section from the facts of every facility instead. The prompt is unchanged.
+            for s in brief["sections"]:
+                if s["heading"] == "Missing financials":
+                    s["points"] = status_brief.missing_financials(rvg_missing)
+                    s["by"] = "Code"
+            cal_facts, cal_figures = status_brief.calderwood_facts(core, items)
+            summary_sections = [
+                {"heading": "Missing data", "points": status_brief.client_missing_data(core)},
+                {"heading": "Open questions", "points": cal_facts["open_questions"]},
+                {"heading": "Exclusions", "points": cal_facts["exclusions"]},
+                {"heading": "Identifier changes", "points": cal_facts["identifier_changes"]},
+                {"heading": "Missing financials",
+                 "points": status_brief.missing_financials(rvg_missing)},
+                {"heading": "Waiting on an expert view",
+                 "points": [f"{p}; a credit expert is reviewing it and we will tell you the "
+                            "outcome" for p in cal_facts["waiting_on_an_expert"]]},
+                {"heading": section["heading"], "points": rvg_facts},
+            ]
+            summaries.append(client_summary.build(client, meta["cycle"], summary_sections,
+                                                  cal_figures | figures))
         else:
             extra = subline.brief_points(tests["wharfedale"])
             missing = [f"Larkspur: {f['document'].lower()} for {pretty(d)} not received; the "
@@ -1902,9 +1926,24 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
                        for d in f["missing"]]
             for s in brief["sections"]:
                 if s["heading"] == "Missing data" and missing:
-                    s["points"] = [p.removeprefix("None. ") for p in s["points"]] + missing
+                    # A daily price file is missing, so the bid prices did not all arrive.
+                    s["points"] = missing + ["Everything else arrived on time: the collateral "
+                                             "report by SFTP and the other daily bid prices by "
+                                             "API."]
                 if s["heading"] in extra and extra[s["heading"]]:
                     s["points"] = [p for p in s["points"] if p != "None."] + extra[s["heading"]]
+            client = next(c for c in meta["clients"] if c["id"] == brief["client"])
+            summaries.append(client_summary.build(
+                client, meta["cycle"], [s for s in brief["sections"]
+                                        if s["points"] not in (["None."], ["None outstanding."])],
+                brief["figures"]))
+    for summary in summaries:
+        client = next(c for c in meta["clients"] if c["id"] == summary["client"])
+        others = [c for c in meta["clients"] if c["id"] != client["id"]]
+        found = client_summary.problems(summary, client, meta.get("team", {}), others)
+        if found:
+            raise ValueError(f"{client['name']} summary is not client-facing: {found}")
+    result["client_summaries"] = summaries
     result["pending_recording"] = pending.items
     result["unverified"] = evidence.unverified
     result["usage"] = {

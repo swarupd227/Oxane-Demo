@@ -34,6 +34,9 @@ param analystUsers string = ''
 @description('Comma-separated sign-in names of second analysts.')
 param approverUsers string = ''
 
+@description('Database the app uses on the server. A new name starts the app on empty data.')
+param databaseName string = 'oxane'
+
 @description('Comma-separated sign-in names of heads of monitoring (third approval level).')
 param seniorUsers string = ''
 
@@ -128,7 +131,7 @@ resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview'
 
 resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-12-01-preview' = {
   parent: postgres
-  name: 'oxane'
+  name: databaseName
 }
 
 // Reachable from Azure services only. The address 0.0.0.0 is Azure's marker for that rule.
@@ -142,7 +145,7 @@ resource databaseSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: vault
   name: 'database-url'
   properties: {
-    value: 'postgresql+psycopg://${postgresUser}:${postgresPassword}@${postgres.properties.fullyQualifiedDomainName}:5432/oxane?sslmode=require'
+    value: 'postgresql+psycopg://${postgresUser}:${postgresPassword}@${postgres.properties.fullyQualifiedDomainName}:5432/${databaseName}?sslmode=require'
   }
 }
 

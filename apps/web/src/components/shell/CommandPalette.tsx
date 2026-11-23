@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useCasework } from "../../lib/casework";
 import { casePath, useCases } from "../../lib/cases";
 import { usePresenterMode } from "../../lib/presenter";
-import { sections } from "../../lib/scenes";
+import { CASE_HOME, sections } from "../../lib/scenes";
 import { useSession } from "../../lib/session";
 import { useWorkbench } from "../../lib/workbench";
 
@@ -166,7 +166,7 @@ export function CommandPalette({ open, onOpenChange, largeText, onToggleLargeTex
             onSelect={() =>
               run(() => {
                 dispatch({ type: "reset" });
-                navigate("/");
+                navigate(CASE_HOME);
               })
             }
           >

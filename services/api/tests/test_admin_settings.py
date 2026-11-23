@@ -132,7 +132,7 @@ def test_a_bad_key_is_refused_without_echoing_it():
     ("GET", URL, None), ("PUT", URL, {"key": KEY}), ("DELETE", URL, None),
     ("POST", f"{URL}/test", {"key": KEY}),
 ])
-def test_only_the_administrator_with_the_access_code_gets_in(method, path, body, monkeypatch):
+def test_only_the_administrator_gets_in(method, path, body, monkeypatch):
     def call(headers: dict[str, str]) -> Any:
         return client.request(method, path, headers=headers, json=body)
 
@@ -143,10 +143,9 @@ def test_only_the_administrator_with_the_access_code_gets_in(method, path, body,
     assert call({}).json()["detail"]["reason"] == "not_admin"
     # A client user is stopped before the endpoint runs.
     assert call(h("james")).status_code == 403
-    assert call(h(code=None)).json()["detail"]["reason"] == "access_code"
-    assert call(h(code="wrong")).json()["detail"]["reason"] == "access_code"
-    monkeypatch.setattr(settings, "demo_access_code", "")
-    assert call(h(code="")).json()["detail"]["reason"] == "access_off"
+    # There is no access code: the administrator persona alone is enough to read the settings.
+    if method == "GET":
+        assert call(h(code=None)).status_code == 200
     with Session(engine) as db:
         assert db.get(AppSetting, ap.NAME) is None
 

@@ -310,15 +310,11 @@ def test_a_figure_not_in_its_quote_is_flagged(monkeypatch):
     assert approve.status_code == 422
 
 
-def test_access_code_cap_and_upload_limits(monkeypatch):
+def test_cap_and_upload_limits(monkeypatch):
     row = flow.new_client("Ashgrove Capital Partners LP", "Nadia Brooks", True)
     case = flow.new_case(row["id"], "Limits", "Consumer instalment", 1_000_000)
     url = f"/api/deals/cases/{case['id']}/documents"
     pdf = (flow.deal_dir("harbourline") / "onboarding" / HARBOURLINE[1]).read_bytes()
-    assert client.post(url, params={"name": "a.pdf"}, content=pdf,
-                       headers=h("hannah")).status_code == 403
-    assert client.post(url, params={"name": "a.pdf"}, content=pdf,
-                       headers={**h("hannah"), "X-Demo-Access-Code": "wrong"}).status_code == 403
     assert client.post(url, params={"name": "a.exe"}, content=b"MZ",
                        headers=h("hannah", True)).status_code == 422
     assert client.post(url, params={"name": "a.pdf"}, content=b"not a pdf",
@@ -329,10 +325,6 @@ def test_access_code_cap_and_upload_limits(monkeypatch):
     monkeypatch.setattr(settings, "max_upload_mb", 20)
     flow.upload(case["id"], flow.deal_dir("harbourline") / "onboarding" / HARBOURLINE[0],
                 "agreement")
-    monkeypatch.setattr(settings, "demo_access_code", "")
-    assert client.post(f"/api/deals/cases/{case['id']}/extract",
-                       headers=h("hannah", True)).status_code == 403
-    monkeypatch.setattr(settings, "demo_access_code", flow.CODE)
     # Live path with today's spend at the cap: refused before any call is made.
     monkeypatch.setattr(settings, "deals_stub_model", False)
     monkeypatch.setattr(settings, "anthropic_api_key", "not-a-real-key")

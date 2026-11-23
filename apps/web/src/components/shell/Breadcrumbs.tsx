@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useCase } from "../../lib/api";
 import { useCases } from "../../lib/cases";
-import { sectionOf } from "../../lib/scenes";
+import { CASE_HOME, sectionOf } from "../../lib/scenes";
 
 interface Crumb {
   label: string;
@@ -29,9 +29,9 @@ export function Breadcrumbs() {
     const place = sectionOf(pathname);
     crumbs.push(
       { label: data.deal.lender.name },
-      { label: `${data.number} ${data.deal.borrower.short_name}`, to: "/" },
+      { label: `${data.number} ${data.deal.borrower.short_name}`, to: CASE_HOME },
     );
-    if (place && place.section.path !== "/") {
+    if (place && place.section.path !== CASE_HOME) {
       crumbs.push({ label: place.section.label, to: place.child ? place.section.path : undefined });
       if (place.child && place.child.path !== place.section.path) {
         crumbs.push({ label: place.child.label });

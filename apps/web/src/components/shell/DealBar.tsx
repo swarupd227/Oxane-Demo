@@ -2,8 +2,9 @@ import clsx from "clsx";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { Popover } from "radix-ui";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { casePath, STAGE_TONES, useCases } from "../../lib/cases";
+import { CASE_HOME, sectionOf } from "../../lib/scenes";
 import { useNotifications } from "../../lib/notifications";
 import { useSession } from "../../lib/session";
 import { WorkbenchSwitch } from "../../monitoring/parts";
@@ -21,7 +22,14 @@ function CaseSwitcher() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
-  const active = data?.cases.find((item) => item.active);
+  const { pathname } = useLocation();
+  // Name a case only while one is open: its summary, or the working case's own sections.
+  const routeNumber = pathname.startsWith("/cases/") ? pathname.split("/")[2] : undefined;
+  const current = routeNumber
+    ? data?.cases.find((item) => item.number === routeNumber)
+    : sectionOf(pathname)
+      ? data?.cases.find((item) => item.active)
+      : undefined;
   const shown = (data?.cases ?? []).filter((item) =>
     `${item.number} ${item.client} ${item.facility}`.toLowerCase().includes(filter.toLowerCase()),
   );
@@ -33,9 +41,9 @@ function CaseSwitcher() {
           aria-label="Switch case"
           className="flex h-8 max-w-[19rem] min-w-0 cursor-pointer items-center gap-2 rounded-md border border-line bg-surface px-2.5 text-left hover:border-stone"
         >
-          <span className="numeric shrink-0 text-xs font-semibold text-muted">{active?.number ?? "0412"}</span>
+          {current && <span className="numeric shrink-0 text-xs font-semibold text-muted">{current.number}</span>}
           <span className="truncate text-[0.8125rem] font-medium">
-            {active?.facility.replace(/ LLC$/, "") ?? "Loading"}
+            {current ? current.facility.replace(/ LLC$/, "") : data ? "Choose a case" : "Loading"}
           </span>
           <ChevronsUpDown aria-hidden className="size-3.5 shrink-0 text-muted" />
         </button>
@@ -150,7 +158,7 @@ export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
         <PersonaMenu
           onReset={() => {
             dispatch({ type: "reset" });
-            navigate("/");
+            navigate(CASE_HOME);
           }}
         />
       </div>

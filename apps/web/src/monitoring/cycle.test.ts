@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FACILITY_ORDER, clientOf, fillText, workbookUrl, type Cycle } from "./cycle";
-import { STEPS } from "./MonitoringShell";
+import { priorPeriods, STEPS } from "./MonitoringShell";
 
 describe("fillText", () => {
   it("puts code's figures where the placeholders are", () => {
@@ -42,5 +42,12 @@ describe("monitoring steps", () => {
     expect(FACILITY_ORDER.slice(4)).toEqual(["ravenglass", "wharfedale"]);
     expect(workbookUrl("larkspur")).toBe("/api/monitoring/workbook/larkspur.xlsx");
     expect(workbookUrl("ravenglass")).toBe("/api/monitoring/workbook/ravenglass.xlsx");
+  });
+});
+
+describe("priorPeriods", () => {
+  it("lists the closed cycles before the open one, newest first", () => {
+    expect(priorPeriods("2026-05-31", 2)).toEqual(["Apr 2026", "Mar 2026"]);
+    expect(priorPeriods("2026-01-31", 1)).toEqual(["Dec 2025"]);
   });
 });

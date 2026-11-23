@@ -65,6 +65,16 @@ Use a person on each list, in two separate browser sessions.
 4. Confirm the audit log shows both real names.
 5. Open `/monitoring` and do the same for the May cycle: the analyst triages, the second analyst approves the lender packs.
 
+### Smoke test
+
+In demo mode (`-NoSignIn`), add `-SmokeTest` to run the browser suite against the new app once it is deployed. The script waits for `/api/health`, then runs the Playwright `azure` project from `tests/e2e` (it installs the packages and Chromium if they are missing, so Node.js is needed). The access code comes from `DEMO_ACCESS_CODE`, or `OXANE_DEMO_ACCESS_CODE` in `.env.azure`; without one, the tests that need it skip. A failing test fails the script.
+
+```powershell
+./infra/deploy.ps1 -Subscription "<subscription name or ID>" -ResourceGroup rg-oxane-workbench -Location eastus2 -PostgresLocation centralus -NoSignIn -SmokeTest
+```
+
+To run it on its own against the deployed app, see "Smoke-test the hosted app" in the README. The `azure` project skips the specs that reset the shared scripted case or need the test model (`fallback`, `screens`, `flow`, `drills`, and deals test (d)); `context.spec.ts`, `settings.spec.ts` and deals test (c) run. Test (c) leaves a new client and live facility behind, and the context checks archive their throwaway client and case. With sign-in on, the smoke test is skipped, since it acts as each persona.
+
 To add or change who can use it, redeploy with new `-AnalystUsers`, `-ApproverUsers` and `-SeniorUsers` (heads of monitoring, the third approval level some clients need), or change the `ANALYST_USERS`, `APPROVER_USERS` and `SENIOR_USERS` settings on the container app. Anyone in the organisation can sign in, but only people on a list can act.
 
 ## Live runs

@@ -6,7 +6,7 @@ import { NavLink } from "react-router-dom";
 import { PdfPage } from "../components/evidence/PdfPage";
 import { Tooltip } from "../components/ui/Tooltip";
 import { MONITORING_ROLES, ONBOARDING_ROLES, useRole } from "../lib/persona";
-import { fileUrl, OUTCOMES, type Outcome, type Source } from "./cycle";
+import { fileUrl, OUTCOMES, useCycle, type Outcome, type Source } from "./cycle";
 
 export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitoring" }) {
   const item = (to: string, label: string, active: boolean) => (
@@ -27,7 +27,7 @@ export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitori
   const monitoring = !role || MONITORING_ROLES.includes(role);
   return (
     <nav aria-label="Workbench" className="flex items-center gap-0.5 rounded-lg bg-sand p-0.5">
-      {onboarding && item("/", "Onboarding", current === "onboarding")}
+      {onboarding && item("/cases", "Onboarding", current === "onboarding")}
       {monitoring && item("/monitoring", "Monitoring", current === "monitoring")}
     </nav>
   );
@@ -53,14 +53,15 @@ export function OutcomePill({ outcome, pending }: { outcome: Outcome | null; pen
   );
 }
 
-const facilityTones: Record<string, string> = {
-  bramble: "bg-[#efe3d3] text-[#6b4a1f]",
-  northmoor: "bg-[#dfe8ef] text-[#2f4b63]",
-  kestrel: "bg-[#e6e2ef] text-[#4a3f6b]",
-  larkspur: "bg-[#dcebe3] text-[#2f5a44]",
-  ravenglass: "bg-[#f0e0dc] text-[#6b2f24]",
-  wharfedale: "bg-[#e2ebe0] text-[#3d5a2f]",
-};
+// One tone per worked facility, in the cycle's own order; any other facility stays neutral.
+const facilityTones = [
+  "bg-[#efe3d3] text-[#6b4a1f]",
+  "bg-[#dfe8ef] text-[#2f4b63]",
+  "bg-[#e6e2ef] text-[#4a3f6b]",
+  "bg-[#dcebe3] text-[#2f5a44]",
+  "bg-[#f0e0dc] text-[#6b2f24]",
+  "bg-[#e2ebe0] text-[#3d5a2f]",
+];
 
 /** A client that does not permit AI runs on code checks only. Said plainly wherever it shows. */
 export function NoAiBadge({ compact }: { compact?: boolean }) {
@@ -148,11 +149,13 @@ export function FacilityTabs({
 }
 
 export function FacilityTag({ id, name }: { id: string; name: string }) {
+  const { data: cycle } = useCycle();
+  const index = cycle?.facilities.findIndex((f) => f.id === id) ?? -1;
   return (
     <span
       className={clsx(
         "inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap",
-        facilityTones[id] ?? "bg-sand text-muted",
+        (index >= 0 && facilityTones[index]) || "bg-sand text-muted",
       )}
     >
       {name}

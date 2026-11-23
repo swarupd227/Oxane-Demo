@@ -34,7 +34,7 @@ OUTCOMES = {
     "expert": "Expert review",
 }
 PREPARER_EVENTS = {"open-cycle", "confirm-layout", "triage", "send-chase", "resolve-block",
-                   "resolve-qc", "approve-alert"}
+                   "resolve-qc", "approve-alert", "release-summary"}
 REVIEWER_EVENTS = {"approve-pack"}
 CLIENT_EVENTS = {"request-alert"}
 
@@ -49,6 +49,8 @@ def _initial() -> dict[str, Any]:
         "qcResolved": {},
         "approvals": {},
         "packs": {},
+        # Status-call summaries released to each client's portal: client id -> {at, by}.
+        "summaries": {},
         "alerts": [],
         "audit": [],
         "actions": 0,
@@ -70,6 +72,7 @@ def _describe(event: CaseEvent) -> tuple[str, str | None]:
                        p.get("note")),
         "request-alert": (f"Asked for an alert: {p.get('request')}", None),
         "approve-alert": (f"Approved the alert: {p.get('summary')}", None),
+        "release-summary": (f"Released the status-call summary to {p.get('name')}", None),
         "approve-pack": (
             f"Approved the {p.get('name')} lender pack at level {p.get('level')}"
             + (": released" if p.get("released") else ""),
@@ -115,6 +118,8 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
         elif event.type == "approve-alert":
             alert = next(a for a in state["alerts"] if a["id"] == p["alert"])
             alert.update(status="live", approvedAt=at, approvedBy=who)
+        elif event.type == "release-summary":
+            state["summaries"][p["client"]] = {"at": at, "by": who}
         elif event.type == "approve-pack":
             state["approvals"].setdefault(p["facility"], []).append(
                 {"level": p["level"], "title": p.get("title"), "by": who, "actor": event.actor,
@@ -235,6 +240,14 @@ def _check(
         if not payload.get("rule"):
             raise Refused("The request has no valid rule")
         return {}
+    if kind == "release-summary":
+        client = next((c for c in cycle["clients"] if c["id"] == payload.get("client")), None)
+        if client is None or not any(s["client"] == client["id"]
+                                     for s in cycle.get("client_summaries", [])):
+            raise Refused("No summary for that client")
+        if client["id"] in state["summaries"]:
+            raise Refused("This summary is already released")
+        return {"name": client["name"]}
     if kind == "approve-alert":
         alert = next((a for a in state["alerts"] if a["id"] == payload.get("alert")), None)
         if alert is None or alert["status"] != "requested":

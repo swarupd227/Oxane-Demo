@@ -23,7 +23,7 @@ test.describe("when something goes wrong on stage", () => {
 
   test("the session service failing is reported, not shown as an empty case", async ({ page }) => {
     await page.route("**/api/session", (route) => route.abort());
-    await page.goto("/");
+    await page.goto("/overview");
     await expect(page.getByText("The session service is not responding.")).toBeVisible({ timeout: 15_000 });
   });
 
@@ -143,12 +143,12 @@ test.describe("keyboard control", () => {
     await page.goto("/exceptions");
     await expect(page.getByText("3 open of 10")).toBeVisible();
     await page.keyboard.press("Alt+r");
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/overview$/);
     await expect(page.getByText("Awaiting pack").first()).toBeVisible();
   });
 
   test("Alt+P turns presenter mode on and off", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/overview");
     await page.keyboard.press("Alt+p");
     await expect(page.locator("html")).toHaveAttribute("data-walkthrough", "true");
     await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toBeVisible();
@@ -168,7 +168,7 @@ test.describe("keyboard control", () => {
   });
 
   test("the command menu finds exactly what was typed", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/overview");
     await page.keyboard.press("Control+k");
     await page.getByPlaceholder("Search terms, exceptions, queries, cases").fill("reset");
     await expect(page.getByRole("option")).toHaveCount(1);
@@ -178,7 +178,7 @@ test.describe("keyboard control", () => {
 
 test.describe("workbench chrome", () => {
   test("presenter mode is off by default and the header toggle keeps it on", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/overview");
     await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toHaveCount(0);
     await page.getByRole("button", { name: "Presenter mode" }).click();
     await expect(page.getByRole("navigation", { name: "Onboarding steps" })).toBeVisible();
@@ -191,7 +191,7 @@ test.describe("workbench chrome", () => {
 
   test("global search finds terms, exceptions and queries", async ({ page, request }) => {
     await prepare(request, "run");
-    await page.goto("/");
+    await page.goto("/overview");
     await page.getByRole("button", { name: "Search" }).click();
     const input = page.getByPlaceholder("Search terms, exceptions, queries, cases");
     await input.fill("advance rate");
@@ -212,7 +212,7 @@ test.describe("workbench chrome", () => {
   });
 
   test("the acting user switches from the user menu", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/overview");
     await page.getByRole("button", { name: /Acting as Hannah Cole, Onboarding analyst/ }).click();
     await page.getByRole("menuitemradio", { name: /Marcus Hale/ }).click();
     await expect(page.getByRole("button", { name: /Acting as Marcus Hale, Second analyst/ })).toBeVisible();

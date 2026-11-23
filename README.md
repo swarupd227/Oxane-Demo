@@ -214,11 +214,36 @@ docker compose --profile tools run --rm e2e npm install
 docker compose --profile tools run --rm e2e npx playwright test --project=stage
 ```
 
+Test runs never write into the demo's database. The `e2e` service runs against its own stack, `api-test` and `web-test` (ports 8011 and 5181), on the `oxane_test` database, which is created and migrated when that stack starts; `pytest` does the same for itself in `tests/conftest.py`. A Playwright run from the host goes to `BASE_URL`, so point it at `http://localhost:5181` with that stack up (`docker compose --profile tools up -d web-test`) rather than at the demo on 5180.
+
+If a test run did write into a demo database, remove what it left, then rebuild the scripted hand-offs once. It is a dry run that prints what would go until you add `--apply`; it never touches the scripted fixtures, the session logs, the audit log or the saved AI-provider key:
+
+```bash
+docker compose exec api python -m app.admin.purge --test-data
+docker compose exec api python -m app.admin.purge --test-data --apply
+```
+
 `specs/deals.spec.ts` runs the new-deal flows through the browser, switching persona at each hand-off. It needs `DEMO_ACCESS_CODE` in `.env`. The AI steps run on the test model when the API is started with `DEALS_STUB_MODEL=true` (the offline variant), or on the live model only with `E2E_LIVE=1`; otherwise those two tests skip and the no-AI client's flow still runs:
 
 ```bash
 DEALS_STUB_MODEL=true docker compose --profile tools run --rm e2e sh -c "npm ci && npx playwright test --project=stage specs/deals.spec.ts"
 ```
+
+`specs/context.spec.ts` checks that the shell shows only what belongs to the acting persona and the page in view: each persona lands on My work with its role's navigation, list pages carry no case or facility section, the scripted case's sidebar names that case, a new-deal case page shows its own case, client users never reach internal pages (and the API refuses them), and presenter mode starts off. A matching unit test, `apps/web/src/guards/scenarioLiterals.test.ts` (part of `npm test`), fails if the shared UI (shells, navigation, breadcrumbs, headers, persona menu, notifications, My work, list pages and shared components) hard-codes a case number, a facility, client or person name from the scenario data, a fixed date, or "demo" wording.
+
+### Smoke-test the hosted app
+
+The `azure` project runs the suite against the hosted app. It exists only when `BASE_URL` names a hosted (https) address, or under `npm run azure`, which defaults to the demo address. It skips the specs that reset the shared scripted case or need the test model. From `tests/e2e` on the host, after `npm ci` and `npx playwright install chromium`:
+
+```bash
+BASE_URL=https://oxaneworkbench.livelypond-56376142.eastus2.azurecontainerapps.io NEWDEALS_DIR=../../deal-kit/output/newdeals DEMO_ACCESS_CODE=<code> npx playwright test --project=azure
+```
+
+```powershell
+$env:BASE_URL = "https://oxaneworkbench.livelypond-56376142.eastus2.azurecontainerapps.io"; $env:NEWDEALS_DIR = "../../deal-kit/output/newdeals"; $env:DEMO_ACCESS_CODE = "<code>"; npm run azure
+```
+
+Without the access code, the tests that need it skip. `infra/deploy.ps1 -SmokeTest` runs the same after a deployment (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 
 Record the fallback videos into `tests/e2e/fallback-recordings`:
 

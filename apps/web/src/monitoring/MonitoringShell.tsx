@@ -37,23 +37,34 @@ import { deskRows, notices, ScopeContext, useScope, type ClientScope } from "./d
 import { WorkbenchSwitch } from "./parts";
 import { PresenterProvider, usePresenter } from "./presenter";
 import { RecordId, when } from "./ui";
+import { HINTS } from "./walkthrough";
 
 /** The screens in the order a cycle is worked. Presenter mode walks them in this order. */
 export const STEPS = [
-  { path: "/monitoring", label: "Portfolio", icon: LayoutGrid, hint: "Whole book for the cycle. Six facilities carry this month's issues, including a 40-obligor middle-market book and a subscription line; the rest are routine." },
-  { path: "/monitoring/submissions", label: "Submissions", icon: Inbox, hint: "Northmoor's servicer report and one Ravenglass obligor's financials are overdue and escalated. Schedules and Larkspur's daily feeds are on their own tabs." },
-  { path: "/monitoring/mapping", label: "Mapping", icon: TableProperties, hint: "Stored mapping reused; only Bramble's two new columns needed a suggestion. The layout library counts each obligor layout." },
-  { path: "/monitoring/validation", label: "Validation", icon: ShieldCheck, hint: "Northmoor's duplicate row blocks the load. Record the resolution to release it." },
-  { path: "/monitoring/reconciliation", label: "Reconciliation", icon: Scale, hint: "Bramble roll-forward gap traced to 27 loans; charge-offs differ on 9." },
-  { path: "/monitoring/terms", label: "Terms", icon: CalendarRange, hint: "Switch to June: Amendment No. 2 changes the dealer limit." },
-  { path: "/monitoring/covenants", label: "Covenants", icon: Gauge, hint: "Run the June what-if on Northmoor. Ravenglass obligor covenants; Wharfedale's exclusion forces a prepayment." },
-  { path: "/monitoring/collateral", label: "Collateral", icon: Car, hint: "One VIN in both Bramble and Northmoor. Open both rows." },
-  { path: "/monitoring/triage", label: "Exceptions", icon: ListChecks, hint: "Accept or change each suggestion; a change needs a reason." },
-  { path: "/monitoring/pack", label: "Reports", icon: FileText, hint: "Resolve the QC variance, then switch user to approve. Thornbury needs three levels." },
-  { path: "/monitoring/monitor", label: "Alerts", icon: BellRing, hint: "Headroom across the book. Pick a client request to draft an alert rule." },
-  { path: "/monitoring/status-call", label: "Status calls", icon: MessagesSquare, hint: "Weekly brief per client contact. Thornbury's is a code template." },
-  { path: "/monitoring/results", label: "Metrics", icon: ClipboardCheck, hint: "Measured against assumed, with the test-set results." },
+  { path: "/monitoring", label: "Portfolio", icon: LayoutGrid },
+  { path: "/monitoring/submissions", label: "Submissions", icon: Inbox },
+  { path: "/monitoring/mapping", label: "Mapping", icon: TableProperties },
+  { path: "/monitoring/validation", label: "Validation", icon: ShieldCheck },
+  { path: "/monitoring/reconciliation", label: "Reconciliation", icon: Scale },
+  { path: "/monitoring/terms", label: "Terms", icon: CalendarRange },
+  { path: "/monitoring/covenants", label: "Covenants", icon: Gauge },
+  { path: "/monitoring/collateral", label: "Collateral", icon: Car },
+  { path: "/monitoring/triage", label: "Exceptions", icon: ListChecks },
+  { path: "/monitoring/pack", label: "Reports", icon: FileText },
+  { path: "/monitoring/monitor", label: "Alerts", icon: BellRing },
+  { path: "/monitoring/status-call", label: "Status calls", icon: MessagesSquare },
+  { path: "/monitoring/results", label: "Metrics", icon: ClipboardCheck },
 ];
+
+const monthFmt = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+
+/** The closed cycles before this one, newest first, worked out from its period end. */
+export function priorPeriods(periodEnd: string, count: number): string[] {
+  const end = new Date(`${periodEnd.slice(0, 10)}T00:00:00Z`);
+  return Array.from({ length: count }, (_, i) =>
+    monthFmt.format(new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1 - i, 1))),
+  );
+}
 
 function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
@@ -340,8 +351,12 @@ function Header({ onReset }: { onReset: () => void }) {
           <CalendarRange aria-hidden className="size-3.5 text-muted" />
           <select aria-label="Cycle" defaultValue="current" className="h-7 cursor-pointer rounded-md bg-transparent pr-1 text-xs">
             <option value="current">{cycle ? `${cycle.cycle.label} · open` : "Cycle"}</option>
-            <option disabled>Apr 2026 · closed</option>
-            <option disabled>Mar 2026 · closed</option>
+            {cycle &&
+              priorPeriods(cycle.cycle.period_end, 2).map((label) => (
+                <option key={label} disabled>
+                  {label} · closed
+                </option>
+              ))}
           </select>
         </label>
         {cycle && <span className="hidden text-xs text-muted 2xl:inline">As of {when(cycle.cycle.as_of)}</span>}
@@ -402,7 +417,7 @@ function PresenterBar() {
           </li>
         ))}
       </ol>
-      <p className="min-w-0 flex-1 truncate text-ink">{STEPS[index].hint}</p>
+      <p className="min-w-0 flex-1 truncate text-ink">{HINTS[STEPS[index].path]}</p>
       <div className="flex shrink-0 items-center gap-1">
         {prev && (
           <Button size="sm" variant="ghost" onClick={() => navigate(prev.path)}>

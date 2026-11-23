@@ -15,12 +15,8 @@ async function switchTo(page: Page, name: string) {
   await expect(page.getByRole("button", { name: new RegExp(`^Acting as ${name}`) })).toBeVisible();
 }
 
-async function enterCode(page: Page) {
-  await page.getByRole("button", { name: /^Acting as/ }).click();
-  await page.getByRole("menuitem", { name: "Access code" }).click();
-  await page.getByRole("textbox", { name: "Code" }).fill(CODE);
-  await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("dialog")).toBeHidden();
+async function enterCode(_page: Page) {
+  // There is no access code any more: uploads, live AI and settings need only the right persona.
 }
 
 async function shot(page: Page, name: string) {
@@ -30,6 +26,8 @@ async function shot(page: Page, name: string) {
 }
 
 async function personaMenuHasSettings(page: Page): Promise<boolean> {
+  // Wait for the persona to load: a menu opened while it reads "Loading" has no role items yet.
+  await expect(page.getByRole("button", { name: /^Acting as (?!Loading)/ })).toBeVisible();
   await page.getByRole("button", { name: /^Acting as/ }).click();
   const has = await page.getByRole("menuitem", { name: "Settings" }).isVisible();
   await page.keyboard.press("Escape");
@@ -54,21 +52,18 @@ test("other personas cannot see Settings, and the API refuses them", async ({ pa
   await shot(page, "not-admin");
   const refused = await request.get("/api/admin/ai-provider", { headers: { "X-Acting-User": "hannah", "X-Demo-Access-Code": CODE } });
   expect(refused.status()).toBe(403);
-  const noCode = await request.get("/api/admin/ai-provider", { headers: { "X-Acting-User": "alex" } });
-  expect(noCode.status()).toBe(403);
+  // No access code: the administrator persona alone opens the settings.
+  const admin = await request.get("/api/admin/ai-provider", { headers: { "X-Acting-User": "alex" } });
+  expect(admin.status()).toBe(200);
 });
 
 test("the administrator tests a dummy key and sees why it failed", async ({ page }) => {
-  test.skip(!CODE, "needs DEMO_ACCESS_CODE");
   await page.goto("/work");
   await switchTo(page, "Alex Morgan");
   await page.evaluate(() => window.localStorage.removeItem("oxane.access-code"));
   await page.goto("/work");
   await page.getByRole("navigation", { name: "Workspace" }).getByRole("link", { name: "Settings" }).click();
   await expect(page).toHaveURL(/\/settings\/ai-provider$/);
-  await expect(page.getByText("Access code needed")).toBeVisible();
-  await shot(page, "access-code");
-
   await enterCode(page);
   const status = page.getByTestId("provider-status");
   await expect(status).toBeVisible();

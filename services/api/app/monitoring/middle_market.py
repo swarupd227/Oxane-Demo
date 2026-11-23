@@ -722,6 +722,10 @@ def brief_section(gateway: Any, client: dict[str, Any], t: dict[str, Any],
     else:
         section = {"heading": "Ravenglass Direct Lending Fund I",
                    "points": [p for s in draft.sections for p in s.points], "by": "AI"}
+    # The code-written facts, for the client's own summary (never the model's wording), and the
+    # obligors whose financials are missing, for the brief's "Missing financials".
+    section["facts"] = points
+    section["missing_financials"] = [rows[i["obligor"]]["name"] for i in missing]
     pattern = re.compile(r"\{\{(\w+)\}\}")
     section["unknown_placeholders"] = sorted({m for p in section["points"]
                                               for m in pattern.findall(p) if m not in figures})

@@ -1,3 +1,4 @@
+import { useCase } from "./api";
 import { useCasework, formatStamp } from "./casework";
 import { useCases } from "./cases";
 import { useSession } from "./session";
@@ -15,6 +16,9 @@ export function useNotifications(): Notice[] {
   const { state } = useSession();
   const { data: casework } = useCasework();
   const { data: pipeline } = useCases();
+  const { data: open } = useCase();
+  // The scripted case this session works, as the API names it.
+  const caseRef = open ? `Case ${open.number}` : "Case";
   const notices: Notice[] = [];
   if (state.intakeDone && casework) {
     for (const query of casework.tracker.queries) {
@@ -38,7 +42,7 @@ export function useNotifications(): Notice[] {
       });
     }
     if (casework.qc.can_release) {
-      notices.push({ id: "release", kind: "approval", title: "First report ready for release", detail: "Case 0412 · reviewer", to: "/qc" });
+      notices.push({ id: "release", kind: "approval", title: "First report ready for release", detail: `${caseRef} · reviewer`, to: "/qc" });
     }
   }
   if (state.ruleEdit?.status === "pending") {
@@ -52,7 +56,7 @@ export function useNotifications(): Notice[] {
   }
   const ready = state.intakeDone && Object.values(state.readiness).every(Boolean);
   if (ready && !state.approvedAt) {
-    notices.push({ id: "load", kind: "approval", title: "Case 0412 ready for approval", detail: "Load file · second analyst", to: "/approve" });
+    notices.push({ id: "load", kind: "approval", title: `${caseRef} ready for approval`, detail: "Load file · second analyst", to: "/approve" });
   }
   for (const item of pipeline?.cases ?? []) {
     if (!item.active && item.qc_variances_open > 0) {

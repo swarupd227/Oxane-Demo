@@ -47,6 +47,11 @@ async function scriptedCase(request: APIRequestContext) {
   };
 }
 
+/** My work greets the acting person by first name; its line underneath starts with their role. */
+const greeting = (page: Page, person: Persona) =>
+  page.getByRole("heading", { level: 1, name: new RegExp(`^Good (morning|afternoon|evening), ${person.name.split(" ")[0]}$`) });
+const roleLine = (page: Page, person: Persona) => page.getByText(new RegExp(`^${person.role_label} · (\\d+ waiting on you|nothing waiting on you)$`));
+
 const personaButton = (page: Page) => page.getByRole("button", { name: /^Acting as/ });
 
 async function switchTo(page: Page, person: Persona) {
@@ -106,13 +111,20 @@ for (const role of Object.keys(WORKSPACE_NAV)) {
     await page.goto("/clients");
     await switchTo(page, person);
     await expect(page).toHaveURL(/\/work$/);
-    await expect(page.getByRole("heading", { level: 1, name: "My work" })).toBeVisible();
-    await expect(page.getByText(`${person.name} · ${person.role_label}`)).toBeVisible();
+    await expect(greeting(page, person)).toBeVisible();
+    await expect(roleLine(page, person)).toBeVisible();
     await expect.poll(() => navItems(page, "Workspace")).toEqual(WORKSPACE_NAV[role]);
-    await expect.poll(() => page.getByRole("navigation", { name: "Workbench" }).getByRole("link").allInnerTexts()).toEqual([
+    // Two workbenches: a switch between them. One: a plain link back to it, and no switch.
+    const benches = [
       ...(ONBOARDING_ROLES.includes(role) ? ["Onboarding"] : []),
       ...(MONITORING_ROLES.includes(role) ? ["Monitoring"] : []),
-    ]);
+    ];
+    if (benches.length > 1) {
+      await expect.poll(() => page.getByRole("navigation", { name: "Workbench" }).getByRole("link").allInnerTexts()).toEqual(benches);
+    } else {
+      await expect(page.getByRole("navigation", { name: "Workbench" })).toHaveCount(0);
+      await expect(page.getByRole("link", { name: `${benches[0]} workbench`, exact: true })).toBeVisible();
+    }
     // The persona menu offers Settings to the administrator only.
     await personaButton(page).click();
     await expect(page.getByRole("menu")).toBeVisible();
@@ -141,7 +153,7 @@ test("list pages carry no case or facility section", async ({ page, request }) =
   await page.goto("/work");
   await switchTo(page, admin);
   const pages: { path: string; heading: RegExp | string; crumbs?: string[] }[] = [
-    { path: "/work", heading: "My work" },
+    { path: "/work", heading: /^Good (morning|afternoon|evening), / },
     { path: "/cases", heading: "Onboarding cases", crumbs: ["Onboarding", "Cases"] },
     { path: "/clients", heading: "Clients" },
     { path: "/facilities", heading: /Facilities/ },
@@ -305,12 +317,15 @@ test("switching persona updates the menu and My work in place", async ({ page, r
   const to = people.find((p) => p.role === "monitoring_analyst")!;
   await page.goto("/work");
   await switchTo(page, from);
-  await expect(page.getByText(`${from.name} · ${from.role_label}`)).toBeVisible();
+  await expect(greeting(page, from)).toBeVisible();
+  await expect(roleLine(page, from)).toBeVisible();
   // Marks this page load: a full reload would drop it.
   await page.evaluate(() => ((window as unknown as { contextMark: number }).contextMark = 1));
   await switchTo(page, to);
-  await expect(page.getByText(`${to.name} · ${to.role_label}`)).toBeVisible();
-  await expect(page.getByText(`${from.name} · ${from.role_label}`)).toHaveCount(0);
+  await expect(greeting(page, to)).toBeVisible();
+  await expect(roleLine(page, to)).toBeVisible();
+  await expect(greeting(page, from)).toHaveCount(0);
+  await expect(roleLine(page, from)).toHaveCount(0);
   await expect.poll(() => navItems(page, "Workspace")).toEqual(WORKSPACE_NAV[to.role]);
   expect(await page.evaluate(() => (window as unknown as { contextMark?: number }).contextMark)).toBe(1);
   // The checked item in the menu moved too.

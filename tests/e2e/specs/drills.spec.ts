@@ -204,9 +204,15 @@ test.describe("workbench chrome", () => {
     await expect(page.getByRole("option", { name: /Q-03/ })).toBeVisible();
   });
 
-  test("the case list opens another case's summary", async ({ page }) => {
+  test("the case list opens another case's summary", async ({ page, request }) => {
+    // One table: the scripted pipeline's cases and the open cases started on the platform.
+    const pipeline = (await (await request.get("/api/cases", { headers: { "X-Acting-User": "hannah" } })).json()).cases.length;
+    const opened = (await (await request.get("/api/deals/cases", { headers: { "X-Acting-User": "hannah" } })).json()).filter(
+      (c: { archived_at: string | null }) => !c.archived_at,
+    ).length;
+    expect(pipeline).toBe(15);
     await page.goto("/cases");
-    await expect(page.getByRole("row")).toHaveCount(16);
+    await expect(page.getByText(`${pipeline + opened} records`, { exact: true })).toBeVisible();
     await page.getByRole("link", { name: "0403" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Granite Peak");
   });
@@ -218,7 +224,7 @@ test.describe("workbench chrome", () => {
     await expect(page.getByRole("button", { name: /Acting as Marcus Hale, Second analyst/ })).toBeVisible();
     // Switching persona lands on their own work queue.
     await expect(page).toHaveURL(/\/work$/);
-    await expect(page.getByRole("heading", { name: "My work" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /^Good (morning|afternoon|evening), Marcus$/ })).toBeVisible();
   });
 });
 

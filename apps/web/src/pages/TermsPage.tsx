@@ -71,7 +71,7 @@ function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citatio
             {amended ? current : original}
           </motion.span>
         </AnimatePresence>
-        {amended && <s className="numeric text-lg text-stone">{original}</s>}
+        {amended && <s className="numeric text-lg text-muted">{original}</s>}
         <span className="text-[0.8125rem] text-muted">
           {amended ? "Amendment No. 1, 2(a)" : "Credit Agreement 2.3"}
         </span>
@@ -248,7 +248,8 @@ export function TermsPage() {
               <button
                 key={item.id}
                 type="button"
-                aria-pressed={filter === item.id}
+                role="tab"
+                aria-selected={filter === item.id}
                 onClick={() => setFilter(item.id)}
                 className={clsx(
                   "h-7 cursor-pointer rounded-md px-2.5 text-xs font-medium transition-colors",

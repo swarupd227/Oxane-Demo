@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ActionButton } from "../components/deals/parts";
 import { Card, Skeleton } from "../components/ui/layout";
 import { casePath, ownerName, useCases, type Stage } from "../lib/cases";
@@ -184,7 +184,12 @@ export function CasesPage() {
       key: "ref",
       header: "Case",
       sort: (r) => r.ref,
-      render: (r) => <RecordId>{r.ref}</RecordId>,
+      // A real link, so a case opens from the keyboard too (the row click is for the mouse).
+      render: (r) => (
+        <Link to={r.href} className="hover:underline">
+          <RecordId>{r.ref}</RecordId>
+        </Link>
+      ),
     },
     {
       key: "facility",
@@ -221,7 +226,7 @@ export function CasesPage() {
       header: "Owner",
       sort: (r) => r.owner,
       render: (r) => (
-        <span className="inline-flex" title={r.owner} aria-label={r.owner}>
+        <span role="img" className="inline-flex" title={r.owner} aria-label={r.owner}>
           <Avatar name={r.owner} size="md" />
         </span>
       ),

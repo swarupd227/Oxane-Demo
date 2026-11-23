@@ -24,12 +24,8 @@ async function switchTo(page: Page, name: string, within = "") {
   await expect(page.getByRole("button", { name: new RegExp(`^Acting as ${name}`) })).toBeVisible();
 }
 
-async function enterCode(page: Page) {
-  await page.getByRole("button", { name: /^Acting as/ }).click();
-  await page.getByRole("menuitem", { name: "Access code" }).click();
-  await page.getByRole("textbox", { name: "Code" }).fill(CODE);
-  await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("dialog")).toBeHidden();
+async function enterCode(_page: Page) {
+  // There is no access code any more: uploads, live AI and settings need only the right persona.
 }
 
 /** Click each matching button in turn, waiting each time until the screen has caught up. */
@@ -42,8 +38,11 @@ async function clickEach(page: Page, find: () => ReturnType<Page["getByRole"]>, 
     if (before) {
       await before();
     }
-    await find().first().click();
-    await expect.poll(() => find().count(), { timeout: 20_000 }).toBeLessThan(count);
+    // The list re-renders after each click; a button detached mid-click is tried again.
+    const clicked = await find().first().click({ timeout: 15_000 }).then(() => true, () => false);
+    if (clicked) {
+      await expect.poll(() => find().count(), { timeout: 20_000 }).toBeLessThan(count);
+    }
   }
 }
 
@@ -111,7 +110,6 @@ async function qcAndApprove(page: Page, facility: string) {
 }
 
 test.beforeAll(async ({ request }) => {
-  test.skip(!CODE, "DEMO_ACCESS_CODE is not set");
   const status = await (await request.get("/api/deals/status")).json();
   expect(status.access_configured).toBe(true);
 });
@@ -305,6 +303,6 @@ test("(d) the scripted case 0412 hands an escalation to the credit expert and ba
   await expect(page.getByText(/done .* by Ruth Adeyemi/).first()).toBeVisible();
   await switchTo(page, "Hannah Cole");
   await expect(page.getByRole("link", { name: "Expert decision: X5, case 0412" }).first()).toBeVisible();
-  await expect(page.getByText(/handed over by Ruth Adeyemi/).first()).toBeVisible();
+  await expect(page.getByText(/From Ruth Adeyemi/).first()).toBeVisible();
   await resetCase(request);
 });

@@ -37,11 +37,11 @@ test("definitions: the borrowing base traced through 23 defined terms and reconc
   await expect(page.getByText("Not in pack 4")).toBeVisible();
 
   // Two chains; a term shared between them is shown in full once, then "see above".
-  const chain = (root: string) => page.locator("div").filter({ has: page.getByRole("heading", { level: 2, name: root, exact: true }) }).last();
   const base = page.locator(".overflow-hidden").filter({ has: page.getByRole("heading", { level: 2, name: "Borrowing Base", exact: true }) });
   const ratio = page.locator(".overflow-hidden").filter({ has: page.getByRole("heading", { level: 2, name: "Delinquency Ratio", exact: true }) });
-  await expect(chain("Borrowing Base").getByText("36 terms")).toBeVisible();
-  await expect(chain("Delinquency Ratio").getByText("9 terms")).toBeVisible();
+  // The chain cards, not the detail panel, which also has a "Borrowing Base" heading.
+  await expect(base.getByText("36 terms", { exact: true })).toBeVisible();
+  await expect(ratio.getByText("9 terms", { exact: true })).toBeVisible();
   const lines = page.locator(".overflow-hidden li button");
   const repeats = lines.filter({ hasText: "see above" });
   await expect(lines).toHaveCount(45);
@@ -74,8 +74,14 @@ test("definitions: the borrowing base traced through 23 defined terms and reconc
   await expect(detail.getByText("Amendment No. 1, Section 2(a)", { exact: false })).toBeVisible();
   await expect(detail.getByText(/"85%" is deleted and replaced with "82.5%"/)).toBeVisible();
   await expect(detail.getByText("82.5%", { exact: true })).toBeVisible();
-  await detail.getByRole("button", { name: "Amendment", exact: true }).click();
-  await expect(detail.getByRole("button", { name: "Amendment", exact: true })).toHaveClass(/bg-ink/);
+  // The chosen source takes the selected style the agreement had, whatever that style is.
+  const agreement = detail.getByRole("button", { name: "Agreement", exact: true });
+  const amendment = detail.getByRole("button", { name: "Amendment", exact: true });
+  const chosen = (await agreement.getAttribute("class"))!;
+  await expect(amendment).not.toHaveAttribute("class", chosen);
+  await amendment.click();
+  await expect(amendment).toHaveAttribute("class", chosen);
+  await expect(agreement).not.toHaveAttribute("class", chosen);
 
   await expect(page.getByText(/Credit and Collection Policy \(the written policies/)).toBeVisible();
   await expect(page.getByText("Delinquency Ratio, April: 0.79% with repossessed receivables (per definition) · 0.80% without")).toBeVisible();

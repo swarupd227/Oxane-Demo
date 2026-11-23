@@ -83,7 +83,10 @@ def tracker(casework: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
         sent = _at(plan["sent"]) if plan.get("earlier") or (live and live["sent"]) else None
         answered = (_at(plan.get("answered")) if sent and (plan.get("earlier") or (
             live and live["answered"])) else None)
-        closed = _at(plan.get("closed")) if answered else None
+        # Only the queries worked before the demo were closed, per the record. A query sent in
+        # the session has no close event, so it stays answered: the scripted close (and its time)
+        # must not run ahead of what the analyst did.
+        closed = _at(plan.get("closed")) if answered and plan.get("earlier") else None
         status = ("closed" if closed else "answered" if answered else
                   "with client" if sent else "drafted")
         analyst = business_hours(raised, sent or clock, day) + (

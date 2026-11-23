@@ -160,7 +160,7 @@ test("the coverage matrix ties each agent to the brief's pain points", async ({ 
 
 test("the run log filters by agent, client and outcome; Thornbury's calls are refused", async ({ page }) => {
   await console_(page, "/monitoring/agents/runs");
-  const thornbury = page.locator("div").filter({ has: page.getByText("Thornbury Bank N.A.", { exact: true }) }).filter({ hasText: "AI not permitted · code checks only" }).last();
+  const thornbury = page.locator("div").filter({ has: page.getByText("Thornbury Bank N.A.", { exact: true }) }).filter({ hasText: "Existing process — outside AI scope" }).last();
   await expect(thornbury).toBeVisible();
   const stat = (card: typeof thornbury, label: string) => card.locator("span.shrink-0").filter({ has: page.getByText(label, { exact: true }) }).locator("span").last();
   await expect(stat(thornbury, "Refused")).toHaveText("6");

@@ -149,7 +149,7 @@ test("mapping: stored mapping reused, Bramble's changed layout confirmed, and th
   await expect(file("Northmoor")).toContainText("Unchanged");
   await expect(file("Northmoor")).toContainText("27 of 27");
   await expect(file("Larkspur")).toContainText("11 of 11");
-  await expect(file("Larkspur")).toContainText("No AI");
+  await expect(file("Larkspur")).toContainText("Existing process — outside AI scope");
 
   // The two new Bramble columns are logged, then confirmed by the analyst.
   await expect(page.getByText("From stored mapping 38/40 · new 2")).toBeVisible();
@@ -471,7 +471,7 @@ test("alerts: headroom and early warnings, and a client's preset alert drafted, 
   // Thornbury does not permit AI, so its alerts are kept by its named contact.
   const requests = page.locator("section").filter({ has: page.getByRole("heading", { name: "Client alert requests" }) });
   await requests.getByRole("tab", { name: "Thornbury" }).click();
-  await expect(requests.getByText("No AI")).toBeVisible();
+  await expect(requests.getByText("Existing process — outside AI scope")).toBeVisible();
   await expect(requests.getByText("Daniel Okafor")).toBeVisible();
   await requests.getByRole("tab", { name: "Calderwood" }).click();
 
@@ -514,7 +514,7 @@ test("status calls: a brief per client, with its attendees and every figure chec
   await expect(page.getByText("James Whitcombe · Director")).toBeVisible();
 
   await page.getByRole("tab", { name: /^Thornbury Bank N\.A\./ }).click();
-  await expect(page.getByRole("tab", { name: /^Thornbury Bank N\.A\./ })).toContainText("No AI");
+  await expect(page.getByRole("tab", { name: /^Thornbury Bank N\.A\./ })).toContainText("Existing process — outside AI scope");
   await expect(page.getByText("Status call · Thursdays 15:00, 15 minutes")).toBeVisible();
   await expect(page.getByText("Template", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 3, name: "Early warnings" })).toBeVisible();
@@ -542,7 +542,8 @@ test("metrics: 20 of 20 planted issues found, 0 of 8 noise items raised, 49 of 4
   await expect(metric("False alerts per cycle")).toContainText("0");
   await expect(metric("Turnaround time per cycle")).toContainText("3 of 6 packs released");
   await page.getByRole("combobox", { name: "Type" }).selectOption("Assumed");
-  await expect(page.locator("tbody tr").filter({ hasText: "Measured" })).toHaveCount(0);
+  // Only the Type cell counts: an assumed row's description may itself mention what was measured.
+  await expect(page.locator("tbody tr").filter({ has: page.getByText("Measured", { exact: true }) })).toHaveCount(0);
 });
 
 test("client portal: each client sees its released reports and brief, nothing internal and nothing of the other client's", async ({ page }) => {
@@ -554,7 +555,10 @@ test("client portal: each client sees its released reports and brief, nothing in
   await expect(reports.locator("li").filter({ hasText: BRAMBLE })).toContainText("M-2026-05");
   await expect(reports.locator("li").filter({ hasText: NORTHMOOR })).toBeVisible();
   await expect(reports.getByRole("link", { name: "Workbook" })).toHaveCount(2);
-  await expect(page.getByRole("heading", { name: "Weekly status call" })).toBeVisible();
+  // Oxane's internal status-call brief never reaches the portal; the client sees only a summary
+  // written to them, and only after the analyst releases it (not released in this run).
+  await expect(page.getByRole("heading", { name: "Weekly status call" })).toHaveCount(0);
+  await expect(page.getByText(/For this week's call with/)).toHaveCount(0);
 
   const body = await page.locator("main").innerText();
   // Unreleased packs (Kestrel, Ravenglass) and Thornbury's facilities are not shown...

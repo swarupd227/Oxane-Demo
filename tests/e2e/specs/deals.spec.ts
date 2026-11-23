@@ -17,7 +17,8 @@ const ASHGROVE = `Ashgrove Capital Partners LP ${run}`;
 const KINGSGATE = `Kingsgate Bank N.A. ${run}`;
 const state: { caseUrl?: string; facilityUrl?: string; contact?: string; subPath?: string; clientName?: string } = {};
 
-test.describe.configure({ mode: "serial", timeout: 360_000 });
+// The hosted app is slower than a local stack, and each flow walks many screens and personas.
+test.describe.configure({ mode: "serial", timeout: /^https:/.test(process.env.BASE_URL ?? "") ? 720_000 : 360_000 });
 
 async function switchTo(page: Page, name: string, within = "") {
   await page.getByRole("button", { name: /^Acting as/ }).click();

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { CheckCircle2, Circle, Code2, FileSpreadsheet, Lock, Send, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { useState } from "react";
+import { PanoramaReceipt } from "../../components/deals/Panorama";
 import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
 import { Tooltip } from "../../components/ui/Tooltip";
@@ -338,7 +339,9 @@ export function PackPage() {
                 <Lock aria-hidden className="size-3.5" />
                 Released {when(released.at)}
               </p>
-            ) : (
+            ) : null}
+            {released && <PanoramaReceipt sent={session?.panorama?.[tab]} what="the released results" />}
+            {released ? null : (
               <>
                 {blockers.length > 0 && (
                   <ul className="mt-2 space-y-0.5 text-xs text-warn">

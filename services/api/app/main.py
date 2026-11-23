@@ -481,11 +481,33 @@ def post_cycle_event(event: SessionEvent, request: Request, session: SessionDep)
         cycle_session.record(session, cycle, actor, event.type, payload)
     except case_session.Refused as refused:
         raise HTTPException(status_code=409, detail=str(refused)) from refused
+    if event.type == "approve-pack":
+        # The approval that releases a pack hands its results to Panorama (a stub).
+        facility = payload.get("facility")
+        released = cycle_session.view(session, cycle)
+        if facility in released["packs"] and facility not in released["panorama"]:
+            cycle_session.send_to_panorama(session, cycle, facility)
     sync_scripted(session, persona or personas.for_actor(personas.CYCLE_EVENTS, event.type,
                                                          actor), "cycle")
     session.commit()
     if persona is not None and persona.role == "client":
         return {"ok": True}
+    return cycle_session.view(session, cycle)
+
+
+@app.post("/api/monitoring/panorama/{facility}")
+def post_cycle_panorama(facility: str, request: Request, session: SessionDep) -> dict[str, Any]:
+    """Send a released pack's results to Panorama again, after a failed hand-off."""
+    persona = personas.acting(request, session)
+    if persona is not None and persona.role == "client":
+        raise HTTPException(status_code=403, detail="Not available to client users")
+    cycle = current_cycle()
+    if facility not in {f["id"] for f in cycle["facilities"]}:
+        raise HTTPException(status_code=404, detail="Unknown facility")
+    try:
+        cycle_session.send_to_panorama(session, cycle, facility)
+    except case_session.Refused as refused:
+        raise HTTPException(status_code=409, detail=str(refused)) from refused
     return cycle_session.view(session, cycle)
 
 

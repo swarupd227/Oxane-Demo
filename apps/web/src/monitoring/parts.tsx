@@ -2,36 +2,11 @@
 import clsx from "clsx";
 import { BotOff, FileText, Link2, ZoomIn, ZoomOut } from "lucide-react";
 import { Fragment, useState, type ReactNode } from "react";
-import { NavLink } from "react-router-dom";
 import { PdfPage } from "../components/evidence/PdfPage";
 import { Tooltip } from "../components/ui/Tooltip";
-import { MONITORING_ROLES, ONBOARDING_ROLES, useRole } from "../lib/persona";
 import { fileUrl, OUTCOMES, useCycle, type Outcome, type Source } from "./cycle";
 
-export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitoring" }) {
-  const item = (to: string, label: string, active: boolean) => (
-    <NavLink
-      to={to}
-      aria-current={active ? "page" : undefined}
-      className={clsx(
-        "flex h-7 items-center rounded-md px-2.5 text-xs font-medium transition-colors",
-        active ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:text-ink",
-      )}
-    >
-      {label}
-    </NavLink>
-  );
-  // Each role sees the workbenches it uses.
-  const role = useRole();
-  const onboarding = !role || ONBOARDING_ROLES.includes(role);
-  const monitoring = !role || MONITORING_ROLES.includes(role);
-  return (
-    <nav aria-label="Workbench" className="flex items-center gap-0.5 rounded-lg bg-sand p-0.5">
-      {onboarding && item("/cases", "Onboarding", current === "onboarding")}
-      {monitoring && item("/monitoring", "Monitoring", current === "monitoring")}
-    </nav>
-  );
-}
+export { WorkbenchSwitch } from "../components/shell/frame";
 
 export function OutcomePill({ outcome, pending }: { outcome: Outcome | null; pending?: string }) {
   if (!outcome) {

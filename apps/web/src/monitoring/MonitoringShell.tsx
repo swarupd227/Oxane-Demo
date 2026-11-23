@@ -23,6 +23,9 @@ import {
   ShieldCheck,
   TableProperties,
   Car,
+  Landmark,
+  ListTodo,
+  type LucideIcon,
 } from "lucide-react";
 import { DropdownMenu, Popover } from "radix-ui";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -34,7 +37,7 @@ import { Skeleton } from "../components/ui/layout";
 import { Tooltip } from "../components/ui/Tooltip";
 import { ActorContext, useActor, useCycle, useCycleAction, useCycleReset, useCycleSession, type CycleActor } from "./cycle";
 import { deskRows, notices, ScopeContext, useScope, type ClientScope } from "./desk";
-import { WorkbenchSwitch } from "./parts";
+import { HEADER, NavCount, NavIcon, NavSection, navItem, SidebarFrame } from "../components/shell/frame";
 import { PresenterProvider, usePresenter } from "./presenter";
 import { RecordId, when } from "./ui";
 import { HINTS } from "./walkthrough";
@@ -66,6 +69,15 @@ export function priorPeriods(periodEnd: string, count: number): string[] {
   );
 }
 
+/* The sidebar groups the cycle's screens by the stage of the monitoring workflow. */
+const NAV_GROUPS = [
+  { label: "Overview", paths: ["/monitoring"] },
+  { label: "Ingest", paths: ["/monitoring/submissions", "/monitoring/mapping", "/monitoring/validation", "/monitoring/reconciliation"] },
+  { label: "Test", paths: ["/monitoring/terms", "/monitoring/covenants", "/monitoring/collateral"] },
+  { label: "Resolve and report", paths: ["/monitoring/triage", "/monitoring/pack", "/monitoring/monitor", "/monitoring/status-call", "/monitoring/results"] },
+];
+const ALERT_PATHS = ["/monitoring/submissions", "/monitoring/validation"];
+
 function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 }
@@ -89,79 +101,46 @@ function Sidebar() {
       "/monitoring/pack": { n: cycle.facilities.length - released, tone: "bg-sand text-muted" },
     } as Record<string, { n: number; tone: string }>;
   }, [cycle, session]);
-  return (
-    <aside className="sticky top-0 flex h-screen w-52 shrink-0 flex-col border-r border-line bg-surface">
-      <div className="flex h-12 items-center gap-2 border-b border-line px-3">
-        <span aria-hidden className="size-5 rounded-[5px] bg-ink">
-          <span className="ml-[5px] block h-full w-[5px] bg-accent" />
-        </span>
-        <span className="text-sm font-semibold tracking-tight">Oxane</span>
-      </div>
-      <div className="border-b border-line px-3 py-2 [&_nav]:w-full [&_nav>a]:flex-1 [&_nav>a]:justify-center">
-        <WorkbenchSwitch current="monitoring" />
-      </div>
-      <nav aria-label="Monitoring" className="flex-1 overflow-y-auto px-2 py-2">
-        <ul className="space-y-0.5">
-          {STEPS.map((step) => {
-            const Icon = step.icon;
-            const count = counts[step.path];
-            return (
-              <li key={step.path}>
-                <NavLink
-                  to={step.path}
-                  end
-                  className={({ isActive }) =>
-                    clsx(
-                      "flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem]",
-                      isActive ? "bg-sand font-semibold text-ink" : "text-muted hover:bg-canvas hover:text-ink",
-                    )
-                  }
-                >
-                  <Icon aria-hidden className="size-4 shrink-0" />
-                  <span className="truncate">{step.label}</span>
-                  {count && count.n > 0 && <span className={clsx("numeric ml-auto rounded-full px-1.5 text-[0.6875rem] leading-4 font-semibold", count.tone)}>{count.n}</span>}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-        {role !== "client" && <NavLink
-          to="/monitoring/agents"
-          className={({ isActive }) =>
-            clsx("mt-2 flex h-8 items-center gap-2 rounded-md border-t border-line px-2 pt-px text-[0.8125rem]", isActive ? "bg-sand font-semibold text-ink" : "text-muted hover:bg-canvas hover:text-ink")
-          }
-        >
-          <Bot aria-hidden className="size-4 shrink-0" />
-          <span className="truncate">Agents</span>
-        </NavLink>}
-      </nav>
-      <nav aria-label="Workspace" className="border-t border-line px-2 py-2">
-        {[
-          { to: "/work", label: "My work" },
-          { to: "/facilities", label: "Onboarded facilities" },
-        ].map((item) => (
-          <NavLink key={item.to} to={item.to} className="flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem] text-muted hover:bg-canvas hover:text-ink">
-            <Building2 aria-hidden className="size-4 shrink-0" />
-            {item.label}
-          </NavLink>
-        ))}
-        {role === "admin" && (
-          <NavLink
-            to="/settings/ai-provider"
-            className={({ isActive }) => clsx("flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem]", isActive ? "bg-sand font-semibold text-ink" : "text-muted hover:bg-canvas hover:text-ink")}
-          >
-            <Settings aria-hidden className="size-4 shrink-0" />
-            Settings
-          </NavLink>
-        )}
-      </nav>
-      {cycle && (
-        <div className="border-t border-line px-3 py-2 text-[0.6875rem] text-muted">
-          <p className="font-medium text-ink">{cycle.desk}</p>
-          <p>Cycle {cycle.cycle.id}</p>
-        </div>
+  const link = (to: string, label: string, icon: LucideIcon, count?: { n: number; tone: string }, alert?: boolean) => (
+    <NavLink key={to} to={to} end className={({ isActive }) => navItem(isActive)}>
+      {({ isActive }) => (
+        <>
+          <NavIcon icon={icon} active={isActive} />
+          <span className="truncate">{label}</span>
+          <NavCount value={count?.n} active={isActive} alert={alert} />
+        </>
       )}
-    </aside>
+    </NavLink>
+  );
+  const stepsByGroup = (paths: string[]) => STEPS.filter((step) => paths.includes(step.path));
+  return (
+    <SidebarFrame
+      current="monitoring"
+      footer={
+        cycle && (
+          <div className="px-2.5 py-1 text-[0.6875rem] text-subtle">
+            <p className="font-medium text-muted">{cycle.desk}</p>
+            <p className="numeric">Cycle {cycle.cycle.id}</p>
+          </div>
+        )
+      }
+    >
+      <nav aria-label="Monitoring">
+        {NAV_GROUPS.map((group) => (
+          <NavSection key={group.label} label={group.label}>
+            {stepsByGroup(group.paths).map((step) =>
+              link(step.path, step.label, step.icon, counts[step.path], ALERT_PATHS.includes(step.path)),
+            )}
+          </NavSection>
+        ))}
+        <NavSection label="Workspace">
+          {link("/work", "My work", ListTodo)}
+          {link("/facilities", "Onboarded facilities", Landmark)}
+          {role !== "client" && link("/monitoring/agents", "Agents", Bot)}
+          {role === "admin" && link("/settings/ai-provider", "Settings", Settings)}
+        </NavSection>
+      </nav>
+    </SidebarFrame>
   );
 }
 
@@ -321,7 +300,7 @@ function Header({ onReset }: { onReset: () => void }) {
   const presenter = usePresenter();
   const page = STEPS.find((s) => s.path === pathname);
   return (
-    <header className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b border-line bg-surface px-4">
+    <header className={HEADER}>
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-[0.8125rem]">
         <Link to="/monitoring" className="text-muted hover:text-ink">
           Monitoring
@@ -493,10 +472,10 @@ function Frame() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Header onReset={doReset} />
         {presenter.on && <PresenterBar />}
-        <main key={pathname} className="w-full min-w-0 flex-1 px-4 py-3">
+        <main key={pathname} className="w-full min-w-0 flex-1 px-8 pt-5 pb-6">
           <Outlet />
         </main>
-        <footer className="flex items-center gap-1.5 border-t border-line px-4 py-1.5 text-[0.6875rem] text-muted">
+        <footer className="mx-8 flex items-center gap-1.5 border-t border-line pt-3 pb-4 text-[0.6875rem] text-subtle">
           <FileInput aria-hidden className="size-3" />
           Synthetic data. Not connected to Panorama or client systems.
         </footer>

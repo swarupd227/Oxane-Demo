@@ -332,3 +332,14 @@ test("presenter mode is off by default", async ({ page }) => {
     await expect(page.getByRole("list", { name: "Walkthrough" })).toHaveCount(0);
   }
 });
+
+test("a fresh browser keeps the persona it started as when it moves to another area", async ({ page }) => {
+  // Nobody chosen: opening monitoring starts as Priya, the monitoring analyst.
+  await page.goto("/monitoring");
+  await expect(page.getByRole("button", { name: /^Acting as Priya Raman,/ })).toBeVisible({ timeout: 90_000 });
+  // Moving to My work, the cases list or back must not fall back to the onboarding default.
+  await page.goto("/work");
+  await expect(page.getByRole("button", { name: /^Acting as Priya Raman,/ })).toBeVisible({ timeout: 90_000 });
+  await page.goto("/monitoring");
+  await expect(page.getByRole("button", { name: /^Acting as Priya Raman,/ })).toBeVisible({ timeout: 90_000 });
+});

@@ -84,7 +84,7 @@ function Documents({ view, act }: { view: CaseView; act: Act }) {
       >
         <table className="w-full text-[0.8125rem]">
           <thead>
-            <tr className="border-b border-line text-left text-[0.6875rem] text-muted uppercase">
+            <tr className="border-b border-line text-left text-xs text-subtle">
               <th className="py-1.5">Document</th>
               <th>Type</th>
               <th>Version</th>
@@ -385,7 +385,7 @@ export function MappingEditor({ mapping, disabled, onConfirm, errors }: { mappin
     <Panel title="Tape mapping" meta={`${words[mapping.source]} · ${mapping.confirmed ? `confirmed by ${mapping.confirmed_by ?? "analyst"}` : "not confirmed"}`} actions={<ActionButton reason={disabled} onClick={() => onConfirm(columns, statuses)}>Confirm and store</ActionButton>}>
       <table className="w-full text-[0.8125rem]">
         <thead>
-          <tr className="border-b border-line text-left text-[0.6875rem] text-muted uppercase"><th className="py-1">Tape column</th><th>Sample</th><th>Loader field</th><th>Check</th></tr>
+          <tr className="border-b border-line text-left text-xs text-subtle"><th className="py-1">Tape column</th><th>Sample</th><th>Loader field</th><th>Check</th></tr>
         </thead>
         <tbody>
           {mapping.headers.map((h) => (

@@ -37,7 +37,7 @@ function ChangeTable({ feed }: { feed: Feed }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+        <tr className="text-xs font-medium text-subtle">
           <th className="pb-1.5">Rule</th>
           <th className="pb-1.5 text-right">April</th>
           <th className="pb-1.5 text-right">May</th>
@@ -249,7 +249,7 @@ function FamilyRows({ name, rules }: { name: string; rules: Feed["rules"] }) {
   return (
     <>
       <tr className="bg-canvas">
-        <td colSpan={4} className="px-5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+        <td colSpan={4} className="px-5 py-1.5 text-xs font-medium text-subtle">
           {name}
         </td>
       </tr>

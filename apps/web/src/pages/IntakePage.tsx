@@ -201,7 +201,7 @@ export function IntakePage() {
         <Card className="overflow-hidden">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+              <tr className="border-b border-line text-xs font-medium text-subtle">
                 <th className="py-2.5 pl-5">
                   <span className="sr-only">Status</span>
                 </th>

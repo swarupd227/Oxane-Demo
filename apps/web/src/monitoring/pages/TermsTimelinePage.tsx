@@ -118,7 +118,7 @@ export function TermsTimelinePage() {
             <SectionLabel>Versions</SectionLabel>
             <table className="mt-3 w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+                <tr className="border-b border-line text-xs font-medium text-subtle">
                   <th className="py-2 pr-3">Term</th>
                   <th className="py-2 pr-3">May 2026</th>
                   <th className="py-2 pr-3">From 1 Jun 2026</th>

@@ -70,10 +70,10 @@ export function PersonaMenu({ onReset, resetLabel = "Reset case" }: { onReset?: 
         <DropdownMenu.Portal>
           <DropdownMenu.Content align="end" sideOffset={6} className="z-50 max-h-[80vh] w-72 overflow-y-auto rounded-lg border border-line bg-surface p-1 shadow-overlay">
             <DropdownMenu.RadioGroup value={shown.id} onValueChange={pick} aria-label="Acting as">
-              <DropdownMenu.Label className="px-2 pt-1.5 pb-1 text-[0.6875rem] font-semibold tracking-wide text-muted uppercase">Oxane team</DropdownMenu.Label>
+              <DropdownMenu.Label className="px-2 pt-1.5 pb-1 text-xs font-medium text-subtle">Oxane team</DropdownMenu.Label>
               {team.map(radio)}
               <DropdownMenu.Separator className="my-1 h-px bg-line" />
-              <DropdownMenu.Label className="px-2 pt-1.5 pb-1 text-[0.6875rem] font-semibold tracking-wide text-muted uppercase">Client users</DropdownMenu.Label>
+              <DropdownMenu.Label className="px-2 pt-1.5 pb-1 text-xs font-medium text-subtle">Client users</DropdownMenu.Label>
               {clients.map(radio)}
             </DropdownMenu.RadioGroup>
             <DropdownMenu.Separator className="my-1 h-px bg-line" />

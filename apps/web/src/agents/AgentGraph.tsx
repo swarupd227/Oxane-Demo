@@ -57,7 +57,7 @@ export function AgentGraph({ registry, selected, compact }: { registry: Registry
           return (
             <g key={band.stage}>
               <rect x={band.x - 6} y={4} width={band.width + 12} height={layout.height - 8} rx={6} className={i % 2 ? "fill-canvas" : "fill-sand/50"} />
-              <text x={band.x} y={22} className="fill-muted text-[11px] font-semibold tracking-[0.06em] uppercase">
+              <text x={band.x} y={22} className="fill-muted text-[11px] font-medium">
                 {i + 1}. {stage.label}
               </text>
             </g>

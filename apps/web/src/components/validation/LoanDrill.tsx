@@ -8,7 +8,7 @@ function PastDueTable({ rows }: { rows: LoanRow[] }) {
     <div tabIndex={0} role="region" aria-label="Affected loans" className="max-h-96 overflow-y-auto">
       <table className="w-full text-left">
         <thead className="sticky top-0 bg-surface">
-          <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+          <tr className="border-b border-line text-xs font-medium text-subtle">
             <th className="py-2 pr-4 pl-5">Loan</th>
             <th className="py-2 pr-4 text-right">Days past due</th>
             <th className="py-2 pr-4 text-right">Balance</th>

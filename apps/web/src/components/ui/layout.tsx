@@ -21,7 +21,7 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[0.6875rem] font-semibold tracking-[0.08em] text-muted uppercase">
+    <p className="text-xs font-medium text-subtle">
       {children}
     </p>
   );

@@ -76,7 +76,7 @@ function QcCard({ facility }: { facility: FacilityId }) {
       </div>
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+          <tr className="text-xs font-medium text-subtle">
             <th className="py-2 pr-3 pl-5">Line</th>
             <th className="py-2 pr-3 text-right">Platform</th>
             <th className="py-2 pr-3 text-right">QC workbook</th>

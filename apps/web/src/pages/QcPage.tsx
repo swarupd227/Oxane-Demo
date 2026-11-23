@@ -137,7 +137,7 @@ export function QcPage() {
       <Card className="overflow-hidden">
         <table className="w-full text-left text-[0.8125rem]">
           <thead>
-            <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+            <tr className="border-b border-line text-xs font-medium text-subtle">
               <th className="py-2 pr-3 pl-4">Line</th>
               <th className="py-2 pr-3 text-right">Platform</th>
               <th className="py-2 pr-3 text-right">Independent QC</th>

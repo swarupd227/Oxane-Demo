@@ -68,14 +68,18 @@ const provenances: Record<Provenance, { icon: LucideIcon; label: string }> = {
 /** Where a value came from. `tip` carries the source and its quote, on hover or focus. */
 export function ProvenanceChip({ kind, tip, detail }: { kind: Provenance; tip?: ReactNode; detail?: string }) {
   const { icon: Icon, label } = provenances[kind];
+  const ai = kind === "ai" || kind === "suggested" || kind === "extracted";
   const chip = (
     <span
       tabIndex={tip ? 0 : undefined}
-      className="inline-flex h-5 items-center gap-1 rounded border border-line bg-surface px-1.5 text-[0.6875rem] font-medium whitespace-nowrap text-muted"
+      className={clsx(
+        "inline-flex h-[1.375rem] items-center gap-1 rounded-full px-2 text-[0.6875rem] font-medium whitespace-nowrap",
+        ai ? "bg-accent-tint text-accent-strong" : "border border-line bg-surface text-muted",
+      )}
     >
       <Icon aria-hidden className="size-3" />
       {label}
-      {detail && <span className="font-normal text-muted">· {detail}</span>}
+      {detail && <span className={clsx("font-normal", ai ? "text-accent-strong/80" : "text-subtle")}>· {detail}</span>}
     </span>
   );
   return tip ? <Tooltip content={tip}>{chip}</Tooltip> : chip;
@@ -109,7 +113,7 @@ export function Confidence({ level }: { level: ConfidenceLevel }) {
 
 export function Kbd({ children }: { children: string }) {
   return (
-    <kbd className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-line bg-surface px-1 font-sans text-[0.6875rem] font-medium text-muted">
+    <kbd className="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-line bg-surface px-1 font-sans text-[0.6875rem] font-medium text-subtle shadow-[0_1px_0_rgb(16_24_40/0.06)]">
       {children}
     </kbd>
   );
@@ -119,8 +123,8 @@ export function TierBadge({ tier }: { tier: 1 | 2 | 3 }) {
   return (
     <span
       className={clsx(
-        "numeric inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap",
-        tier === 1 ? "bg-ink text-white" : "bg-sand text-muted",
+        "numeric inline-flex h-[1.375rem] items-center rounded-full px-2 text-[0.6875rem] font-medium whitespace-nowrap",
+        tier === 1 ? "bg-ink-soft text-white" : "bg-sand text-muted",
       )}
     >
       Tier {tier}

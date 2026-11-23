@@ -67,7 +67,7 @@ export function MappingPage() {
           >
             <table className="w-full text-left">
               <thead className="sticky top-0 z-10 bg-surface">
-                <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+                <tr className="border-b border-line text-xs font-medium text-subtle">
                   <th className="py-2 pr-4 pl-5">Tape column</th>
                   <th className="py-2 pr-4">Platform field</th>
                   <th className="py-2 pr-4">Sample</th>

@@ -53,7 +53,7 @@ function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citatio
   }
 
   return (
-    <div className="rounded-lg bg-canvas p-4">
+    <div className="rounded-xl border border-line bg-canvas p-4">
       <div className="flex items-baseline justify-between gap-3">
         <SectionLabel>Advance rate as of</SectionLabel>
         <span className="numeric text-sm font-medium">{formatDate(iso)}</span>
@@ -71,7 +71,7 @@ function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citatio
             {amended ? current : original}
           </motion.span>
         </AnimatePresence>
-        {amended && <s className="numeric text-lg text-muted">{original}</s>}
+        {amended && <s className="numeric text-lg text-stone">{original}</s>}
         <span className="text-[0.8125rem] text-muted">
           {amended ? "Amendment No. 1, 2(a)" : "Credit Agreement 2.3"}
         </span>
@@ -85,15 +85,15 @@ function AsOfControl({ onCitation, term }: { term: Term; onCitation: (c: Citatio
           step={DAY}
           value={time}
           onChange={(event) => change(Number(event.target.value))}
-          className="w-full cursor-pointer accent-ink"
+          className="w-full cursor-pointer accent-accent"
         />
         <span
           aria-hidden
-          className="absolute -bottom-0.5 h-2 w-0.5 bg-ink"
+          className="absolute -bottom-0.5 h-2 w-0.5 rounded-full bg-accent"
           style={{ left: `${markerPct}%` }}
         />
       </div>
-      <div className="numeric mt-1 flex justify-between text-[0.6875rem] text-muted">
+      <div className="numeric mt-1 flex justify-between text-[0.6875rem] text-subtle">
         <span>15 Jan 2026</span>
         <span>1 Mar: amendment effective</span>
         <span>30 Apr 2026</span>
@@ -120,8 +120,8 @@ function TermRow({
       onClick={onSelect}
       aria-selected={selected}
       className={clsx(
-        "cursor-pointer border-b border-sand transition-colors duration-75 last:border-0",
-        selected ? "bg-sand" : "hover:bg-canvas",
+        "cursor-pointer border-b border-line/70 transition-colors duration-75 last:border-0",
+        selected ? "bg-accent-tint/60" : "hover:bg-canvas",
       )}
     >
       <td className="relative py-2.5 pr-3 pl-4">
@@ -129,12 +129,12 @@ function TermRow({
         <button
           type="button"
           onClick={onSelect}
-          className="cursor-pointer text-left text-sm font-medium"
+          className={clsx("cursor-pointer text-left text-sm font-medium", selected ? "text-accent-strong" : "text-ink")}
         >
           {term.name}
         </button>
       </td>
-      <td className={clsx("py-2.5 pr-3 text-sm", term.status === "missing" && "text-muted")}>
+      <td className={clsx("py-2.5 pr-3 text-sm", term.status === "missing" ? "text-subtle italic" : "text-ink-soft")}>
         {value}
       </td>
       <td className="py-2.5 pr-3">
@@ -240,9 +240,10 @@ export function TermsPage() {
         </SeedNotice>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1fr)_34rem] items-start gap-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_30rem] 2xl:grid-cols-[minmax(0,1fr)_34rem] items-start gap-5">
         <Card className="overflow-hidden">
-          <div className="flex items-center gap-1 border-b border-line p-2">
+          <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
+            <div role="tablist" aria-label="Filter terms" className="flex items-center gap-0.5 rounded-lg bg-sand p-0.5">
             {FILTERS.map((item) => (
               <button
                 key={item.id}
@@ -250,13 +251,14 @@ export function TermsPage() {
                 aria-pressed={filter === item.id}
                 onClick={() => setFilter(item.id)}
                 className={clsx(
-                  "h-8 cursor-pointer rounded-md px-3 text-[0.8125rem] font-medium",
-                  filter === item.id ? "bg-accent-tint text-accent-strong font-medium" : "text-muted hover:bg-sand",
+                  "h-7 cursor-pointer rounded-md px-2.5 text-xs font-medium transition-colors",
+                  filter === item.id ? "bg-surface text-ink shadow-card" : "text-muted hover:text-ink",
                 )}
               >
                 {item.label}
               </button>
             ))}
+            </div>
             <KeyHints>
             <span className="ml-auto flex items-center gap-1.5 pr-2 text-xs text-muted">
               <Kbd>J</Kbd>
@@ -273,8 +275,8 @@ export function TermsPage() {
           </div>
           <div className="max-h-[calc(100vh-19rem)] overflow-y-auto">
             <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 bg-surface">
-                <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+              <thead className="sticky top-0 z-10 bg-canvas">
+                <tr className="border-b border-line text-xs font-medium text-subtle">
                   <th className="py-2 pr-3 pl-4">Term</th>
                   <th className="py-2 pr-3">Value</th>
                   <th className="py-2 pr-3">Tier</th>
@@ -301,10 +303,10 @@ export function TermsPage() {
           </div>
         </Card>
 
-        <Card className="sticky top-14 space-y-4 p-5">
+        <Card className="sticky top-16 space-y-5 p-6">
           <div>
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg leading-snug font-semibold">{selected.name}</h2>
+              <h2 className="text-lg leading-snug font-semibold text-ink">{selected.name}</h2>
               <StatusPill status={termStatus(selected, state)} />
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -327,9 +329,10 @@ export function TermsPage() {
           {selected.name === "Advance rate" ? (
             <AsOfControl key={selected.name} term={selected} onCitation={setOverride} />
           ) : (
-            <p className="text-xl font-semibold tracking-tight">
-              {state.termEdits[selected.name] ?? selected.value}
-            </p>
+            <div className="rounded-xl border border-line bg-canvas px-4 py-3">
+              <p className="text-xs font-medium text-subtle">Value</p>
+              <p className="mt-1 text-xl font-semibold tracking-tight text-ink">{state.termEdits[selected.name] ?? selected.value}</p>
+            </div>
           )}
 
           <GroundingLine grounding={selected.grounding} />
@@ -354,8 +357,8 @@ export function TermsPage() {
                   onClick={() => setOverride(item)}
                   aria-pressed={citation === item}
                   className={clsx(
-                    "block w-full cursor-pointer rounded-md px-2 py-1 text-left text-[0.8125rem] hover:bg-sand",
-                    citation === item ? "font-medium text-ink" : "text-muted",
+                    "block w-full cursor-pointer rounded-lg px-2.5 py-1.5 text-left text-[0.8125rem] transition-colors hover:bg-sand",
+                    citation === item ? "bg-accent-tint/60 font-medium text-accent-strong" : "text-muted",
                   )}
                 >
                   {item!.label ?? selected.clause}, page {item!.page}

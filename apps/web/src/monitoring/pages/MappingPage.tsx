@@ -83,7 +83,7 @@ export function MappingPage() {
             <Card>
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+                  <tr className="border-b border-line text-xs font-medium text-subtle">
                     <th className="py-2.5 pr-3 pl-5">File</th>
                     <th className="py-2.5 pr-3">Client memory</th>
                     <th className="py-2.5 pr-3">Layout</th>
@@ -184,7 +184,7 @@ export function MappingPage() {
               <div className="mt-3 max-h-80 overflow-auto rounded-lg border border-line">
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 bg-canvas">
-                    <tr className="text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+                    <tr className="text-xs font-medium text-subtle">
                       <th className="py-2 pr-3 pl-3">Source column</th>
                       <th className="py-2 pr-3">Master field</th>
                       <th className="py-2 pr-3">Standard model</th>

@@ -55,7 +55,15 @@ function firstPersona(): string {
   }
   return path.startsWith("/clients") ? "alex" : DEFAULT_PERSONA;
 }
-let actingId = (typeof window !== "undefined" && (read(PERSONA_KEY) || firstPersona())) || DEFAULT_PERSONA;
+// Nobody chosen yet: start as the person who works the screen being opened, and remember it, so
+// moving to another area (My work, the cases list) keeps the same person.
+let actingId = (typeof window !== "undefined" && read(PERSONA_KEY)) || "";
+if (!actingId) {
+  actingId = typeof window !== "undefined" ? firstPersona() : DEFAULT_PERSONA;
+  if (typeof window !== "undefined") {
+    write(PERSONA_KEY, actingId);
+  }
+}
 let accessCode = (typeof window !== "undefined" && read(ACCESS_KEY)) || "";
 
 /** Every /api request carries the acting user and, once entered, the demo access code. */

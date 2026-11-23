@@ -1,0 +1,473 @@
+# The agents behind both workbenches, as the code runs them.
+#
+# A model agent owns one or more gateway task names: the first argument of every
+# `gateway.parse(...)` call in app/. tests/test_agents.py scans the code and fails if a task
+# name is missing here, or listed twice. Code engines never call a model and own no task.
+# `upstream` lists the data each agent is handed and by whom; downstream is worked out from it.
+
+version: 1
+
+stages:
+  - {id: receive, label: Receive}
+  - {id: interpret, label: Interpret}
+  - {id: codify, label: Codify}
+  - {id: validate, label: Validate}
+  - {id: resolve, label: Resolve}
+  - {id: report, label: Report}
+  - {id: communicate, label: Communicate}
+
+use_cases:
+  UC1:
+    label: Onboarding
+    steps: {1: Receive, 2: Interpret, 3: Clarify, 4: Codify, 5: Map and load, 6: Configure,
+            7: QC and release}
+  UC2:
+    label: Monitoring
+    steps: {1: Expect and receive, 2: Map and ingest, 3: Validate, 4: Review and resolve,
+            5: Calculate and report, 6: Monitor and alert, 7: Communicate}
+
+pain_points:
+  - {id: documents, short: Documents, label: "Varied documents, channels and formats; missing items"}
+  - {id: definitions, short: Definitions, label: Nested definitions and amendments}
+  - {id: client_model, short: Client model, label: Client's own model and the query cycle}
+  - {id: configuration, short: Config workbook, label: Configuration built by hand}
+  - {id: mapping, short: Mapping, label: Changing tape layouts and backbook loads}
+  - {id: validation, short: Validation, label: Blocking against warning checks; prior-period change}
+  - {id: calculations, short: Calculations, label: "Calculations (borrowing base, triggers, covenants)"}
+  - {id: qc, short: Independent QC, label: Independent QC and presentation differences}
+  - {id: judgement, short: Judgement, label: Confirmed issues kept apart from expert judgement}
+  - {id: communications, short: Packs and queries, label: "Communications (lender packs, client queries)"}
+  - {id: alerts, short: Self-service alerts, label: Client self-service alerts}
+  - {id: status_call, short: Weekly call summary, label: Weekly client-call summary}
+  - {id: asset_classes, short: Other asset classes, label: Other asset classes after the pilot}
+  - {id: data_handling, short: No-AI clients, label: Clients who don't permit AI}
+
+asset_classes:
+  - {id: auto_abf, label: Auto ABF}
+  - {id: nav, label: Fund finance (NAV)}
+  - {id: clo_bsl, label: CLO / BSL}
+  - {id: middle_market, label: Middle-market}
+  - {id: subscription, label: Subscription lines}
+
+constraints:
+  code_numbers: Code computes every number; the model never supplies a figure that code trusts
+  quotes_verified: Every value read carries an exact quote that code must find on its page, or the value goes to the queue unverified
+  placeholders: Every figure in drafted text is a {{placeholder}} filled by code; a draft with a raw number or an unknown placeholder is refused
+  no_ai_clients: Disabled for clients that don't permit AI; the guarded gateway refuses the call and the code path runs
+  human_decision: Output is a suggestion; a person decides and a change needs a reason
+  ontology: Grounded in the Private Credit Ontology; an answer citing a concept it was not given is dropped or held
+  client_scoped: Memory and data stay with one client; nothing is pooled across clients
+  documents_as_data: Document text is data; instructions inside documents are ignored
+  four_eyes: Release needs a second person, and a third level where the client requires it
+  replayable: Each call is keyed by its full request and recorded; a changed prompt never reuses an old answer
+  deterministic: Deterministic; the same inputs always give the same result
+
+model:
+  name: claude-opus-5-5
+  effort: high
+
+agents:
+  # Model agents -------------------------------------------------------------------------
+
+  - id: intake
+    name: Intake and classification
+    kind: model
+    stage: receive
+    purpose: Sorts an incoming pack into document types, links amendments to what they amend and reads scanned pages.
+    tasks:
+      - Classify each file by type, date and version
+      - Link each amendment to the agreement it amends
+      - Name documents the pack refers to but does not contain
+      - Read scanned pages (OCR through the model)
+    triggers:
+      - {kind: event, label: Document pack uploaded}
+      - {kind: event, label: New deal documents uploaded}
+    inputs: [Document pack (PDF, XLSX, CSV), Scanned pages]
+    outputs: [Document register with type and version, Amendment links, Missing documents, Page text for scans]
+    upstream: []
+    constraints: [no_ai_clients, documents_as_data, quotes_verified, human_decision, replayable]
+    use_cases: {UC1: [1]}
+    pain_points: [documents, data_handling]
+    asset_classes: {now: [auto_abf], after_pilot: [nav, clo_bsl, middle_market, subscription]}
+    gateway_tasks:
+      classify: Classify the document pack
+      read_scan: Read a scanned page
+      deals_classify: Classify a new deal's documents
+    source: [app/pipeline/steps.py, app/deals/ai.py]
+
+  - id: extraction
+    name: Extraction
+    kind: model
+    stage: interpret
+    purpose: Reads terms and periodic figures from agreements, amendments, servicer reports, compliance certificates and NAV packs, each with an exact quote.
+    tasks:
+      - Extract facility terms with tier, clause and quote (Tier 1 read twice, the second pass as a sceptical reviewer)
+      - Apply amendments with their effective dates
+      - Read servicer report, excess spread and compliance certificate figures
+      - Read NAV packs against the NAV lending layer
+      - Read middle-market obligors' financials and compliance certificates in each obligor's own layout, and classify each add-back against the cap
+      - Read amendment and waiver notices that change an obligor's covenant
+    triggers:
+      - {kind: event, label: Agreement classified}
+      - {kind: event, label: Submission received}
+      - {kind: event, label: Obligor financials received}
+    inputs: [Classified documents, Ontology concepts]
+    outputs: [Terms with source and confidence, Effective-dated amendments, Periodic figures with quotes]
+    upstream:
+      - {agent: intake, hands_off: Classified documents and page text}
+    constraints: [no_ai_clients, quotes_verified, code_numbers, ontology, documents_as_data, human_decision, replayable]
+    use_cases: {UC1: [2], UC2: [1, 5]}
+    pain_points: [documents, definitions, calculations, data_handling, asset_classes]
+    asset_classes: {now: [auto_abf, nav, middle_market], after_pilot: [clo_bsl, subscription]}
+    gateway_tasks:
+      extract_tier1: Extract Tier 1 terms (second pass)
+      extract_all: Extract all facility terms
+      read_amendment: Read Amendment No. 1
+      read_amendment_2: Read Amendment No. 2
+      read_servicer_report: Read the servicer report
+      read_excess_spread: Read excess spread
+      read_compliance: Read the compliance certificate
+      read_nav_pack: Read the NAV pack
+      read_obligor_financials: Read obligor financials and compliance certificates
+      read_covenant_notice: Read an amendment and waiver notice
+      deals_extract: Extract a new deal's terms
+      deals_report: Read a new deal's servicer report
+    source: [app/pipeline/steps.py, app/monitoring/steps.py, app/deals/ai.py]
+
+  - id: definitions
+    name: Definitions
+    kind: model
+    stage: interpret
+    purpose: Traces defined terms that refer to each other down to the clauses and schedules that settle them, including the leverage formula.
+    tasks:
+      - Trace each defined term to the terms, sections and schedules it uses
+      - Quote each definition and mark amended ones
+      - Build the leverage ratio formula through its cross-references and carve-outs
+    triggers:
+      - {kind: event, label: Agreement classified}
+    inputs: [Credit agreement, Amendments]
+    outputs: [Definition chain with quotes, Resolved covenant formula]
+    upstream:
+      - {agent: intake, hands_off: Agreement and amendments}
+    constraints: [no_ai_clients, quotes_verified, code_numbers, documents_as_data, human_decision, replayable]
+    use_cases: {UC1: [2]}
+    pain_points: [definitions, calculations]
+    asset_classes: {now: [auto_abf], after_pilot: [nav, middle_market, subscription]}
+    gateway_tasks:
+      trace_definitions: Trace nested definitions
+      resolve_leverage: Resolve the leverage formula
+    source: [app/casework/steps.py, app/pipeline/steps.py]
+
+  - id: client_model
+    name: Client-model comparison
+    kind: model
+    stage: interpret
+    purpose: Reads the client's own model and reporting requirements so code can compare them with the agreement.
+    tasks:
+      - Read each treatment in the client's model template, cell by cell
+      - Match each reporting requirement to a tape column, calculation or formula
+    triggers:
+      - {kind: event, label: Client model received}
+      - {kind: event, label: Reporting requirements received}
+    inputs: [Client model workbook, Lender requirements workbook, Tape columns]
+    outputs: [Treatments with cell references, Requirement coverage]
+    upstream:
+      - {agent: intake, hands_off: Client model and requirements}
+    constraints: [no_ai_clients, quotes_verified, code_numbers, documents_as_data, human_decision, replayable]
+    use_cases: {UC1: [1, 3]}
+    pain_points: [client_model, configuration]
+    asset_classes: {now: [auto_abf], after_pilot: [nav, clo_bsl, middle_market, subscription]}
+    gateway_tasks:
+      read_client_model: Read the client's model
+      read_requirements: Read the reporting requirements
+    source: [app/casework/steps.py, app/pipeline/steps.py]
+
+  - id: rule_drafting
+    name: Rule drafting
+    kind: model
+    stage: codify
+    purpose: Drafts eligibility and concentration rules from the agreement's schedules in the engine's rule format.
+    tasks:
+      - Draft each eligibility criterion as clause, plain English and test logic
+      - Draft concentration limits and thresholds
+    triggers:
+      - {kind: event, label: Terms verified}
+    inputs: [Schedules and clauses, Ontology concepts]
+    outputs: [Draft rule set]
+    upstream:
+      - {agent: extraction, hands_off: Terms and clauses}
+    constraints: [no_ai_clients, ontology, quotes_verified, human_decision, four_eyes, replayable]
+    use_cases: {UC1: [4, 6]}
+    pain_points: [configuration, calculations]
+    asset_classes: {now: [auto_abf], after_pilot: [nav, middle_market, subscription]}
+    gateway_tasks:
+      draft_rules: Draft the eligibility rules
+      deals_rules: Draft a new deal's rules
+    source: [app/pipeline/steps.py, app/deals/ai.py]
+
+  - id: mapping
+    name: Mapping
+    kind: model
+    stage: codify
+    purpose: Maps tape columns to the platform's fields when a layout is new or has changed; the stored mapping handles every unchanged layout.
+    tasks:
+      - Map a new tape to platform fields
+      - Suggest fields for columns the mapping memory has not seen
+      - Explain backbook differences against the stored mapping
+    triggers:
+      - {kind: event, label: Layout changed}
+      - {kind: event, label: Backbook batch loaded}
+    inputs: [Tape header and sample rows, Client's mapping memory, Field catalogue]
+    outputs: [Column mapping with reasons, Unmapped columns kept as attributes]
+    upstream:
+      - {agent: intake, hands_off: Loan tape}
+    constraints: [no_ai_clients, client_scoped, ontology, human_decision, replayable]
+    use_cases: {UC1: [5], UC2: [2]}
+    pain_points: [mapping, documents]
+    asset_classes: {now: [auto_abf], after_pilot: [nav, clo_bsl, middle_market, subscription]}
+    gateway_tasks:
+      map_tape: Map the loan tape
+      map_new_columns: Map new tape columns
+      suggest_backbook: Explain backbook differences
+      deals_map: Map a new deal's tape
+    source: [app/pipeline/steps.py, app/monitoring/steps.py, app/casework/steps.py, app/deals/ai.py]
+
+  - id: change_explanation
+    name: Change explanation
+    kind: model
+    stage: validate
+    purpose: Explains a prior-period change that code flagged, from a quoted line in the documents; the figures stay with code.
+    tasks:
+      - Find the documented cause of a flagged change against the prior period
+    triggers:
+      - {kind: event, label: Prior-period change flagged}
+    inputs: [Change flag with code's figures, Servicer report text]
+    outputs: [Cause with quote, or "not explained"]
+    upstream:
+      - {agent: validation, hands_off: Prior-period change flags}
+    constraints: [no_ai_clients, quotes_verified, placeholders, code_numbers, human_decision, replayable]
+    use_cases: {UC2: [3]}
+    pain_points: [validation, judgement]
+    asset_classes: {now: [auto_abf], after_pilot: [nav, clo_bsl, middle_market]}
+    gateway_tasks:
+      explain_change: Explain a prior-period change
+    source: [app/monitoring/steps.py]
+
+  - id: triage
+    name: Triage
+    kind: model
+    stage: resolve
+    purpose: Suggests an outcome for each finding (confirmed, query, expert, logged) with a reason, so confirmed issues stay apart from matters for expert judgement.
+    tasks:
+      - Suggest an outcome and reason for each finding
+      - Route judgement items to an expert
+      - Set noise aside with a logged reason
+    triggers:
+      - {kind: event, label: Findings raised}
+    inputs: [Findings with evidence, Terms version]
+    outputs: [Suggested outcome and reason per finding]
+    upstream:
+      - {agent: validation, hands_off: Rule failures}
+      - {agent: reconciliation, hands_off: Reconciliation gaps}
+      - {agent: calculation, hands_off: Test and covenant results}
+      - {agent: change_explanation, hands_off: Explained changes}
+    constraints: [no_ai_clients, human_decision, code_numbers, client_scoped, replayable]
+    use_cases: {UC2: [4]}
+    pain_points: [judgement, validation]
+    asset_classes: {now: [auto_abf, nav, middle_market], after_pilot: [clo_bsl, subscription]}
+    gateway_tasks:
+      suggest_triage: Suggest triage outcomes
+    source: [app/monitoring/steps.py]
+
+  - id: drafting
+    name: Drafting (packs, queries)
+    kind: model
+    stage: report
+    purpose: Drafts lender pack commentary and client queries in plain English, with every figure a placeholder that code fills.
+    tasks:
+      - Draft lender pack sections per facility
+      - Draft client queries from client-model differences
+      - Draft a new deal's report commentary
+    triggers:
+      - {kind: event, label: Findings decided}
+      - {kind: event, label: Client-model difference found}
+    inputs: [Decided findings, Code's figures as placeholders, Differences to query]
+    outputs: [Pack text, Client queries]
+    upstream:
+      - {agent: triage, hands_off: Decided findings}
+      - {agent: calculation, hands_off: Figures for placeholders}
+      - {agent: client_model, hands_off: Differences to query}
+    constraints: [no_ai_clients, placeholders, code_numbers, human_decision, four_eyes, replayable]
+    use_cases: {UC1: [3], UC2: [5]}
+    pain_points: [communications, client_model]
+    asset_classes: {now: [auto_abf, nav, middle_market], after_pilot: [clo_bsl, subscription]}
+    gateway_tasks:
+      draft_pack: Draft the lender pack
+      draft_client_queries: Draft client queries
+      deals_commentary: Draft a new deal's commentary
+    source: [app/monitoring/steps.py, app/casework/steps.py, app/deals/ai.py]
+
+  - id: alerts
+    name: Alerts (self-service rule drafting)
+    kind: model
+    stage: communicate
+    purpose: Turns a client's plain-English alert request into a rule over the metric catalogue; code checks it and back-tests it before an analyst approves it.
+    tasks:
+      - Understand the request and pick a metric, operator and threshold
+      - Ask a question when the request is ambiguous
+    triggers:
+      - {kind: request, label: Client asks for an alert}
+    inputs: [Client's request, Client's metric catalogue]
+    outputs: [Draft alert rule or a clarifying question]
+    upstream:
+      - {agent: calculation, hands_off: Metric catalogue and history}
+    constraints: [no_ai_clients, ontology, code_numbers, client_scoped, human_decision, replayable]
+    use_cases: {UC2: [6]}
+    pain_points: [alerts]
+    asset_classes: {now: [auto_abf, nav], after_pilot: [clo_bsl, middle_market, subscription]}
+    gateway_tasks:
+      draft_alert: Draft an alert rule
+    source: [app/monitoring/steps.py, app/monitoring/alerts.py]
+
+  - id: status_brief
+    name: Status-call brief
+    kind: model
+    stage: communicate
+    purpose: Drafts the weekly status-call brief for the client's named contact; every figure is a placeholder.
+    tasks:
+      - Summarise missing data, open questions, exclusions, identifier changes and missing financials
+    triggers:
+      - {kind: schedule, label: Weekly before each client's status call}
+    inputs: [Open findings, Submissions status, Code's figures]
+    outputs: [Status-call brief]
+    upstream:
+      - {agent: triage, hands_off: Open questions and exclusions}
+      - {agent: calculation, hands_off: Figures for placeholders}
+    constraints: [no_ai_clients, placeholders, code_numbers, human_decision, replayable]
+    use_cases: {UC2: [7]}
+    pain_points: [status_call, communications]
+    asset_classes: {now: [auto_abf, nav, middle_market], after_pilot: [clo_bsl, subscription]}
+    gateway_tasks:
+      draft_status_brief: Draft the status-call brief
+    source: [app/monitoring/steps.py, app/monitoring/brief.py]
+
+  # Code engines: no model -----------------------------------------------------------------
+
+  - id: quote_check
+    name: Quote check
+    kind: code
+    stage: validate
+    purpose: Finds every quote the model returns on its page or cell, and checks drafted text for raw numbers and unknown placeholders.
+    tasks:
+      - Find each quote in the parsed page text and keep its coordinates
+      - Check client-model treatments against their cells
+      - Fill placeholders from code's figures; refuse raw numbers
+    triggers:
+      - {kind: event, label: Model output returned}
+    inputs: [Model output, Parsed documents]
+    outputs: [Verified values with page and highlight, Unverified items to the queue]
+    upstream:
+      - {agent: extraction, hands_off: Values with quotes}
+      - {agent: definitions, hands_off: Definitions with quotes}
+      - {agent: client_model, hands_off: Treatments with cells}
+    constraints: [deterministic, quotes_verified, placeholders]
+    use_cases: {UC1: [2, 3], UC2: [1, 5]}
+    pain_points: [documents, definitions]
+    asset_classes: {now: [auto_abf, nav, clo_bsl, middle_market, subscription], after_pilot: []}
+    gateway_tasks: {}
+    source: [app/pipeline/assemble.py, app/pipeline/documents.py, app/casework/definitions.py, app/casework/client_model.py, app/pipeline/checks.py]
+
+  - id: validation
+    name: Validation
+    kind: code
+    stage: validate
+    purpose: Runs each client's rule families (missing data, duplicates, reference data, data types, logical constraints, change against prior period), each blocking or warning.
+    tasks:
+      - Run blocking and warning rules on every row
+      - Hold the load on a blocking failure until resolved
+      - Flag change against the prior period
+    triggers:
+      - {kind: event, label: Tape mapped}
+    inputs: [Mapped tape, Client's rule set]
+    outputs: [Rule failures, Held loads, Prior-period change flags]
+    upstream:
+      - {agent: mapping, hands_off: Mapped tape}
+      - {agent: rule_drafting, hands_off: Approved rule set}
+    constraints: [deterministic, code_numbers, client_scoped]
+    use_cases: {UC1: [5], UC2: [3]}
+    pain_points: [validation, data_handling]
+    asset_classes: {now: [auto_abf, nav, clo_bsl, middle_market, subscription], after_pilot: []}
+    gateway_tasks: {}
+    source: [app/monitoring/validate.py, app/pipeline/checks.py, packages/engine/engine/validation.py]
+
+  - id: reconciliation
+    name: Reconciliation
+    kind: code
+    stage: validate
+    purpose: Reconciles the tape with the servicer report and the borrower's certificate, and traces each gap to the loans that explain it.
+    tasks:
+      - Roll the pool forward and trace the gap to loans
+      - Compare charge-offs with the servicer report
+      - Bridge the borrower's borrowing base to the system's
+      - Find collateral pledged to two facilities
+    triggers:
+      - {kind: event, label: Tape loaded}
+    inputs: [Validated tape, Verified servicer figures, Borrower's certificate]
+    outputs: [Bridge and roll-forward, Gaps with loans]
+    upstream:
+      - {agent: validation, hands_off: Validated tape}
+      - {agent: quote_check, hands_off: Verified servicer figures}
+    constraints: [deterministic, code_numbers]
+    use_cases: {UC1: [5], UC2: [3, 5]}
+    pain_points: [calculations, validation]
+    asset_classes: {now: [auto_abf, nav, clo_bsl, middle_market, subscription], after_pilot: []}
+    gateway_tasks: {}
+    source: [packages/engine/engine/reconcile.py, packages/engine/engine/monitoring.py]
+
+  - id: calculation
+    name: Calculation and covenants
+    kind: code
+    stage: validate
+    purpose: Computes the borrowing base, triggers, covenants, NAV loan-to-value and CLO tests with headroom, what-if and early warning.
+    tasks:
+      - Borrowing base with eligibility and concentration excess
+      - Rolling triggers with what-if
+      - Financial covenants and NAV loan-to-value
+      - CCC bucket and market-value excess
+      - Headroom and early-warning indicators
+    triggers:
+      - {kind: event, label: Tape validated}
+      - {kind: event, label: Terms version effective}
+    inputs: [Validated tape, Effective terms, Approved rules, Verified figures]
+    outputs: [Test results, Headroom, Lender workbook figures]
+    upstream:
+      - {agent: validation, hands_off: Validated tape}
+      - {agent: rule_drafting, hands_off: Approved rule set}
+      - {agent: quote_check, hands_off: Verified terms and formulas}
+    constraints: [deterministic, code_numbers]
+    use_cases: {UC1: [6], UC2: [5, 6]}
+    pain_points: [calculations, asset_classes]
+    asset_classes: {now: [auto_abf, nav, clo_bsl, middle_market, subscription], after_pilot: []}
+    gateway_tasks: {}
+    source: [packages/engine/engine/rules.py, packages/engine/engine/covenants.py, packages/engine/engine/monitoring.py, packages/engine/engine/clo.py, packages/engine/engine/alerts.py]
+
+  - id: qc_comparison
+    name: QC comparison
+    kind: code
+    stage: report
+    purpose: Compares platform output with the independent QC workbook and separates presentation differences from genuine variances.
+    tasks:
+      - Classify each line as agreement, rounding, sign, per cent as decimal or blank against dash
+      - Trace each genuine variance to its loans and hold release until resolved
+    triggers:
+      - {kind: event, label: Independent QC workbook received}
+    inputs: [Platform figures, Independent QC workbook]
+    outputs: [Classified variances, Release hold]
+    upstream:
+      - {agent: calculation, hands_off: Platform figures}
+    constraints: [deterministic, code_numbers, four_eyes]
+    use_cases: {UC1: [7], UC2: [5]}
+    pain_points: [qc]
+    asset_classes: {now: [auto_abf, nav, clo_bsl, middle_market, subscription], after_pilot: []}
+    gateway_tasks: {}
+    source: [app/casework/qc.py, app/monitoring/qc.py]

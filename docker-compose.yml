@@ -19,7 +19,7 @@ services:
   # all anyone needs.
   pack:
     build: ./deal-kit
-    command: sh -c "(test -f output/casework-key/key.json || python -m dealkit.build) && (test -f output/cycle-key/key.json || python -m dealkit.cycle.build)"
+    command: sh -c "(test -f output/casework-key/key.json || python -m dealkit.build) && (test -f output/cycle-key/key.json || python -m dealkit.cycle.build) && (test -f output/newdeals/fenwick/key.json || python -m dealkit.newdeals.build)"
     volumes:
       - ./deal-kit:/deal-kit
 
@@ -35,6 +35,15 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_FOUNDRY_API_KEY: ${ANTHROPIC_FOUNDRY_API_KEY:-}
       ANTHROPIC_FOUNDRY_RESOURCE: ${ANTHROPIC_FOUNDRY_RESOURCE:-}
+      # New deals: uploads and live AI need this code; unset switches them off.
+      DEMO_ACCESS_CODE: ${DEMO_ACCESS_CODE:-}
+      LIVE_DAILY_CAP_USD: ${LIVE_DAILY_CAP_USD:-10}
+      # Offline end-to-end runs only: a deterministic test double instead of the model.
+      DEALS_STUB_MODEL: ${DEALS_STUB_MODEL:-false}
+      # Settings › AI provider: encrypts a key saved there (a Fernet key). Unset, nothing saves.
+      SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:-}
+      # Local runs only: saving a key there also writes it to the repo's .env, mounted below.
+      LOCAL_ENV_FILE: /run/oxane/repo.env
     ports:
       - "127.0.0.1:${API_PORT:-8010}:8000"
     volumes:
@@ -42,6 +51,12 @@ services:
       - ./deal-kit:/deal-kit:ro
       - ./packages/engine:/packages/engine:ro
       - ./fixtures:/fixtures
+      # Only the .env file, read-write. It must exist: cp .env.example .env
+      - type: bind
+        source: ./.env
+        target: /run/oxane/repo.env
+        bind:
+          create_host_path: false
     depends_on:
       db:
         condition: service_healthy
@@ -80,9 +95,12 @@ services:
     working_dir: /e2e
     environment:
       BASE_URL: http://web:5173
+      DEMO_ACCESS_CODE: ${DEMO_ACCESS_CODE:-}
+      E2E_LIVE: ${E2E_LIVE:-}
     volumes:
       - ./tests/e2e:/e2e
       - /e2e/node_modules
+      - ./deal-kit/output/newdeals:/newdeals:ro
     depends_on:
       - web
 

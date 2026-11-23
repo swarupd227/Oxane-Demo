@@ -363,6 +363,87 @@ def build_cycle_key(
     return key
 
 
+def add_review_scenarios(key: dict[str, Any], cycle: dict[str, Any], ravenglass: dict[str, Any],
+                         wharfedale: dict[str, Any], daily: dict[str, Any]) -> None:
+    """The RFP review's scenarios: a middle-market facility, a subscription line and the CLO
+    daily feeds. Added after the original key, which they leave as it was."""
+    key["checks"]["ravenglass"] = ravenglass
+    key["checks"]["wharfedale"] = wharfedale
+    key["checks"]["larkspur_daily"] = daily
+    r, w = ravenglass, wharfedale
+    key["issues"] |= {
+        "M13": {"facility": "ravenglass", "check": "obligor_covenants", "outcome": "confirmed",
+                "summary": f"{r['breach']['name']}: leverage {r['breach']['leverage']:.2f}x "
+                f"against a {r['breach']['max_leverage']:.2f}x maximum; out of the base",
+                "obligor": r["breach"]["id"], "value": r["breach"]["leverage"]},
+        "M14": {"facility": "ravenglass", "check": "addbacks", "outcome": "expert",
+                "summary": f"{r['addbacks']['name']}: add-backs of "
+                f"{r['addbacks']['addback_pct']:.0f}% of EBITDA; leverage passes or breaches "
+                "on how the cap is read",
+                "obligor": r["addbacks"]["id"], "readings": r["addbacks"]["readings"]},
+        "M15": {"facility": "ravenglass", "check": "obligor_financials", "outcome": "query",
+                "summary": f"{r['missing']['name']}: Q1 financials not delivered; excluded from "
+                "the borrowing base", "obligor": r["missing"]["id"]},
+        "M16": {"facility": "ravenglass", "check": "covenant_terms", "outcome": "logged",
+                "summary": f"{r['waiver']['name']}: waiver raises maximum leverage from "
+                f"{r['waiver']['original']:.2f}x to {r['waiver']['amended']:.2f}x for Q1",
+                "obligor": r["waiver"]["id"]},
+        "M17": {"facility": "wharfedale", "check": "investor_exclusion", "outcome": "confirmed",
+                "summary": f"{w['exclusion']['name']} downgraded to {w['exclusion']['to']}: "
+                "excluded, borrowing base below the loans outstanding",
+                "investor": w["exclusion"]["id"],
+                "prepayment": w["after_exclusion"]["prepayment"]},
+        "M18": {"facility": "wharfedale", "check": "investor_concentration",
+                "outcome": "confirmed",
+                "summary": f"{w['concentration']['name']} over the single-investor limit after "
+                "the exclusion", "investor": w["concentration"]["id"],
+                "excess": w["concentration"]["excess"]},
+        "M19": {"facility": "wharfedale", "check": "notice_reconciliation", "outcome": "query",
+                "summary": f"Register has not posted capital call {w['capital_call']['number']} "
+                f"for {w['register']['stale']['name']}",
+                "investor": w["register"]["stale"]["id"]},
+        "M20": {"facility": "larkspur", "check": "daily_feeds", "outcome": "query",
+                "summary": f"No bid price file for {daily['missing'][0]['as_of']}",
+                "as_of": daily["missing"][0]["as_of"]},
+    }
+    key["noise"] |= {
+        "N6": {"facility": "ravenglass", "check": "obligor_covenants",
+               "summary": f"{r['rounding']['name']}: fund reports {r['rounding']['reported']:.2f}x"
+               f", recomputed {r['rounding']['recomputed']:.2f}x; within tolerance"},
+        "N7": {"facility": "wharfedale", "check": "notice_reconciliation",
+               "summary": f"Distribution notice {w['distribution']['number']} reconciles to the "
+               "register, recallable amount added back"},
+        "N8": {"facility": "larkspur", "check": "daily_feeds",
+               "summary": f"Position file for {daily['late'][0]['as_of']} arrived after its "
+               "deadline, complete"},
+    }
+    _verify_review(key, cycle)
+
+
+def _verify_review(key: dict[str, Any], cycle: dict[str, Any]) -> None:
+    r, w = key["checks"]["ravenglass"], key["checks"]["wharfedale"]
+    daily = key["checks"]["larkspur_daily"]
+    assert r["obligors"] == 40 and r["received"] == 39, r["obligors"]
+    assert r["breach"]["leverage"] > r["breach"]["max_leverage"], r["breach"]
+    readings = r["addbacks"]["readings"]
+    assert readings["as_reported"] <= r["addbacks"]["max_leverage"] < readings[
+        "integration_capped"] <= readings["all_capped"], readings
+    assert r["waiver"]["original"] < r["waiver"]["leverage"] <= r["waiver"]["amended"]
+    assert r["rounding"]["recomputed"] - r["rounding"]["reported"] == 0.01 or abs(
+        r["rounding"]["recomputed"] - r["rounding"]["reported"] - 0.01) < 1e-9
+    assert sorted(r["excluded"].values()) == ["Material Obligor Event",
+                                               "financials not delivered"], r["excluded"]
+    assert r["availability"] > 0 and r["certificate_difference"] > 0, r
+    assert r["largest_obligor"]["pct"] <= 7.5 and r["largest_sector"]["pct"] <= 20, r
+    assert len(r["layouts"]) == 4 and len(r["certificate_forms"]) == 2
+    assert w["before_exclusion"]["prepayment"] == 0 < w["after_exclusion"]["prepayment"], w
+    assert not w["before_exclusion"]["concentration_excess"], w["before_exclusion"]
+    assert w["concentration"]["share_pct"] > 15 and w["concentration"]["excess"] > 0
+    assert w["register"]["stale"]["difference"] > 0
+    assert daily["expected"] == 60 and daily["received"] == 59, daily
+    assert cycle["ravenglass"]["obligors"] == r["obligors"]
+
+
 def _verify(key: dict[str, Any], cycle: dict[str, Any]) -> None:
     """The numbers the script quotes must hold, or the kit is not built."""
     checks = key["checks"]

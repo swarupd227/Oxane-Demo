@@ -47,7 +47,8 @@ from app.monitoring import alerts as client_alerts
 from app.monitoring import book as desk_book
 from app.monitoring import brief as status_brief
 from app.monitoring import clients as policy
-from app.monitoring import clo, qc, steps
+from app.monitoring import clo, qc, schedules, steps, subline
+from app.monitoring import middle_market as mm
 from app.monitoring import validate as validation
 from app.pipeline.catalogue import PLATFORM_FIELDS
 from app.pipeline.documents import PdfDocument, find_citation, normalise, read_pdf
@@ -81,7 +82,8 @@ def served_files() -> set[str]:
             (settings.pipeline_dir / "pack.json").read_text(encoding="utf-8")
         ).values()
     }
-    for folder_name in [item["folder"] for item in record()["facilities"]] + ["qc"]:
+    daily = [item["daily_folder"] for item in record()["facilities"] if item.get("daily_folder")]
+    for folder_name in [item["folder"] for item in record()["facilities"]] + ["qc", *daily]:
         folder = cycle_path(folder_name)
         if folder.exists():
             names |= {f"{folder_name}/{path.name}" for path in folder.iterdir()}
@@ -200,10 +202,14 @@ def business_days_after(day: date, count: int) -> date:
 
 
 def collect(as_of: date) -> list[dict[str, Any]]:
+    return collect_items(record()["submissions"], as_of)
+
+
+def collect_items(inbox: list[dict[str, Any]], as_of: date) -> list[dict[str, Any]]:
     chase_policy = record()["chase_policy"]
     days = record()["internal_deadline_days"]
     items = []
-    for item in record()["submissions"]:
+    for item in inbox:
         due, received = item["due"], item["received"]
         reused = item.get("reused")
         late = received is None and not reused and as_of > due
@@ -229,13 +235,14 @@ def collect(as_of: date) -> list[dict[str, Any]]:
                         "at": escalate.isoformat(),
                         "action": "Escalated automatically",
                         "to": f"Relationship manager at {sender}; copied to the lender",
-                        "text": "Still not received one business day after the "
-                        "reminder. The May borrowing base stays pending.",
+                        "text": item.get("escalation_note") or "Still not received one business "
+                        "day after the reminder. The May borrowing base stays pending.",
                     }
                 )
         items.append(
             {
-                **{k: v for k, v in item.items() if k not in ("due", "received", "reused")},
+                **{k: v for k, v in item.items()
+                   if k not in ("due", "received", "reused", "escalation_note")},
                 "client": client["id"],
                 "due": due.isoformat(),
                 "internal_deadline": internal.isoformat(),
@@ -1348,7 +1355,8 @@ OUTCOME_WORDS = {
 
 
 def topic(item: dict[str, Any]) -> str:
-    return next(text for prefix, text in TOPICS.items() if item["id"].startswith(prefix))
+    topics = {**mm.TOPICS, **subline.TOPICS, **schedules.TOPICS, **TOPICS}
+    return next(text for prefix, text in topics.items() if item["id"].startswith(prefix))
 
 
 PACK_HEADINGS = {
@@ -1555,15 +1563,26 @@ def possessive(name: str) -> str:
 
 
 def larkspur_pack(
-    tests: dict[str, Any], recon: dict[str, Any], items: list[dict[str, Any]]
+    tests: dict[str, Any], recon: dict[str, Any], items: list[dict[str, Any]],
+    daily: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The pack for a client that does not permit AI: code's standard wording, no model."""
     lark = tests["larkspur"]
     figures = pack_figures("larkspur", tests, recon, items)
     downgrade = lark["downgrades"][0] if lark["downgrades"] else None
+    feeds = ""
+    if daily:
+        missing = [f"{f['document'].lower()} for {pretty(d)}" for f in daily["feeds"]
+                   for d in f["missing"]]
+        late = [f"{f['document'].lower()} for {pretty(d)}" for f in daily["feeds"]
+                for d in f["late"]]
+        feeds = (f" Daily feeds: {daily['received']} of {daily['expected']} deliveries arrived."
+                 + (f" Not received: {', '.join(missing)}; we have asked for it." if missing
+                    else "")
+                 + (f" Late but complete: {', '.join(late)}." if late else ""))
     sections = [
         {"heading": "Submissions", "text": "The May collateral report arrived by SFTP and the "
-         "29 May bid prices by API, both on time. Both passed every blocking check."},
+         "29 May bid prices by API, both on time. Both passed every blocking check." + feeds},
         {"heading": "CCC bucket and borrowing base", "text": "The CCC share is {{ccc_pct}} "
          "against a {{ccc_limit}} limit, up from {{april_ccc_pct}} in April"
          + (f", after {downgrade['issuer']} was downgraded to {'/'.join(downgrade['after'])}"
@@ -1617,6 +1636,9 @@ def mapping_view(
         "northmoor": (by["northmoor"]["mapping"], "Onboarding, September 2025", None),
         "larkspur": (by["larkspur"]["mapping"], "Onboarding, February 2026", None),
     }
+    for f in meta["facilities"]:
+        if f["id"] not in sources and f.get("mapping"):
+            sources[f["id"]] = (f["mapping"], f.get("mapping_stored", "Onboarding"), None)
     out = []
     for feed in feeds:
         columns, stored, change = sources[feed["facility"]]
@@ -1650,7 +1672,8 @@ def mapping_view(
             "name": client["name"],
             "layouts": [
                 {"facility": f["id"], "columns": len(sources[f["id"]][0]) if f["id"] in sources
-                 else 0, "kind": "Loan tape" if f["asset_class"] == "Auto ABF" else
+                 else 0, "kind": f["layout_kind"] if f.get("layout_kind") else
+                 "Loan tape" if f["asset_class"] == "Auto ABF" else
                  "Collateral report" if f["id"] == "larkspur" else "Documents only"}
                 for f in mine
             ],
@@ -1724,14 +1747,50 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
     # Review: triage, then report
     items = findings(subs, layout, recon, timeline, tests, shared, feeds)
     triage(calderwood, items)
-    for item in items:
+
+    # The RFP review's scenarios: a middle-market facility, a subscription line and the CLO
+    # daily feeds. They run after the original facilities, with their own model requests, so
+    # every earlier request (and its recording) is exactly as it was.
+    pending = mm.Pending()
+    rvg, whf = facility("ravenglass"), facility("wharfedale")
+    review_subs = collect_items(
+        [*meta["review_submissions"], *mm.submissions(rvg, cycle_path("ravenglass"))], as_of)
+    for sub in review_subs:
+        sub["review"] = True
+    rvg_feed, _ = validation.run_feed(
+        meta, "ravenglass", rvg["portfolio_report"],
+        cycle_path("ravenglass") / rvg["portfolio_report"], "mm_portfolio",
+        [{k: v for k, v in r.items() if k != "sheet_row"} for r in mm.read_sheet(
+            cycle_path("ravenglass") / rvg["portfolio_report"], "Portfolio", rvg["mapping"])])
+    whf_feed, _ = validation.run_feed(
+        meta, "wharfedale", whf["registers"]["May"],
+        cycle_path("wharfedale") / whf["registers"]["May"], "investor_register",
+        [{k: v for k, v in r.items() if k != "sheet_row"} for r in mm.read_sheet(
+            cycle_path("wharfedale") / whf["registers"]["May"], "Register", whf["mapping"])])
+    tests["ravenglass"] = mm.tests(calderwood, evidence, meta, cycle_path("ravenglass"),
+                                   review_subs, pending)
+    tests["wharfedale"] = subline.tests(meta, cycle_path("wharfedale"), evidence)
+    daily = schedules.daily_feeds(meta, settings.deal_kit_output / "cycle",
+                                  (date(2026, 5, 1), date(2026, 5, 29)))
+    rvg_items = mm.findings(tests["ravenglass"], review_subs, pretty)
+    mm.triage(calderwood, rvg_items, pending)
+    review_items = [*rvg_items, *subline.findings(tests["wharfedale"]),
+                    *schedules.findings(daily, pretty)]
+    every = [*items, *review_items]
+    for item in every:
         item["topic"] = topic(item)
-    packs = [
-        larkspur_pack(tests, recon, items)
-        if not policy.ai_permitted(meta, f["id"])
-        else lender_pack(calderwood, f["id"], f["name"], tests, recon, items, subs)
-        for f in meta["facilities"]
-    ]
+    packs = []
+    for f in meta["facilities"]:
+        if f["id"] == "ravenglass":
+            packs.append(mm.pack(calderwood, f, tests["ravenglass"], rvg_items, review_subs,
+                                 pending, OUTCOME_WORDS))
+        elif f["id"] == "wharfedale":
+            packs.append(subline.pack(tests["wharfedale"],
+                                      [i for i in review_items if i["facility"] == "wharfedale"]))
+        elif not policy.ai_permitted(meta, f["id"]):
+            packs.append(larkspur_pack(tests, recon, every, daily))
+        else:
+            packs.append(lender_pack(calderwood, f["id"], f["name"], tests, recon, items, subs))
 
     result: dict[str, Any] = {
         "cycle": meta["cycle"] | {"as_of": as_of.isoformat(), "period_end": period_end.isoformat()},
@@ -1765,21 +1824,39 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
             }
             for f in meta["facilities"]
         ],
-        "submissions": subs,
+        "submissions": [*subs, *review_subs],
         "layout": layout,
-        "validation": {"feeds": feeds},
+        "validation": {"feeds": [*feeds, rvg_feed, whf_feed]},
         "reconciliation": recon,
         "terms": timeline,
         "tests": tests,
         "collateral": shared,
-        "findings": items,
+        "findings": every,
         "packs": packs,
+        "daily_feeds": daily,
     }
     result["mapping"] = mapping_view(meta, layout, memory, [bramble_feed, northmoor_feed,
-                                                            *lark_feeds])
+                                                            *lark_feeds, rvg_feed, whf_feed])
     result["qc"] = qc.compare(result, cycle_path("qc"))
-    result["headroom"] = client_alerts.headroom_view(meta, result)
-    result["early_warnings"] = client_alerts.early_warning_indicators(result)
+    history = meta.get("history", {})
+    result["headroom"] = [
+        *client_alerts.headroom_view(meta, result),
+        *mm.headroom_rows(tests["ravenglass"], [tuple(p) for p in history.get(
+            "ravenglass.availability_usd", [])], client_alerts._row),
+        *subline.headroom_rows(tests["wharfedale"], [tuple(p) for p in history.get(
+            "wharfedale.availability_usd", [])], client_alerts._row),
+    ]
+    result["early_warnings"] = client_alerts.early_warning_indicators(result) + [
+        {"facility": "wharfedale", "kind": "Rating downgrade", "subject": r["name"],
+         "detail": f"{r['prior_rating']} to {r['rating']}, an Exclusion Event",
+         "source": tests["wharfedale"]["clause_sources"]["exclusion"]}
+        for r in tests["wharfedale"]["exclusions"]
+    ] + [
+        {"facility": "larkspur", "kind": "Daily rating feed", "subject": c["issuer"],
+         "detail": f"{c['agency']} {c['previous']} to {c['current']} on {pretty(c['as_of'])}",
+         "source": None}
+        for c in daily["rating_changes"]
+    ]
     result["alerts"] = {
         client["id"]: {
             "ai_permitted": client["ai_permitted"],
@@ -1798,12 +1875,37 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
         }
         for client in meta["clients"]
     }
+    # Calderwood's brief is drafted from its original facilities' facts, exactly as before; the
+    # review facilities add their own sections after it.
+    core = {**result, "submissions": subs, "validation": {"feeds": feeds}}
     result["briefs"] = [
-        status_brief.draft_calderwood(gateways[c["id"]], c, result, items)
+        status_brief.draft_calderwood(gateways[c["id"]], c, core, items)
         if c["ai_permitted"]
         else status_brief.template_brief(c, result)
         for c in meta["clients"]
     ]
+    for brief in result["briefs"]:
+        if brief["client"] == "calderwood":
+            client = next(c for c in meta["clients"] if c["id"] == "calderwood")
+            section, figures = mm.brief_section(calderwood, client, tests["ravenglass"],
+                                                rvg_items, pending)
+            brief["unknown_placeholders"] = sorted({*brief["unknown_placeholders"],
+                                                    *section.pop("unknown_placeholders")})
+            brief["numbers_in_text"] = sorted({*brief["numbers_in_text"],
+                                               *section.pop("numbers_in_text")})
+            brief["sections"].append(section)
+            brief["figures"] |= figures
+        else:
+            extra = subline.brief_points(tests["wharfedale"])
+            missing = [f"Larkspur: {f['document'].lower()} for {pretty(d)} not received; the "
+                       "pricing service has been asked to resend it" for f in daily["feeds"]
+                       for d in f["missing"]]
+            for s in brief["sections"]:
+                if s["heading"] == "Missing data" and missing:
+                    s["points"] = [p.removeprefix("None. ") for p in s["points"]] + missing
+                if s["heading"] in extra and extra[s["heading"]]:
+                    s["points"] = [p for p in s["points"] if p != "None."] + extra[s["heading"]]
+    result["pending_recording"] = pending.items
     result["unverified"] = evidence.unverified
     result["usage"] = {
         "model": gateway.model,
@@ -1824,6 +1926,12 @@ def run_cycle(gateway: Gateway, out_dir: Path) -> dict[str, Any]:
     result["team"] = meta.get("team", {})
     result["book"] = desk_book.build(meta, cycle_path("book"), as_of, business_days_after)
     number(result, as_of)
+    result["schedules"] = schedules.facility_schedules(
+        meta, meta["facilities"], [*result["submissions"], *result["book"]["submissions"]],
+        daily, result["book"]["facilities"])
+    result["mapping"]["library"] = schedules.library(
+        meta, [*meta["facilities"], *result["book"]["facilities"]],
+        [*result["submissions"], *result["book"]["submissions"]], tests["ravenglass"], daily)
     (out_dir / "cycle.json").write_text(
         json.dumps(result, indent=1, default=str) + "\n", encoding="utf-8"
     )
@@ -1834,7 +1942,10 @@ def number(result: dict[str, Any], as_of: date) -> None:
     """Reference numbers for findings and submissions, and the date each finding was raised:
     the day its facility's last file arrived, or the day a late file was escalated."""
     period = result["cycle"]["id"].removeprefix("M-")
-    subs = [*result["submissions"], *result["book"]["submissions"]]
+    # The review's submissions are numbered after the book, so earlier references stand.
+    subs = [*[s for s in result["submissions"] if not s.get("review")],
+            *result["book"]["submissions"],
+            *[s for s in result["submissions"] if s.get("review")]]
     for index, sub in enumerate(subs, start=1):
         sub["ref"] = f"SUB-{period}-{index:04d}"
     arrived: dict[str, str] = {}
@@ -1854,11 +1965,15 @@ def number(result: dict[str, Any], as_of: date) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["record", "replay", "live"], required=True)
-    mode = parser.parse_args().mode
+    parser.add_argument("--budget-usd", type=float, default=None,
+                        help="Stop before any live call once this much has been spent")
+    args = parser.parse_args()
+    mode = args.mode
     gateway = Gateway(
         mode=mode,
         fixtures=settings.cycle_llm_fixtures,
         client_factory=lambda: AnthropicClient(settings.llm_provider),
+        budget_usd=args.budget_usd,
     )
     result = run_cycle(gateway, settings.cycle_dir)
     if mode == "record":
@@ -1868,6 +1983,8 @@ def main() -> int:
             {
                 "findings": len(result["findings"]),
                 "unverified": result["unverified"],
+                "pending_recording": result["pending_recording"],
+                "spent_live_usd": gateway.spent_usd(),
                 **result["usage"],
             },
             indent=1,

@@ -30,6 +30,10 @@ class ModelError(RuntimeError):
     """The model did not return a complete answer."""
 
 
+class BudgetExceeded(RuntimeError):
+    """A recording run reached its spending cap before this call."""
+
+
 @dataclass(frozen=True)
 class Usage:
     task: str
@@ -54,20 +58,30 @@ class ModelClient(Protocol):
 
 
 class AnthropicClient:
-    """Claude through the first-party API or Microsoft Foundry, chosen by configuration."""
+    """Claude through the first-party API or Microsoft Foundry.
+
+    The key and provider are resolved on every request: a key saved on Settings › AI provider
+    first, then the environment (`provider` is the environment's choice). A changed key gets a
+    new SDK client on the next call, with no restart.
+    """
 
     def __init__(self, provider: str) -> None:
-        if provider == "foundry":
-            from anthropic import AnthropicFoundry
+        self.provider = provider
+        self._client: Any = None
+        self._built_for = ""
 
-            self._client: Any = AnthropicFoundry()
-        else:
-            from anthropic import Anthropic
+    def _sdk(self) -> Any:
+        from app.admin.ai_provider import effective, sdk_client
 
-            self._client = Anthropic()
+        current = effective(env_provider=self.provider)
+        ident = hashlib.sha256(f"{current.provider}\0{current.key}".encode()).hexdigest()
+        if self._client is None or ident != self._built_for:
+            self._client = sdk_client(current)
+            self._built_for = ident
+        return self._client
 
     def request(self, payload: dict[str, Any]) -> tuple[str, Usage]:
-        with self._client.messages.stream(**payload) as stream:
+        with self._sdk().messages.stream(**payload) as stream:
             message = stream.get_final_message()
         if message.stop_reason != "end_turn":
             raise ModelError(f"Model stopped early: {message.stop_reason}")
@@ -114,6 +128,8 @@ class Gateway:
     model: str = "claude-opus-5-5"
     effort: str = "high"
     client_factory: Callable[[], ModelClient] | None = None
+    # Live spend cap in US$ for a recording run; replayed calls cost nothing and do not count.
+    budget_usd: float | None = None
     usage: list[Usage] = field(default_factory=list)
     used: set[Path] = field(default_factory=set)
     _client: ModelClient | None = None
@@ -144,6 +160,9 @@ class Gateway:
         if self.mode == "replay":
             raise ReplayMiss(f"No recorded response for {task} ({digest[:12]})")
 
+        if self.budget_usd is not None and self.spent_usd() >= self.budget_usd:
+            raise BudgetExceeded(f"Spent US${self.spent_usd():.2f} of the US${self.budget_usd:.2f} "
+                                 f"cap before {task}")
         if self._client is None:
             if self.client_factory is None:
                 raise ModelError("No model client is configured")
@@ -166,6 +185,10 @@ class Gateway:
         for path in stale:
             path.unlink()
         return len(stale)
+
+    def spent_usd(self) -> float:
+        """What this run has spent on live calls, leaving out replayed ones."""
+        return round(sum(u.cost_usd(self.model) for u in self.usage if not u.from_replay), 4)
 
     def total_cost_usd(self) -> float:
         return round(sum(item.cost_usd(self.model) for item in self.usage), 4)

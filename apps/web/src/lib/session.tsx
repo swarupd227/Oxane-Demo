@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { onboardingActor, PERSONA_FOR_ACTOR, usePersona } from "./persona";
 import type { ExceptionItem, Term, Workbench } from "./workbench";
 
 export type Actor = "analyst" | "approver";
@@ -183,7 +184,9 @@ const SESSION_KEY = ["session"];
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
-  const [actor, setActor] = useState<Actor>("analyst");
+  // The acting persona decides the actor; the API checks it again.
+  const { persona, setPersona } = usePersona();
+  const actor: Actor = onboardingActor(persona?.role);
   const [refusal, setRefusal] = useState<string | null>(null);
   const { data: me } = useQuery({
     queryKey: ["me"],
@@ -205,7 +208,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const dispatch = useCallback(
     (action: Action) => {
       if (action.type === "set-actor") {
-        setActor(action.actor);
+        setPersona(PERSONA_FOR_ACTOR[action.actor]);
         return;
       }
       setRefusal(null);
@@ -216,13 +219,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       request
         .then((next) => {
           client.setQueryData(SESSION_KEY, next);
-          if (action.type === "reset") {
-            setActor("analyst");
-          }
+          void client.invalidateQueries({ queryKey: ["work"] });
         })
         .catch((error: Error) => setRefusal(error.message));
     },
-    [actor, client],
+    [actor, client, setPersona],
   );
 
   const value = useMemo(

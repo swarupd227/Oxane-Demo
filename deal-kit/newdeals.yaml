@@ -1,0 +1,101 @@
+# Two more test deals, distinct from the Bramble pack in structure, terms and file layout.
+# They exercise the create-to-monitor path on documents the pipeline was not written around.
+# python -m dealkit.newdeals.build writes them to output/newdeals/<id>/.
+
+consumer:
+  id: harbourline
+  seed: 7311
+  deal_type: Consumer instalment
+  lender: {name: Ashgrove Capital Partners LP, short: Ashgrove, address: "400 Park Row, Suite 2100, Chicago, IL 60601"}
+  borrower: {name: Harbourline Consumer Receivables LLC, short: Harbourline, address: "88 Quay Street, Baltimore, MD 21202"}
+  parent: Harbourline Finance Inc.
+  servicer: Harbourline Servicing LLC
+  governing_law: State of Illinois
+  signing_date: 2026-03-16
+  commitment_usd: 150000000
+  advance_rate_pct: "88.00"
+  reserve_pct: "1.50"
+  margin: "SOFR plus 3.40% per annum"
+  revolving_period_end: 2028-03-15
+  final_maturity: 2029-09-15
+  report_day: 15
+  amendment:
+    signed: 2026-08-20
+    effective: 2026-09-01
+    advance_rate_pct: "86.00"
+    new_concentration: {text: "Receivables financing Home Improvement products", limit_pct: "20.00"}
+  eligibility:
+    max_days_past_due: 30
+    min_credit_score: 600
+    max_original_term: 60
+    max_current_balance: 35000
+    max_apr: "35.99"
+    restricted_states: [NY, VT, WV]
+    excluded_statuses: [CHARGED_OFF, DEFAULTED]
+  concentration:
+    state_pct: "20.00"
+    low_score: {below: 640, limit_pct: "15.00"}
+    long_term: {above: 48, limit_pct: "30.00"}
+  triggers:
+    delinquency: {days: 60, limit_pct: "5.00", months: 3}
+    net_loss: {limit_pct: "9.00"}
+  tape:
+    file: Harbourline_Loan_Tape_2026-09.csv
+    cutoff: 2026-09-30
+    loans: 1400
+    history_pct: {"2026-07": "2.41", "2026-08": "2.63"}
+  later:
+    file: Harbourline_Loan_Tape_2026-10.csv
+    report: Harbourline_Servicer_Report_October_2026.pdf
+    cutoff: 2026-10-31
+    new_loans: 90
+    paid_off: 45
+    charged_off: 6
+    duplicate_rows: 1
+  client_model: {file: Ashgrove_Harbourline_BB_Model_v1.xlsx, stale_advance_rate_pct: "88.00"}
+
+sme:
+  id: fenwick
+  seed: 9127
+  deal_type: SME loans
+  lender: {name: Marlow Bank plc, short: Marlow, address: "12 Lothbury, London EC2R 7HH"}
+  borrower: {name: Fenwick SME Funding LLC, short: Fenwick, address: "1900 Commerce Street, Dallas, TX 75201"}
+  parent: Fenwick Business Capital Inc.
+  servicer: Fenwick Business Capital Inc.
+  governing_law: State of New York
+  signing_date: 2026-05-04
+  commitment_usd: 80000000
+  advance_rate_pct: "70.00"
+  # The agreement deliberately has no reserve: extraction must report it missing, not invent it.
+  margin: "Term SOFR plus 4.25% per annum"
+  revolving_period_end: 2028-05-04
+  final_maturity: 2030-05-04
+  report_day: 20
+  eligibility:
+    max_days_past_due: 30
+    max_risk_grade: 6
+    max_original_principal: 750000
+    max_remaining_term: 84
+    excluded_sectors: [Gaming, Cannabis, Digital Assets]
+    excluded_statuses: [DEFAULT, WRITTEN_OFF]
+  concentration:
+    obligor_pct: "2.50"
+    sector_pct: "20.00"
+    region_pct: "30.00"
+    weak_grade: {from: 5, limit_pct: "35.00"}
+  triggers:
+    delinquency: {days: 30, limit_pct: "7.50", months: 3}
+  tape:
+    file: Fenwick_Portfolio_2026-09.xlsx
+    cutoff: 2026-09-30
+    loans: 520
+    history_pct: {"2026-07": "4.12", "2026-08": "4.37"}
+  later:
+    file: Fenwick_Portfolio_2026-10.xlsx
+    report: Fenwick_Monthly_Report_October_2026.pdf
+    cutoff: 2026-10-31
+    new_loans: 30
+    paid_off: 18
+    charged_off: 3
+    renamed: {"Arrears Days": "Days in Arrears"}
+    added: Collateral Type

@@ -275,6 +275,93 @@ def read_nav_pack(gateway: Gateway, documents: list[PdfDocument]) -> NavReading:
     )
 
 
+# Middle-market obligors
+
+
+class ObligorAddBack(BaseModel):
+    description: str
+    amount: str
+    kind: Literal["capped", "uncapped", "judgement"]
+    reason: str
+    quote: str
+
+
+class ObligorReading(BaseModel):
+    obligor_id: str
+    unit: str
+    figures: list[Figure]
+    addbacks: list[ObligorAddBack]
+
+
+class ObligorBatch(BaseModel):
+    obligors: list[ObligorReading]
+
+
+OBLIGOR_GUIDE = (
+    "These are middle-market obligors' quarterly financial statements and compliance "
+    "certificates, each in the obligor's own layout. For each obligor, give `obligor_id` as "
+    "printed (such as RVG-007, or from the file name), `unit` as the documents state it (US$ "
+    "thousands or US$ millions), and these figures by name, each `value` exactly as printed "
+    "with its quote: Consolidated EBITDA (before adjustments), Net debt, Interest expense, "
+    "Covenant EBITDA, Total net leverage, Interest cover. Leave out any figure a document does "
+    "not print. List every EBITDA add-back the certificate itemises, with its amount as "
+    "printed. Set `kind` by the facility's Covenant EBITDA definition, given below: capped for "
+    "cost savings, synergies or restructuring charges; uncapped for another adjustment; "
+    "judgement where the documents do not settle which it is. `reason` is one plain sentence "
+    "in UK spelling. Never compute a figure.\n\nCovenant EBITDA definition: "
+)
+
+
+def read_obligor_financials(gateway: Gateway, documents: list[PdfDocument],
+                            definition: str) -> ObligorBatch:
+    return gateway.parse(
+        "read_obligor_financials",
+        GROUND_RULES,
+        [
+            *[_doc(document) for document in documents],
+            {"type": "text", "text": OBLIGOR_GUIDE + definition},
+        ],
+        ObligorBatch,
+        max_tokens=16000,
+    )
+
+
+class CovenantChange(BaseModel):
+    obligor_id: str
+    covenant: str
+    old_value: str
+    new_value: str
+    test_dates: list[str]
+    effective_from: str
+    quote: str
+
+
+class CovenantNotice(BaseModel):
+    changes: list[CovenantChange]
+
+
+def read_covenant_notice(gateway: Gateway, notice: PdfDocument) -> CovenantNotice:
+    return gateway.parse(
+        "read_covenant_notice",
+        GROUND_RULES,
+        [
+            _doc(notice),
+            {
+                "type": "text",
+                "text": (
+                    "This notice reports an amendment or waiver of an obligor's financial "
+                    "covenant. List each covenant it changes. `old_value` and `new_value` are "
+                    "bare ratios as printed, such as 5.50:1.00. `test_dates` and "
+                    "`effective_from` are ISO dates. `quote` is the sentence that states the "
+                    "change, copied exactly."
+                ),
+            },
+        ],
+        CovenantNotice,
+        max_tokens=4000,
+    )
+
+
 # Triage
 
 

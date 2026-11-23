@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, Code2, FileSpreadsheet, Lock, Send, ShieldCheck, 
 import { useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
+import { Tooltip } from "../../components/ui/Tooltip";
 import { Refusal, useActor, useCycle, useCycleAction, useCycleSession, workbookUrl, type FacilityId, type QcLine, type Source } from "../cycle";
 import { deskRows, REPORT_LABEL, useScope, type DeskRow } from "../desk";
 import { FacilityTabs, FacilityTag, Filled, SourcePanel } from "../parts";
@@ -242,7 +243,15 @@ export function PackPage() {
                     Provisional
                   </Badge>
                 )}
-                {pack.ai === false ? (
+                {pack.pending_recording ? (
+                  <Tooltip content="Written from the code template: the drafting step for this facility has not been recorded yet.">
+                    <span tabIndex={0}>
+                      <Badge tone="warn" icon={<Code2 aria-hidden className="size-3" />}>
+                        Template · draft pending
+                      </Badge>
+                    </span>
+                  </Tooltip>
+                ) : pack.ai === false ? (
                   <Badge tone="neutral" icon={<Code2 aria-hidden className="size-3" />}>
                     Template
                   </Badge>

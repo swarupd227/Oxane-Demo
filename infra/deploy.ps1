@@ -33,6 +33,10 @@ param(
     # Its redirect address must be <app address>/.auth/login/aad/callback, which this script prints.
     [string] $AuthClientId = "",
     [string] $AuthClientSecret = "",
+    # Live AI for new cases: reads ANTHROPIC_API_KEY from the environment or the git-ignored .env,
+    # and a demo access code from OXANE_DEMO_ACCESS_CODE or .env.azure (a new one is saved there).
+    [switch] $LiveAi,
+    [string] $LiveDailyCapUsd = "10",
     [string] $FoundryResource = "",
     [string] $FoundryApiKey = ""
 )
@@ -127,10 +131,41 @@ if ($AuthClientId) {
 
 }
 
+function Read-EnvValue([string] $File, [string] $Name) {
+    if (-not (Test-Path $File)) { return "" }
+    $line = Get-Content $File | Where-Object { $_ -match "^$Name=" } | Select-Object -First 1
+    if ($line) { return $line.Substring($Name.Length + 1).Trim().Trim('"') }
+    return ""
+}
+$liveParams = @()
+if ($LiveAi) {
+    $anthropicKey = if ($env:ANTHROPIC_API_KEY) { $env:ANTHROPIC_API_KEY } else { Read-EnvValue (Join-Path $root ".env") "ANTHROPIC_API_KEY" }
+    # The key may instead be entered later by an admin in Settings > AI provider.
+    if (-not $anthropicKey) { Write-Host "No ANTHROPIC_API_KEY found; an admin can set it in Settings > AI provider." }
+    $accessCode = if ($env:OXANE_DEMO_ACCESS_CODE) { $env:OXANE_DEMO_ACCESS_CODE } else { Read-EnvValue $passwordFile "OXANE_DEMO_ACCESS_CODE" }
+    if (-not $accessCode) {
+        $accessCode = "oxane-" + ([Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(3))).ToLower()
+        Add-Content -Path $passwordFile -Value "OXANE_DEMO_ACCESS_CODE=$accessCode"
+        Write-Host "Saved a new demo access code to $passwordFile."
+    }
+    $liveParams = @("llmProvider=anthropic", "anthropicApiKey=$anthropicKey", "demoAccessCode=$accessCode", "liveDailyCapUsd=$LiveDailyCapUsd")
+}
+
+# Encrypts settings saved in the app (an admin-entered model key). Kept in .env.azure so a
+# redeploy can still read what was saved.
+$settingsKey = if ($env:OXANE_SETTINGS_ENCRYPTION_KEY) { $env:OXANE_SETTINGS_ENCRYPTION_KEY } else { Read-EnvValue $passwordFile "OXANE_SETTINGS_ENCRYPTION_KEY" }
+if (-not $settingsKey) {
+    $settingsKey = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).Replace('+', '-').Replace('/', '_')
+    Add-Content -Path $passwordFile -Value "OXANE_SETTINGS_ENCRYPTION_KEY=$settingsKey"
+    Write-Host "Saved a new settings encryption key to $passwordFile. Keep it: saved settings need it."
+}
+$liveParams += @("settingsEncryptionKey=$settingsKey")
+
 Write-Host "Deploying the app"
-$outputs = Deploy-Template @(
+$appParams = @(
     "image=$image", "authClientId=$clientId", "authClientSecret=$clientSecret",
     "analystUsers=$AnalystUsers", "approverUsers=$ApproverUsers", "seniorUsers=$SeniorUsers",
     "foundryResource=$FoundryResource", "foundryApiKey=$FoundryApiKey"
-)
+) + $liveParams
+$outputs = Deploy-Template $appParams
 Write-Host "Done: $($outputs.appUrl.value)"

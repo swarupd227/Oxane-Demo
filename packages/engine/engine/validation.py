@@ -108,11 +108,21 @@ def _price_in_range(row: Row) -> bool:
     return price is None or Decimal(0) < price <= Decimal(110)
 
 
+def _not_above_commitment(field_name: str) -> Callable[[Row], bool]:
+    def check(row: Row) -> bool:
+        value, commitment = _number(row.get(field_name, "")), _number(row.get("commitment", ""))
+        return value is None or commitment is None or value <= commitment
+
+    return check
+
+
 LOGICAL: dict[str, Callable[[Row], bool]] = {
     "balance_not_above_original": _not_above_original,
     "matures_after_origination": _matures_after_origination,
     "charge_off_has_amount": _charge_off_has_amount,
     "price_in_range": _price_in_range,
+    "outstanding_not_above_commitment": _not_above_commitment("outstanding"),
+    "uncalled_not_above_commitment": _not_above_commitment("uncalled"),
 }
 
 

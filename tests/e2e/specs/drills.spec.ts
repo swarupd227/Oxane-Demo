@@ -213,9 +213,12 @@ test.describe("workbench chrome", () => {
 
   test("the acting user switches from the user menu", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: /Acting as Onboarding analyst/ }).click();
-    await page.getByRole("menuitemradio", { name: /Second analyst/ }).click();
-    await expect(page.getByRole("button", { name: /Acting as Second analyst/ })).toBeVisible();
+    await page.getByRole("button", { name: /Acting as Hannah Cole, Onboarding analyst/ }).click();
+    await page.getByRole("menuitemradio", { name: /Marcus Hale/ }).click();
+    await expect(page.getByRole("button", { name: /Acting as Marcus Hale, Second analyst/ })).toBeVisible();
+    // Switching persona lands on their own work queue.
+    await expect(page).toHaveURL(/\/work$/);
+    await expect(page.getByRole("heading", { name: "My work" })).toBeVisible();
   });
 });
 

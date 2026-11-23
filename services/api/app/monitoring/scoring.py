@@ -26,6 +26,15 @@ ISSUES = {
     "M10": ("F-validate-northmoor-duplicate", "query"),
     "M11": ("F-larkspur-ccc", "confirmed"),
     "M12": ("F-larkspur-price", "confirmed"),
+    # The RFP review: middle-market, subscription line, CLO daily feeds.
+    "M13": ("F-ravenglass-leverage", "confirmed"),
+    "M14": ("F-ravenglass-addbacks", "expert"),
+    "M15": ("F-ravenglass-financials", "query"),
+    "M16": ("F-ravenglass-waiver", "logged"),
+    "M17": ("F-wharfedale-exclusion", "confirmed"),
+    "M18": ("F-wharfedale-concentration", "confirmed"),
+    "M19": ("F-wharfedale-register", "query"),
+    "M20": ("F-feed-larkspur-prices-gap", "query"),
 }
 NOISE = {
     "N1": "F-layout-",
@@ -33,7 +42,87 @@ NOISE = {
     "N3": "F-certificate-rounding",
     "N4": "F-change-bramble",
     "N5": "F-larkspur-identifier",
+    "N6": "F-ravenglass-rounding",
+    "N7": "F-wharfedale-distribution",
+    "N8": "F-feed-larkspur-positions-late",
 }
+# The key names obligor layouts by letter; the platform's library by its own ids.
+LAYOUT_IDS = {"A": "LAY-0601", "B": "LAY-0602", "C": "LAY-0603", "D": "LAY-0604",
+              "standard": "LAY-0611", "own": "LAY-0612"}
+
+
+def review_accuracy(cycle: dict[str, Any], key: dict[str, Any]) -> list[tuple[str, bool | None]]:
+    """The RFP review's values against the key. None means the value rests on a model step that
+    has not been recorded, so it is not scored yet."""
+    checks, tests = key["checks"], cycle["tests"]
+    if "ravenglass" not in checks or "ravenglass" not in tests:
+        return []
+    r, rk = tests["ravenglass"], checks["ravenglass"]
+    w, wk = tests["wharfedale"], checks["wharfedale"]
+    daily, dk = cycle["daily_feeds"], checks["larkspur_daily"]
+    rows = {o["id"]: o for o in r["obligors"]}
+    bb = r["borrowing_base"]
+    breach, addbacks, waiver = (rows[rk[k]["id"]] for k in ("breach", "addbacks", "waiver"))
+    readings = {x["name"]: x["leverage"] for x in addbacks["readings"]}
+    judgement = readings.get("Judgement items under the cap")
+    extracted = r["extraction"]["status"] == "recorded"
+    keyed = all(not c["by"] == "AI" for c in r["covenant_changes"])
+    layouts = {**rk["layouts"], **rk["certificate_forms"]}
+    wb, before = w["borrowing_base"], w["before_exclusion"]
+    feeds = {f["feed"]: f for f in daily["feeds"]}
+    return [
+        ("Ravenglass obligors reported", r["received"] == rk["received"]),
+        ("Ravenglass breaching obligor's leverage",
+         breach["eligible"] is False and _close(breach["leverage"], rk["breach"]["leverage"])),
+        ("Ravenglass add-backs: leverage as reported and fully capped",
+         _close(addbacks["leverage"], rk["addbacks"]["readings"]["as_reported"])
+         and _close(addbacks["readings"][-1]["leverage"],
+                    rk["addbacks"]["readings"]["all_capped"])),
+        ("Ravenglass add-backs: leverage with the integration costs capped",
+         None if judgement is None and not extracted
+         else judgement is not None
+         and _close(judgement, rk["addbacks"]["readings"]["integration_capped"])),
+        ("Ravenglass waived covenant level", _close(waiver["max_leverage"], rk["waiver"]["amended"])
+         and _close(waiver["leverage"], rk["waiver"]["leverage"]) and waiver["eligible"]),
+        ("Ravenglass excluded obligors",
+         sorted(b["obligor"] for b in bb["excluded"]) == sorted(rk["excluded"])),
+        ("Ravenglass borrowing base", _close(bb["borrowing_base"], rk["borrowing_base"])),
+        ("Ravenglass availability", _close(bb["availability"], rk["availability"])),
+        ("Ravenglass certificate difference", _close(bb["difference"],
+                                                     rk["certificate_difference"])),
+        ("Ravenglass largest obligor and sector",
+         bb["largest"]["obligor"] == rk["largest_obligor"]["id"]
+         and _close(bb["largest_sector"]["pct"], rk["largest_sector"]["pct"])),
+        ("Ravenglass obligor layouts recognised",
+         {LAYOUT_IDS[k]: v for k, v in layouts.items()} == r["layouts"]),
+        ("Ravenglass obligor figures read with verified quotes",
+         r["extraction"]["verified"] == rk["received"] if extracted else None),
+        ("Ravenglass waiver read from the notice", None if keyed else any(
+            c["by"] == "AI" and c["verified"] and c["obligor"] == rk["waiver"]["id"]
+            for c in r["covenant_changes"])),
+        ("Wharfedale excluded investor", [x["id"] for x in w["exclusions"]]
+         == [wk["exclusion"]["id"]]),
+        ("Wharfedale borrowing base before the exclusion",
+         _close(before["borrowing_base"], wk["before_exclusion"]["borrowing_base"])),
+        ("Wharfedale borrowing base after the exclusion",
+         _close(wb["borrowing_base"], wk["after_exclusion"]["borrowing_base"])),
+        ("Wharfedale mandatory prepayment",
+         _close(wb["prepayment"], wk["after_exclusion"]["prepayment"])),
+        ("Wharfedale concentration excess",
+         wb["concentration_excess"] == wk["after_exclusion"]["concentration_excess"]),
+        ("Wharfedale register break", [x["id"] for x in w["register_breaks"]]
+         == [wk["register"]["stale"]["id"]] and _close(
+             w["register_breaks"][0]["difference"], wk["register"]["stale"]["difference"])),
+        ("Wharfedale notices reconcile", w["notices"]["capital_call"]["reconciles"]
+         and w["notices"]["distribution"]["reconciles"]),
+        ("Wharfedale investor classes", w["classes"] == wk["classes"]),
+        ("Larkspur daily deliveries", daily["expected"] == dk["expected"]
+         and daily["received"] == dk["received"]),
+        ("Larkspur late and missing daily files",
+         [{"feed": k, "as_of": d} for k, f in feeds.items() for d in f["late"]] == dk["late"]
+         and [{"feed": k, "as_of": d} for k, f in feeds.items() for d in f["missing"]]
+         == dk["missing"]),
+    ]
 
 
 def read_key() -> dict[str, Any] | None:
@@ -225,7 +314,9 @@ def scorecard(cycle: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
         return {"available": False}
     items = cycle["findings"]
     found, missed = [], []
-    for issue, (prefix, expected) in ISSUES.items():
+    issues = {k: v for k, v in ISSUES.items() if k in key["issues"]}
+    noise_items = {k: v for k, v in NOISE.items() if k in key["noise"]}
+    for issue, (prefix, expected) in issues.items():
         matches = [i for i in items if i["id"].startswith(prefix)]
         if matches and all(_outcome(state, i) == expected for i in matches):
             found.append(issue)
@@ -236,11 +327,11 @@ def scorecard(cycle: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
                 + ("" if not matches else f" (ended as {_outcome(state, matches[0])})")
             )
     planted = {
-        i["id"] for i in items for prefix, _ in ISSUES.values() if i["id"].startswith(prefix)
+        i["id"] for i in items for prefix, _ in issues.values() if i["id"].startswith(prefix)
     }
     noise_raised = [
         n
-        for n, prefix in NOISE.items()
+        for n, prefix in noise_items.items()
         if any(i["id"].startswith(prefix) and _outcome(state, i) != "logged" for i in items)
     ]
     other_alerts = [
@@ -248,9 +339,12 @@ def scorecard(cycle: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
         for i in items
         if i["id"] not in planted
         and _outcome(state, i) != "logged"
-        and not any(i["id"].startswith(p) for p in NOISE.values())
+        and not any(i["id"].startswith(p) for p in noise_items.values())
     ]
-    values = accuracy(cycle, key)
+    scored = [*accuracy(cycle, key), *review_accuracy(cycle, key)]
+    values = [(name, ok) for name, ok in scored if ok is not None]
+    awaiting = [name for name, ok in scored if ok is None]
+    pending = cycle.get("pending_recording", [])
     feeds = cycle["validation"]["feeds"]
     loaded = [f for f in feeds if not f["held"] or f["facility"] in state["blocks"]]
     decided = sum(1 for i in items if i["id"] in state["triage"])
@@ -291,20 +385,21 @@ def scorecard(cycle: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
             f"{sum(ok for _, ok in values)} of {len(values)} values",
             [f"{len(loaded)} of {len(feeds)} files loaded"
              + ("" if len(loaded) == len(feeds) else "; one load is held by a blocking check"),
-             *[f"Wrong: {name}" for name, ok in values if not ok]],
+             *[f"Wrong: {name}" for name, ok in values if not ok],
+             *[f"Not scored until its model step is recorded: {name}" for name in awaiting]],
             target="Every value right, every file loaded", passed=all(ok for _, ok in values),
         ),
         _measure(
             "Material issues missed",
             str(len(missed)),
-            missed or [f"All {len(ISSUES)} planted issues found with the right outcome"],
+            missed or [f"All {len(issues)} planted issues found with the right outcome"],
             target="None", passed=not missed,
         ),
         _measure(
             "False alerts per cycle",
             str(len(noise_raised) + len(other_alerts)),
             [f"{n}: {key['noise'][n]['summary']}" for n in noise_raised] + other_alerts
-            or [f"None of the {len(NOISE)} noise items raised"],
+            or [f"None of the {len(noise_items)} noise items raised"],
             target="None", passed=not noise_raised and not other_alerts,
         ),
         _measure(
@@ -334,7 +429,9 @@ def scorecard(cycle: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
              *[f"{c['client'].title()}: {c['calls']} calls, US${c['cost_usd']:.2f}"
                + ("" if c["ai_permitted"] else " (AI not permitted)")
                for c in by_client.values()],
-             f"{usage['model_seconds']} s of model time; replay costs nothing"],
+             f"{usage['model_seconds']} s of model time; replay costs nothing",
+             *([f"{len(pending)} model steps pending recording; their code fallbacks ran"]
+               if pending else [])],
         ),
         _measure(
             "Share of values linked to source evidence, with an audit trail of changes",
@@ -368,12 +465,14 @@ def scorecard(cycle: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
                 "found": issue in found,
                 "facility": key["issues"][issue]["facility"],
             }
-            for issue, (_, expected) in ISSUES.items()
+            for issue, (_, expected) in issues.items()
         ],
         "noise": [
             {"id": n, "summary": key["noise"][n]["summary"], "raised": n in noise_raised}
-            for n in NOISE
+            for n in noise_items
         ],
+        "pending_recording": pending,
+        "not_scored": awaiting,
         "assumptions": assume["source"],
         "caveat": "Measured on a synthetic cycle that the checks were built against. Results are "
         "not independent and do not indicate accuracy on live portfolios.",
@@ -394,6 +493,11 @@ def _workbook_inputs(cycle: dict[str, Any], state: dict[str, Any]) -> tuple[int,
         cells = [c for c in book["Inputs"]["B"][1:] if c.value is not None]
         if "Positions" in book.sheetnames:
             cells += [c for col in ("C", "G") for c in book["Positions"][col][1:]]
+        for name in ("Obligors", "Investors"):
+            if name in book.sheetnames:
+                cells += [c for row in book[name].iter_rows(min_row=2) for c in row
+                          if c.value is not None and c.font is not None and c.font.color
+                          is not None and str(c.font.color.rgb).endswith("1F4E9A")]
         total += len(cells)
         noted += sum(1 for c in cells if c.comment and c.comment.text.startswith("Source:"))
     return total, noted

@@ -12,7 +12,7 @@ export interface Source {
 }
 
 export type Outcome = "logged" | "query" | "confirmed" | "expert";
-export type FacilityId = "bramble" | "northmoor" | "kestrel" | "larkspur";
+export type FacilityId = "bramble" | "northmoor" | "kestrel" | "larkspur" | "ravenglass" | "wharfedale";
 export type ClientId = "calderwood" | "thornbury";
 
 export interface Facility {
@@ -200,7 +200,7 @@ export interface Brief {
   client: ClientId;
   ai: boolean;
   opening: string;
-  sections: { heading: string; points: string[] }[];
+  sections: { heading: string; points: string[]; by?: "AI" | "Template"; pending_recording?: boolean }[];
   figures: Record<string, PackFigure>;
   unknown_placeholders: string[];
   numbers_in_text: string[];
@@ -314,6 +314,7 @@ export interface LenderPack {
   unknown_placeholders: string[];
   numbers_in_text: string[];
   ai?: boolean;
+  pending_recording?: boolean;
 }
 
 export interface Holding {
@@ -341,6 +342,220 @@ export interface TermRow {
   value_in_force: string;
   next: string;
   next_value: string;
+}
+
+/** One obligor of the middle-market facility, as code tested it. */
+export interface Obligor {
+  id: string;
+  name: string;
+  sector: string;
+  sponsor: string;
+  facility: string;
+  outstanding: number;
+  advance_rate: number;
+  received: boolean;
+  received_on: string | null;
+  financials_file: string | null;
+  certificate_file: string | null;
+  layout: string | null;
+  certificate_layout: string | null;
+  basis: "extracted" | "portfolio_report";
+  stale: boolean;
+  financials_as_of: string;
+  ebitda_k: number;
+  addbacks_k: number;
+  covenant_ebitda_k: number;
+  net_debt_k: number;
+  interest_k: number;
+  leverage: number;
+  reported_leverage: number | null;
+  leverage_difference: number | null;
+  within_tolerance: boolean | null;
+  max_leverage: number;
+  max_leverage_basis: string;
+  original_max_leverage: number;
+  reported_max_leverage: number;
+  icr: number;
+  min_icr: number;
+  leverage_passed: boolean;
+  icr_passed: boolean;
+  headroom: number;
+  eligible: boolean;
+  reason: string;
+  addback_pct: number;
+  addbacks_flagged: boolean;
+  addback_items: { description: string; amount_k: number; kind: string; reason: string; source: Source | null }[];
+  readings: { name: string; covenant_ebitda_k: number; leverage: number; passed: boolean }[];
+  sources: Record<string, Source | null>;
+}
+
+export interface Ravenglass {
+  quarter_end: string;
+  determination_date: string;
+  portfolio_file: string;
+  certificate_file: string;
+  obligors: Obligor[];
+  received: number;
+  covenant_changes: { obligor: string; covenant: string; old_value: string; new_value: string; test_dates: string[]; effective_from: string; document: string; source: Source | null; verified: boolean; by: string }[];
+  extraction: { status: "recorded" | "pending" | "partial"; batches: number; batches_read: number; obligors_read: number; verified: number };
+  borrowing_base: {
+    aggregate: number;
+    eligible: number;
+    excluded: { obligor: string; name: string; reason: string; outstanding: number; value: number }[];
+    single_limit: number;
+    sector_limit: number;
+    excess_reduction: number;
+    largest: { obligor: string; name: string; pct: number };
+    largest_sector: { sector: string; pct: number };
+    single_limit_pct: number;
+    sector_limit_pct: number;
+    borrowing_base: number;
+    commitment: number;
+    drawn: number;
+    availability: number;
+    certificate: { aggregate: number; eligible: number; borrowing_base: number; availability: number };
+    difference: number;
+    bridged: number;
+    sensitivity: { obligor: string; name: string; if_excluded: number }[];
+    passed: boolean;
+  };
+  layouts: Record<string, number>;
+  clauses: Source[];
+  cap_pct: number;
+  tolerance_x: number;
+}
+
+export interface InvestorRow {
+  id: string;
+  name: string;
+  type: string;
+  commitment: number;
+  called: number;
+  register_uncalled: number;
+  prior_uncalled: number;
+  call: number;
+  recallable: number;
+  expected_uncalled: number;
+  difference: number;
+  uncalled: number;
+  rating: string;
+  prior_rating: string;
+  rating_date: string;
+  register_designation: string;
+  class: "Included" | "Designated" | "Excluded";
+  prior_class: string;
+  reason: string;
+  exclusion_event: boolean;
+  counted: number;
+  excess: number;
+  share_pct: number;
+}
+
+export interface SubBase {
+  aggregate_eligible_uncalled: number;
+  single_limit: number;
+  concentration_excess: Record<string, number>;
+  concentration_reduction: number;
+  designated: number;
+  designated_limit: number;
+  designated_excess: number;
+  designated_pct: number;
+  borrowing_base: number;
+  availability: number;
+  prepayment: number;
+}
+
+export interface NoticeView {
+  file: string;
+  number: number;
+  date: string;
+  total: number;
+  pct: number;
+  recallable?: number;
+  sum_difference: number;
+  reconciles: boolean;
+  lines: { investor: string; name: string; amount: number; expected: number; difference: number }[];
+}
+
+export interface Wharfedale {
+  determination_date: string;
+  register_file: string;
+  investors: InvestorRow[];
+  classes: Record<string, number>;
+  commitments: number;
+  uncalled: number;
+  exclusions: InvestorRow[];
+  unapplied: string[];
+  borrowing_base: SubBase & { commitment: number; drawn: number; advance_rates: Record<string, number>; single_limit_pct: number; designated_limit_pct: number; passed: boolean };
+  before_exclusion: SubBase;
+  largest: { id: string; name: string; share_pct: number; excess: number };
+  notices: { capital_call: NoticeView & { due: string }; distribution: NoticeView & { recallable_pct: number } };
+  register_breaks: InvestorRow[];
+  clauses: Source[];
+}
+
+export interface DailyFeed {
+  feed: "positions" | "prices" | "ratings";
+  document: string;
+  channel: string;
+  format: string;
+  due: string;
+  days: { as_of: string; deadline: string; received_at: string | null; status: "on_time" | "late" | "missing"; minutes_late: number; rows: number; file: string | null }[];
+  expected: number;
+  received: number;
+  late: string[];
+  missing: string[];
+}
+
+export interface DailyFeeds {
+  facility: string;
+  folder: string;
+  business_days: number;
+  feeds: DailyFeed[];
+  coverage: { as_of: string; positions: number; priced: number; unpriced: number; price_file: boolean }[];
+  rating_changes: { as_of: string; loanx: string; issuer: string; agency: string; previous: string; current: string; file: string }[];
+  expected: number;
+  received: number;
+}
+
+export interface ScheduleLine {
+  document: string;
+  format: string;
+  frequency: string;
+  channel: string;
+  due: string;
+  internal: string;
+  status: "complete" | "late" | "missing" | "not_due" | "not_applicable" | "summary_only";
+  expected: number;
+  received: number;
+  late: number;
+  missing?: number;
+  note: string;
+}
+
+export interface LibraryEntry {
+  id: string;
+  document: string;
+  sender: string;
+  format: string;
+  client: ClientId;
+  facilities: string[];
+  facility_names: string[];
+  columns: number | null;
+  signature: string | null;
+  count: number;
+  unit: string;
+  obligors: string[];
+  version: number;
+  last_changed: string;
+  changed_by: string;
+  versions: { version: number; date: string; by: string; change: string }[];
+}
+
+export interface PendingStep {
+  task: string;
+  facility: string;
+  subject: string;
 }
 
 /** A facility in the rest of the book: summary figures only, every test worked out by code. */
@@ -387,6 +602,7 @@ export interface Cycle {
     feeds: MappingFeed[];
     memories: { client: ClientId; name: string; layouts: { facility: FacilityId; columns: number; kind: string }[] }[];
     entities: Record<string, string>;
+    library: LibraryEntry[];
   };
   qc: Record<FacilityId, { file: string; lines: QcLine[]; agrees: number; presentation: number; genuine: string[] }>;
   headroom: HeadroomRow[];
@@ -508,7 +724,12 @@ export interface Cycle {
       positions: { name: string; value: number; valued: string }[];
     };
     larkspur: Larkspur;
+    ravenglass: Ravenglass;
+    wharfedale: Wharfedale;
   };
+  daily_feeds: DailyFeeds;
+  schedules: { facility: string; template: string; lines: ScheduleLine[] }[];
+  pending_recording: PendingStep[];
   collateral: {
     checked: Record<FacilityId, number>;
     within: { vin: string; holdings: Holding[] }[];
@@ -667,6 +888,8 @@ export interface CycleScorecard {
   }[];
   issues: { id: string; summary: string; expected: Outcome; found: boolean; facility: string }[];
   noise: { id: string; summary: string; raised: boolean }[];
+  pending_recording?: PendingStep[];
+  not_scored?: string[];
   assumptions: string;
   caveat: string;
 }
@@ -704,7 +927,7 @@ export function clientOf(cycle: Cycle, facility: string): Client | undefined {
   return cycle.clients.find((c) => c.id === owner);
 }
 
-export const FACILITY_ORDER: FacilityId[] = ["bramble", "northmoor", "kestrel", "larkspur"];
+export const FACILITY_ORDER: FacilityId[] = ["bramble", "northmoor", "kestrel", "larkspur", "ravenglass", "wharfedale"];
 
 export function useCycleScorecard() {
   return useQuery({ queryKey: ["cycle-scorecard"], queryFn: () => getJson<CycleScorecard>("/api/monitoring/scorecard") });

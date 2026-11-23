@@ -1,11 +1,13 @@
 import clsx from "clsx";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { usd, useFacilities, type FacilitySummary } from "../../lib/deals";
 import { Skeleton } from "../../components/ui/layout";
 import { useCycle, useCycleSession, type Cycle, type CycleSession } from "../cycle";
 import { allSubmissions, deskRows, REPORT_LABEL, useScope, type DeskRow } from "../desk";
 import { NoAiBadge, OutcomePill } from "../parts";
+import { SCHEDULE_STATUS } from "./Schedules";
 import { Activity, Badge, DataTable, FilterSelect, fmtUnit, Kpis, PageTitle, Person, RecordId, useWide, when, type Column, type Tone } from "../ui";
 
 const STATUS: Record<DeskRow["status"], { label: string; tone: Tone }> = {
@@ -15,6 +17,40 @@ const STATUS: Record<DeskRow["status"], { label: string; tone: Tone }> = {
 };
 const REPORT_TONE: Record<DeskRow["report"]["status"], Tone> = { released: "ok", in_review: "info", preparing: "neutral", provisional: "warn", held: "danger" };
 const SEVERITY = { breach: 0, watch: 1, ok: 2 };
+
+/** A facility onboarded on the platform, as a desk row. Its own page holds the detail. */
+function dealRow(f: FacilitySummary): DeskRow {
+  const latest = f.latest;
+  const limit = latest?.delinquency_limit ? Number(latest.delinquency_limit) : null;
+  const tests = latest?.delinquency_average && limit !== null
+    ? [{ test: "Delinquency, rolling average", value: Number(latest.delinquency_average), limit, unit: "%", direction: "max" as const, passed: !latest.breached, early_warning: latest.warning, headroom: limit - Number(latest.delinquency_average) }]
+    : [];
+  const released = latest?.status === "released";
+  return {
+    id: `deal-${f.id}`,
+    name: f.name,
+    client: `deal:${f.client.id}` as DeskRow["client"],
+    client_name: f.client.name,
+    ai_permitted: f.client.ai_permitted,
+    type: f.deal_type,
+    asset_class: f.deal_type,
+    role: "Calculation agent",
+    size: usd(f.commitment_cents).replace(".00", ""),
+    analyst: "Priya Raman",
+    reporting: "Monthly",
+    period: latest?.period ?? f.submissions[0]?.period ?? "",
+    worked: true,
+    documents: { received: f.submissions.filter((s) => s.status !== "expected").length, total: f.submissions.length, late: 0 },
+    tests: tests as DeskRow["tests"],
+    breaches: tests.filter((t) => !t.passed).length,
+    warnings: tests.filter((t) => t.early_warning).length,
+    open: latest?.open ?? 0,
+    exceptions: latest?.open ?? 0,
+    status: tests.some((t) => !t.passed) ? "breach" : tests.some((t) => t.early_warning) || latest?.open ? "watch" : "ok",
+    report: { status: released ? "released" : latest ? "in_review" : "preparing", done: 0, levels: f.client.approval_levels, at: null, by: null },
+    trend: null,
+  };
+}
 
 function Spark({ row }: { row: DeskRow }) {
   if (!row.trend || row.trend.series.length < 2) {
@@ -37,6 +73,7 @@ function Drawer({ row, cycle, session, onClose }: { row: DeskRow; cycle: Cycle; 
   const ids = new Set([row.id, ...findings.map((f) => f.id)]);
   const audit = (session?.audit ?? []).filter((a) => a.subject && ids.has(a.subject));
   const book = cycle.book?.facilities.find((f) => f.id === row.id);
+  const schedule = cycle.schedules?.find((s) => s.facility === row.id);
   const origin = book
     ? [
         ...(book.report.prepared ? [{ at: book.report.prepared.at, by: book.report.prepared.by, text: "Report prepared" }] : []),
@@ -117,6 +154,34 @@ function Drawer({ row, cycle, session, onClose }: { row: DeskRow; cycle: Cycle; 
           ))}
         </ul>
       </div>
+      {schedule && (
+        <div className="border-t border-line px-3 py-2">
+          <p className="mb-1 flex items-center justify-between text-[0.6875rem] font-semibold text-muted">
+            Document schedule
+            <Link to="/monitoring/submissions?view=schedules" className="font-medium text-info hover:underline">
+              {schedule.template}
+            </Link>
+          </p>
+          <table className="w-full text-xs">
+            <tbody>
+              {schedule.lines.map((line) => (
+                <tr key={line.document} className="border-b border-sand last:border-0">
+                  <td className="py-1 pr-2">
+                    {line.document}
+                    <span className="block text-[0.6875rem] text-muted">
+                      {line.format} · {line.frequency} · {line.channel}
+                    </span>
+                  </td>
+                  <td className="numeric py-1 pr-2 text-right text-muted">{line.expected ? `${line.received}/${line.expected}` : "–"}</td>
+                  <td className="py-1 text-right">
+                    <Badge tone={SCHEDULE_STATUS[line.status].tone}>{SCHEDULE_STATUS[line.status].label}</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {findings.length > 0 && (
         <div className="border-t border-line px-3 py-2">
           <p className="mb-1 text-[0.6875rem] font-semibold text-muted">Exceptions</p>
@@ -150,7 +215,9 @@ export function PortfolioPage() {
   const [status, setStatus] = useState("all");
   const selected = params.get("facility");
   const wide = useWide();
-  const rows = useMemo(() => (cycle ? deskRows(cycle, session) : []), [cycle, session]);
+  const { data: onboarded } = useFacilities();
+  const navigate = useNavigate();
+  const rows = useMemo(() => [...(cycle ? deskRows(cycle, session) : []), ...(onboarded ?? []).filter((f) => f.status === "live").map(dealRow)], [cycle, session, onboarded]);
   if (isPending || !cycle) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -247,7 +314,7 @@ export function PortfolioPage() {
           search={(r) => `${r.name} ${r.client_name} ${r.asset_class} ${r.analyst} ${r.type}`}
           searchPlaceholder="Filter facilities"
           initialSort={{ key: "name", dir: "asc" }}
-          onRowClick={(r) => select(r.id === selected ? null : r.id)}
+          onRowClick={(r) => (r.id.startsWith("deal-") ? navigate(`/facilities/${r.id.slice(5)}`) : select(r.id === selected ? null : r.id))}
           selected={selected}
           toolbar={
             <>

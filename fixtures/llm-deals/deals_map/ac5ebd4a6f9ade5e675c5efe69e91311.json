@@ -1,0 +1,14 @@
+{
+ "task": "deals_map",
+ "model": "claude-opus-5-5",
+ "text": "{\"columns\":[{\"column\":\"AccountNo\",\"field\":\"loan_id\",\"note\":null},{\"column\":\"OriginationDt\",\"field\":\"origination_date\",\"note\":null},{\"column\":\"MaturityDt\",\"field\":\"maturity_date\",\"note\":null},{\"column\":\"OrigPrincipal\",\"field\":\"original_balance\",\"note\":null},{\"column\":\"CurrPrincipal\",\"field\":\"current_balance\",\"note\":null},{\"column\":\"APR_Pct\",\"field\":\"apr\",\"note\":null},{\"column\":\"TermMonths\",\"field\":\"original_term\",\"note\":null},{\"column\":\"RemTerm\",\"field\":\"remaining_term\",\"note\":\"First sample row shows 10 months remaining on a 36-month loan originated 07/28/2024 maturing 07/28/2027, which looks inconsistent with dates.\"},{\"column\":\"DaysDelinquent\",\"field\":\"days_past_due\",\"note\":null},{\"column\":\"AcctStatus\",\"field\":\"status\",\"note\":null},{\"column\":\"FICO_Orig\",\"field\":\"credit_score\",\"note\":null},{\"column\":\"BorrowerState\",\"field\":\"obligor_state\",\"note\":null},{\"column\":\"ProductCategory\",\"field\":\"product\",\"note\":null},{\"column\":\"MerchantName\",\"field\":\"merchant\",\"note\":null}],\"statuses\":[{\"value\":\"DELINQUENT\",\"status\":\"arrears\"},{\"value\":\"CURRENT\",\"status\":\"performing\"}]}",
+ "usage": {
+  "task": "deals_map",
+  "input_tokens": 1433,
+  "output_tokens": 443,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 720,
+  "from_replay": false,
+  "seconds": 5.7
+ }
+}

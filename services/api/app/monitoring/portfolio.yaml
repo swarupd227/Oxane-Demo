@@ -73,6 +73,7 @@ facilities:
     amendments: [Bramble_Amendment_No_2.pdf]
     outstanding_advances_usd: 50500000
     dealer_aliases: {Sunrise Motors: Sunrise Motors LLC}
+    schedule: Auto ABF
   - id: northmoor
     client: calderwood
     name: Northmoor Motor Credit Trust
@@ -104,6 +105,7 @@ facilities:
       excess_spread_floor_pct: 3.0
       excess_spread_clause: Section 7.1(b)
       excess_spread_quote: "is less than 3.0%"
+    schedule: Auto ABF
   - id: kestrel
     client: calderwood
     name: Kestrel Credit Fund III
@@ -128,6 +130,7 @@ facilities:
       max_top_five_pct: 55
       concentration_clause: Section 6.3
       nav_clause: Section 1.1
+    schedule: NAV
   - id: larkspur
     client: thornbury
     name: Larkspur CLO 2026-1 Warehouse
@@ -160,6 +163,101 @@ facilities:
       base_quote: '"Borrowing Base" means'
       warning_clause: Section 6.5
       warning_quote: Early warning
+    schedule: CLO / BSL
+    daily_folder: larkspur-daily
+    daily_log: Larkspur_Daily_Feed_Log_May_2026.csv
+    daily_mapping:
+      positions: {"LoanX ID": loanx, Issuer: issuer, "Par Amount": par, "Moody's Rating": moodys, "S&P Rating": sp, "As Of": as_of}
+      prices: {LoanX_ID: loanx, Bid: bid, Ask: ask, Quotes: quotes, Price_Date: price_date}
+      ratings: {LoanX_ID: loanx, Issuer: issuer, Agency: agency, Previous: previous, Current: current, Effective: effective}
+  # The RFP review's two facilities. Their records were set at onboarding like the others.
+  - id: ravenglass
+    client: calderwood
+    name: Ravenglass Direct Lending Fund I
+    borrower: Ravenglass DL Funding I LLC
+    type: Back-leverage facility
+    asset_class: Middle-market
+    role: Calculation agent
+    size: US$200m
+    reporting: Monthly portfolio report and certificate; quarterly obligor financials and compliance certificates
+    folder: ravenglass
+    schedule: Middle-market
+    layout_kind: Portfolio report
+    agreement: Ravenglass_Back_Leverage_Agreement.pdf
+    obligor_record: Ravenglass_Obligor_Register.json
+    portfolio_report: Ravenglass_Portfolio_Report_2026-05-31.xlsx
+    certificate: Ravenglass_BBC_2026-05-31.xlsx
+    inbox: Ravenglass_Inbox_May_2026.csv
+    quarter_end: 2026-03-31
+    determination_date: 2026-05-31
+    mapping_stored: Onboarding, November 2025
+    # Set when Ravenglass was onboarded: the fund's portfolio report columns.
+    mapping: {"Obligor ID": obligor_id, Obligor: obligor, Sector: sector, Sponsor: sponsor,
+              "Facility type": facility_type, "Commitment (US$)": commitment,
+              "Outstanding (US$)": outstanding, "Financials as of": financials_as_of,
+              "LTM EBITDA (US$000)": ebitda, "EBITDA adjustments (US$000)": ebitda_adjustments,
+              "Covenant EBITDA (US$000)": covenant_ebitda, "Net debt (US$000)": net_debt,
+              "Interest expense (US$000)": interest_expense,
+              "Total net leverage (x)": reported_leverage, "Max leverage (x)": reported_max_leverage,
+              "Interest cover (x)": reported_icr, "Min interest cover (x)": reported_min_icr,
+              "Advance rate (%)": advance_rate}
+    terms:
+      commitment_usd: 200000000
+      drawn_usd: 138000000
+      advance_rates: {First lien: 65, Unitranche: 55, Second lien: 30}
+      single_obligor_limit_pct: 7.5
+      sector_limit_pct: 20
+      addback_cap_pct: 20
+      leverage_tolerance_x: 0.02
+      batch_size: 8
+      eligible_quote: '"Eligible Obligor Loan" means'
+      event_quote: '"Material Obligor Event" means'
+      ebitda_quote: '"Covenant EBITDA" means'
+      base_quote: '"Borrowing Base" means'
+      concentration_quote: '"Concentration Excess Amount" means'
+      ebitda_definition: "Covenant EBITDA means Consolidated EBITDA plus the adjustments the Underlying Loan Agreement permits, provided that cost savings, synergies and restructuring charges added back may not exceed 20% of Consolidated EBITDA before such adjustments."
+    # Covenant changes keyed by the analyst from a notice, page and quote checked by code. Used
+    # when the model's reading of the notice has not been recorded.
+    keyed_covenant_changes:
+      - {obligor: RVG-029, covenant: Total net leverage, old_value: "5.50:1.00", new_value: "6.25:1.00",
+         test_dates: [2026-03-31, 2026-06-30], effective_from: 2026-05-18,
+         document: Ravenglass_Waiver_Notice_RVG-029_2026-05-18.pdf,
+         quote: "the maximum Total Net Leverage Ratio is increased from 5.50:1.00 to 6.25:1.00",
+         keyed_by: Priya Raman}
+  - id: wharfedale
+    client: thornbury
+    name: Wharfedale Infrastructure Partners III
+    borrower: Wharfedale Infrastructure Partners III LP
+    type: Subscription line
+    asset_class: Fund finance
+    role: Calculation agent
+    size: US$250m
+    reporting: Monthly investor register; capital call and distribution notices as issued
+    folder: wharfedale
+    schedule: Subscription line
+    layout_kind: Investor register
+    agreement: Wharfedale_Subscription_Facility_Agreement.pdf
+    registers: {April: Wharfedale_Investor_Register_2026-04-30.xlsx, May: Wharfedale_Investor_Register_2026-05-31.xlsx}
+    capital_call: Wharfedale_Capital_Call_Notice_07.xlsx
+    distribution: Wharfedale_Distribution_Notice_04.xlsx
+    determination_date: 2026-05-31
+    mapping_stored: Onboarding, March 2025
+    mapping: {"Investor ID": investor_id, Investor: investor, "Investor type": investor_type,
+              "Commitment (US$)": commitment, "Called to date (US$)": called,
+              "Uncalled (US$)": uncalled, "Rating (S&P)": rating, Designation: designation,
+              "Rating date": rating_date}
+    terms:
+      commitment_usd: 250000000
+      drawn_usd: 228000000
+      advance_rates: {Included: 90, Designated: 65}
+      included_min_rating: A-
+      exclusion_below: BBB-
+      single_investor_limit_pct: 15
+      designated_limit_pct: 30
+      exclusion_quote: '"Exclusion Event" means'
+      concentration_quote: '"Concentration Limits" means'
+      base_quote: '"Borrowing Base" means'
+      prepayment_quote: the Borrower shall prepay the excess within two Business Days
 
 # Due dates follow each agreement's reporting clause. Received dates are the inbox log.
 submissions:
@@ -180,6 +278,14 @@ submissions:
   - {facility: kestrel, label: Q1 compliance certificate, file: Kestrel_Q1_2026_Compliance_Certificate.pdf, due: 2026-05-30, received: 2026-05-28, channel: Email}
   - {facility: larkspur, label: "Collateral report, May", file: Larkspur_Collateral_Report_2026-05-29.xlsx, due: 2026-06-12, received: 2026-06-12, channel: SFTP}
   - {facility: larkspur, label: "Bid prices, 29 May", file: Meridian_Prices_2026-05-29.csv, due: 2026-05-29, received: 2026-05-29, channel: API}
+# The RFP review's facilities and schedules. Ravenglass's obligor files are listed in the fund's
+# inbox log (the cycle kit's Ravenglass_Inbox_May_2026.csv); the rest are here.
+review_submissions:
+  - {facility: wharfedale, label: "Investor register, May", file: Wharfedale_Investor_Register_2026-05-31.xlsx, due: 2026-06-05, received: 2026-06-05, channel: Data room}
+  - {facility: wharfedale, label: Capital call notice no. 7, file: Wharfedale_Capital_Call_Notice_07.xlsx, due: 2026-05-06, received: 2026-05-06, channel: Email}
+  - {facility: wharfedale, label: Distribution notice no. 4, file: Wharfedale_Distribution_Notice_04.xlsx, due: 2026-05-22, received: 2026-05-22, channel: Email}
+  - {facility: bramble, label: "Collection account statement, May", file: BAF_Collection_Account_Statement_May_2026.pdf, due: 2026-06-12, received: 2026-06-08, channel: Email}
+  - {facility: northmoor, label: "Collection account statement, May", file: NMC_Collection_Account_Statement_May_2026.pdf, due: 2026-06-12, received: 2026-06-09, channel: Email}
 # Oxane's own deadline to have each file loaded and checked, in business days after it is due.
 internal_deadline_days: 2
 # Chasing runs itself: a reminder the morning after a due date, escalation a business day later.
@@ -229,6 +335,144 @@ validation:
       - {id: C07, family: data_types, severity: blocking, field: maturity, kind: date, text: Maturity is a date}
       - {id: C08, family: logical, severity: warning, kind: price_in_range, text: Bid is above 0 and at most 110}
     prior_period: []
+  mm_portfolio:
+    key: obligor_id
+    rules:
+      - {id: P01, family: missing_data, severity: blocking, field: obligor_id, text: Every row has an obligor ID}
+      - {id: P02, family: missing_data, severity: blocking, field: outstanding, text: Every row has an outstanding balance}
+      - {id: P03, family: duplicates, severity: blocking, field: obligor_id, text: Each obligor appears once}
+      - {id: P04, family: reference_data, severity: blocking, field: facility_type, text: Facility type has an advance rate, allowed: [First lien, Unitranche, Second lien]}
+      - {id: P05, family: data_types, severity: blocking, field: outstanding, kind: number, text: Outstanding is a number}
+      - {id: P06, family: data_types, severity: blocking, field: financials_as_of, kind: date, text: Financials date is a date}
+      - {id: P07, family: data_types, severity: warning, field: reported_leverage, kind: number, text: Reported leverage is a number}
+      - {id: P08, family: logical, severity: warning, kind: outstanding_not_above_commitment, text: Outstanding is not above the commitment}
+    prior_period: []
+  investor_register:
+    key: investor_id
+    rules:
+      - {id: R01, family: missing_data, severity: blocking, field: investor_id, text: Every row has an investor ID}
+      - {id: R02, family: missing_data, severity: blocking, field: uncalled, text: Every row has an uncalled commitment}
+      - {id: R03, family: duplicates, severity: blocking, field: investor_id, text: Each investor appears once}
+      - {id: R04, family: reference_data, severity: blocking, field: designation, text: Designation is a known class, allowed: [Included, Designated, Excluded]}
+      - {id: R05, family: reference_data, severity: warning, field: rating, text: "Rating is on S&P's scale or NR",
+         allowed: [AAA, AA+, AA, AA-, A+, A, A-, BBB+, BBB, BBB-, BB+, BB, BB-, B+, B, B-, CCC+, CCC, CCC-, CC, C, NR]}
+      - {id: R06, family: data_types, severity: blocking, field: commitment, kind: number, text: Commitment is a number}
+      - {id: R07, family: logical, severity: blocking, kind: uncalled_not_above_commitment, text: Uncalled is not above the commitment}
+    prior_period: []
+
+# Expected documents by asset class. Each facility takes its schedule from its template when it is
+# onboarded: what, in which format, how often, by which channel and by Oxane's own deadline.
+# `match` ties a line to the inbox; `daily` to a daily feed's log.
+schedule_templates:
+  Auto ABF:
+    - {document: Loan tape, format: CSV, frequency: Monthly, channel: SFTP, due: 15th business day after month end, internal: 2 business days after due, match: Loan tape}
+    - {document: Servicer report, format: PDF, frequency: Monthly, channel: Email, due: 15th business day after month end, internal: 2 business days after due, match: Servicer report}
+    - {document: Borrowing base certificate, format: XLSX, frequency: Monthly, channel: Upload, due: 15th business day after month end, internal: 2 business days after due, match: Borrowing base certificate}
+    - {document: Compliance certificate, format: PDF, frequency: Quarterly, channel: Email, due: 45 days after quarter end, internal: 2 business days after due, match: Q1 compliance certificate}
+    - {document: Bank statements, format: PDF, frequency: Monthly, channel: Email, due: 10th business day after month end, internal: 2 business days after due, match: Collection account statement}
+  Trade receivables:
+    - {document: Receivables ageing, format: XLSX, frequency: Monthly, channel: Upload, due: 10th business day after month end, internal: 2 business days after due, match: Receivables ageing}
+    - {document: Borrowing base certificate, format: XLSX, frequency: Monthly, channel: Email, due: 10th business day after month end, internal: 2 business days after due, match: Borrowing base certificate}
+  CLO / BSL:
+    - {document: Daily position file, format: CSV, frequency: Daily, channel: SFTP, due: "07:00 next business day", internal: same, daily: positions, lag: 1, at: "07:00"}
+    - {document: Daily prices, format: CSV, frequency: Daily, channel: API, due: "18:00 same business day", internal: same, daily: prices, lag: 0, at: "18:00"}
+    - {document: Daily ratings feed, format: CSV, frequency: Daily, channel: API, due: "07:00 next business day", internal: same, daily: ratings, lag: 1, at: "07:00"}
+    - {document: Monthly trustee report, format: XLSX, frequency: Monthly, channel: SFTP, due: 10 business days after the determination date, internal: 2 business days after due, match: Collateral report}
+    - {document: OC/IC tests, format: XLSX, frequency: Monthly, channel: SFTP, due: With the trustee report, internal: 2 business days after due, applies_note: "Applies once the CLO prices; a warehouse tests its CCC bucket instead"}
+  Middle-market:
+    - {document: Obligor financial statements, format: PDF, frequency: Quarterly, channel: Data room, due: 45 days after quarter end, internal: 2 business days after due, match: Q1 financial statements}
+    - {document: Obligor compliance certificates, format: PDF, frequency: Quarterly, channel: Email, due: 45 days after quarter end, internal: 2 business days after due, match: Q1 compliance certificate}
+    - {document: Portfolio report, format: XLSX, frequency: Monthly, channel: Upload, due: 10th business day after month end, internal: 2 business days after due, match: Portfolio report}
+    - {document: Borrowing base certificate, format: XLSX, frequency: Monthly, channel: Upload, due: 10th business day after month end, internal: 2 business days after due, match: Borrowing base certificate}
+    - {document: Amendment and waiver notices, format: PDF, frequency: Ad hoc, channel: Email, due: 5 business days after signing, internal: 2 business days after due, match: Amendment and waiver notice}
+  Subscription line:
+    - {document: Investor register, format: XLSX, frequency: Monthly, channel: Data room, due: 5th business day after month end, internal: 2 business days after due, match: Investor register}
+    - {document: Capital call notices, format: XLSX, frequency: Ad hoc, channel: Email, due: On the day of issue, internal: 1 business day after due, match: Capital call notice}
+    - {document: Distribution notices, format: XLSX, frequency: Ad hoc, channel: Email, due: On the day of issue, internal: 1 business day after due, match: Distribution notice}
+    - {document: Investor transfer and rating notices, format: PDF, frequency: Ad hoc, channel: Email, due: 2 business days after the event, internal: 1 business day after due, match: Investor notice}
+  NAV:
+    - {document: Quarterly NAV report, format: PDF, frequency: Quarterly, channel: Data room, due: 60 days after quarter end, internal: 2 business days after due, match: Q1 NAV report}
+    - {document: Valuation report, format: PDF, frequency: Quarterly, channel: Data room, due: 60 days after quarter end, internal: 2 business days after due, match: Q1 valuation report}
+    - {document: Compliance certificate, format: PDF, frequency: Quarterly, channel: Email, due: 60 days after quarter end, internal: 2 business days after due, match: Q1 compliance certificate}
+# The book's facilities take the template for their kind.
+schedule_by_kind: {auto: Auto ABF, consumer: Auto ABF, equipment: Auto ABF, trade: Trade receivables, subscription: Subscription line, nav: NAV, clo: CLO / BSL}
+
+# The mapping library: each distinct layout the desk has mapped, per document type and sender,
+# with its version history. Code counts this cycle's files in each layout and, for obligor
+# documents, recognises the layout from its own headings (`signature`).
+mapping_library:
+  - {id: LAY-0101, document: Loan tape, sender: Bramble Auto Finance (servicer), format: CSV, client: calderwood, facilities: [bramble], columns: 40,
+     files: [BAF_Loan_Tape_2026-05.csv],
+     versions: [{version: 1, date: 2026-04-14, by: Hannah Cole, change: "Onboarded: 38 columns mapped"},
+                {version: 2, date: 2026-06-19, by: Priya Raman, change: "CoBorrower and GAPCoverage added; kept as attributes"}]}
+  - {id: LAY-0102, document: Loan tape, sender: Northmoor Auto Finance (servicer), format: CSV, client: calderwood, facilities: [northmoor], columns: 27,
+     files: [NMC_Tape_2026-05.csv],
+     versions: [{version: 1, date: 2025-09-18, by: Hannah Cole, change: "Onboarded: 27 columns mapped"}]}
+  - {id: LAY-0201, document: Servicer report, sender: Bramble Auto Finance (servicer), format: PDF, client: calderwood, facilities: [bramble],
+     files: [BAF_Servicer_Report_May_2026.pdf],
+     versions: [{version: 1, date: 2026-04-14, by: Hannah Cole, change: "Onboarded: 6 figures and the charge-off schedule"}]}
+  - {id: LAY-0202, document: Servicer report, sender: Northmoor Auto Finance (servicer), format: PDF, client: calderwood, facilities: [northmoor],
+     files: [],
+     versions: [{version: 1, date: 2025-09-18, by: Hannah Cole, change: "Onboarded: excess spread lines and collections history"}]}
+  - {id: LAY-0301, document: Borrowing base certificate, sender: Auto borrowers' common template, format: XLSX, client: calderwood, facilities: [bramble, northmoor],
+     files: [Bramble_BBC_May_2026.xlsx, NMC_BBC_May_2026.xlsx],
+     versions: [{version: 1, date: 2025-09-18, by: Hannah Cole, change: "Onboarded with Northmoor"},
+                {version: 2, date: 2026-04-14, by: Hannah Cole, change: "Ineligible detail sheet added for Bramble"}]}
+  - {id: LAY-0401, document: Collateral report, sender: Halden Trust Company (collateral administrator), format: XLSX, client: thornbury, facilities: [larkspur, ambleside, grasmere, buttermere, coniston], columns: 11,
+     files: [Larkspur_Collateral_Report_2026-05-29.xlsx],
+     versions: [{version: 1, date: 2026-02-16, by: Daniel Okafor, change: "Onboarded: 11 columns and the Trades sheet"}]}
+  - {id: LAY-0402, document: Daily position file, sender: Halden Trust Company (collateral administrator), format: CSV, client: thornbury, facilities: [larkspur], columns: 6,
+     daily: positions,
+     versions: [{version: 1, date: 2026-02-16, by: Daniel Okafor, change: "Onboarded: 6 columns"}]}
+  - {id: LAY-0403, document: Daily prices, sender: Meridian Loan Pricing, format: CSV, client: thornbury, facilities: [larkspur, ambleside, grasmere, buttermere, coniston], columns: 5,
+     daily: prices,
+     versions: [{version: 1, date: 2025-06-02, by: Daniel Okafor, change: "Onboarded: 5 columns"},
+                {version: 2, date: 2026-01-12, by: Daniel Okafor, change: "Quotes column added"}]}
+  - {id: LAY-0404, document: Daily ratings feed, sender: Ingleby Ratings Data, format: CSV, client: thornbury, facilities: [larkspur], columns: 6,
+     daily: ratings,
+     versions: [{version: 1, date: 2026-02-16, by: Daniel Okafor, change: "Onboarded: change file, one row per agency action"}]}
+  - {id: LAY-0501, document: NAV report pack, sender: Kestrel Capital Partners (manager), format: PDF, client: calderwood, facilities: [kestrel],
+     files: [Kestrel_Q1_2026_NAV_Report.pdf, Kestrel_Q1_2026_Valuation_Report.pdf, Kestrel_Q1_2026_Compliance_Certificate.pdf],
+     versions: [{version: 1, date: 2025-07-08, by: Hannah Cole, change: "Onboarded: NAV, positions and valuation dates"}]}
+  - {id: LAY-0601, document: Obligor financial statements, sender: "Obligors: consolidated statements", format: PDF, client: calderwood, facilities: [ravenglass],
+     signature: Consolidated income statement, obligor_documents: financials,
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: income statement and balance sheet extract, US$ thousands"}]}
+  - {id: LAY-0602, document: Obligor financial statements, sender: "Obligors: management accounts", format: PDF, client: calderwood, facilities: [ravenglass],
+     signature: management accounts, obligor_documents: financials,
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: LTM profit and loss and net debt, US$ millions"}]}
+  - {id: LAY-0603, document: Obligor financial statements, sender: "Obligors: fund's reporting template", format: PDF, client: calderwood, facilities: [ravenglass],
+     signature: Quarterly lender reporting template, obligor_documents: financials,
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded"},
+                {version: 2, date: 2026-02-03, by: Priya Raman, change: "Cash interest expense line added by the fund"}]}
+  - {id: LAY-0604, document: Obligor financial statements, sender: "Obligors: sponsor quarterly pack", format: PDF, client: calderwood, facilities: [ravenglass],
+     signature: Quarterly update to lenders from, obligor_documents: financials,
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: key figures table, US$ thousands"}]}
+  - {id: LAY-0611, document: Obligor compliance certificate, sender: "Fund's standard form", format: PDF, client: calderwood, facilities: [ravenglass],
+     signature: Financial covenant Actual Required Met, obligor_documents: certificates,
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: add-backs itemised, two covenants"}]}
+  - {id: LAY-0612, document: Obligor compliance certificate, sender: "Obligors' own forms", format: PDF, client: calderwood, facilities: [ravenglass],
+     signature: Certificate of compliance with financial covenants, obligor_documents: certificates,
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: narrative form"}]}
+  - {id: LAY-0621, document: Portfolio report, sender: Ravenglass Capital Management (servicer), format: XLSX, client: calderwood, facilities: [ravenglass], columns: 18,
+     files: [Ravenglass_Portfolio_Report_2026-05-31.xlsx],
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: 17 columns"},
+                {version: 2, date: 2026-03-09, by: Priya Raman, change: "Min interest cover column added"}]}
+  - {id: LAY-0622, document: Borrowing base certificate, sender: Ravenglass Capital Management (servicer), format: XLSX, client: calderwood, facilities: [ravenglass],
+     files: [Ravenglass_BBC_2026-05-31.xlsx],
+     versions: [{version: 1, date: 2025-11-20, by: Hannah Cole, change: "Onboarded: summary and obligor detail"}]}
+  - {id: LAY-0701, document: Investor register, sender: Skelwith Fund Administration (administrator), format: XLSX, client: thornbury, facilities: [wharfedale], columns: 9,
+     files: [Wharfedale_Investor_Register_2026-05-31.xlsx],
+     versions: [{version: 1, date: 2025-03-27, by: Daniel Okafor, change: "Onboarded: 8 columns"},
+                {version: 2, date: 2026-01-20, by: Daniel Okafor, change: "Rating date column added"}]}
+  - {id: LAY-0702, document: Capital call notice, sender: Skelwith Fund Administration (administrator), format: XLSX, client: thornbury, facilities: [wharfedale],
+     files: [Wharfedale_Capital_Call_Notice_07.xlsx],
+     versions: [{version: 1, date: 2025-03-27, by: Daniel Okafor, change: "Onboarded: notice and allocation sheets"}]}
+  - {id: LAY-0703, document: Distribution notice, sender: Skelwith Fund Administration (administrator), format: XLSX, client: thornbury, facilities: [wharfedale],
+     files: [Wharfedale_Distribution_Notice_04.xlsx],
+     versions: [{version: 1, date: 2025-03-27, by: Daniel Okafor, change: "Onboarded: with the recallable column"}]}
+  - {id: LAY-0801, document: Bank statements, sender: Calderwood Bank account services, format: PDF, client: calderwood, facilities: [bramble, northmoor],
+     files: [BAF_Collection_Account_Statement_May_2026.pdf, NMC_Collection_Account_Statement_May_2026.pdf],
+     versions: [{version: 1, date: 2025-09-18, by: Hannah Cole, change: "Onboarded: closing balance and collections"}]}
 
 # The platform's standard data model. Each master field feeds one entity; the fields that
 # stratify a pool are listed apart.
@@ -240,9 +484,11 @@ standard_model:
     test: Test inputs and results
     stratification: Buckets that split the pool
   stratification: [obligor_state, dealer_name, dealer_state, vehicle_make, vehicle_condition, days_past_due,
-                   industry, moodys, sp, employment_type]
-  portfolio: [cutoff_date, servicer_code]
-  test: [current_balance, charge_off_amount, status, par, bid]
+                   industry, moodys, sp, employment_type, sector, sponsor, facility_type, investor_type,
+                   rating, designation]
+  portfolio: [cutoff_date, servicer_code, financials_as_of]
+  test: [current_balance, charge_off_amount, status, par, bid, outstanding, ebitda, ebitda_adjustments,
+         covenant_ebitda, net_debt, interest_expense, uncalled, commitment, called, advance_rate]
 
 # Results from earlier cycles on the platform, for alert back-tests and headroom trends.
 history:
@@ -250,6 +496,8 @@ history:
   bramble.leverage_ratio: [[Q3 2025, 5.06], [Q4 2025, 5.19]]
   kestrel.loan_to_value: [[Q3 2025, 27.9], [Q4 2025, 29.1]]
   larkspur.ccc_share: [[Feb 2026, 6.1], [Mar 2026, 6.6]]
+  ravenglass.availability_usd: [[Mar 2026, 16420000], [Apr 2026, 14980000]]
+  wharfedale.availability_usd: [[Mar 2026, 24600000], [Apr 2026, 23100000]]
 
 # What a client may ask to be alerted on, by facility. Thornbury's facility is not here: its
 # data never goes to a model.
@@ -268,7 +516,7 @@ alert_presets:
 
 # Stated assumptions for the scorecard, to be replaced by measured baselines in discovery.
 assumptions:
-  baseline_hours_per_cycle: {bramble: 7.5, northmoor: 6.0, kestrel: 4.0, larkspur: 5.0}
+  baseline_hours_per_cycle: {bramble: 7.5, northmoor: 6.0, kestrel: 4.0, larkspur: 5.0, ravenglass: 18.0, wharfedale: 6.0}
   baseline_turnaround_business_days: 3
   analyst_hours_per_month: 140
   review_hours_per_finding: 0.5

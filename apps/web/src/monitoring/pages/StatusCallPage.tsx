@@ -66,7 +66,10 @@ export function StatusCallPage() {
           </p>
           {brief.sections.map((section) => (
             <section key={section.heading} className="mt-3">
-              <h3 className="text-[0.8125rem] font-semibold">{section.heading}</h3>
+              <h3 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
+                {section.heading}
+                {section.pending_recording && <Badge tone="warn">Template · draft pending</Badge>}
+              </h3>
               <ul className="mt-0.5 list-disc space-y-0.5 pl-5 text-[0.8125rem] leading-relaxed">
                 {section.points.map((point) => (
                   <li key={point}>

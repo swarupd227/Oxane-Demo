@@ -16,13 +16,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app import cases as onboarding_cases
+from app import personas
 from app import session as case_session
+from app.admin.api import router as admin_router
+from app.agents.api import router as agents_router
 from app.casework import config as casework_config
 from app.casework import view as casework
 from app.casework.run import record as casework_record
 from app.config import settings
 from app.db import get_session
 from app.deal import Deal, load_deal
+from app.deals import handoffs
+from app.deals.api import router as deals_router
 from app.engine_service import (
     active_files,
     pack_digests,
@@ -73,7 +78,19 @@ async def require_sign_in(request: Request, call_next: Any) -> Any:
     open_path = request.url.path == "/api/health" or not request.url.path.startswith("/api")
     if settings.auth_required and not open_path and not signed_in_user(request):
         return JSONResponse({"detail": "Sign-in required"}, status_code=401)
+    # A client user sees only what is meant for the client: never internal records.
+    ident = request.headers.get(personas.HEADER, "")
+    is_client = ident in {p.id for p in personas.STATIC if p.role == "client"} or \
+        ident.startswith("client-")
+    if not settings.auth_required and is_client and request.url.path.startswith("/api") and \
+            not personas.client_may_reach(request.url.path):
+        return JSONResponse({"detail": "Not available to client users"}, status_code=403)
     return await call_next(request)
+
+
+app.include_router(deals_router)
+app.include_router(agents_router)
+app.include_router(admin_router)
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -159,6 +176,102 @@ class SessionEvent(BaseModel):
     payload: dict[str, Any] = {}
 
 
+def _persona_actor(request: Request, session: Session, table: dict[str, dict[str, str]],
+                   kind: str, actor: str, payload: dict[str, Any]) -> tuple[str, Any]:
+    """With a persona named, the role decides the actor; the body's actor is ignored."""
+    if settings.auth_required:
+        return actor, None
+    persona = personas.acting(request, session)
+    if persona is None:
+        if request.headers.get(personas.HEADER):
+            raise HTTPException(status_code=403, detail="Unknown user")
+        return actor, None
+    payload["user"] = persona.name
+    return personas.scripted_actor(table, persona, kind), persona
+
+
+def sync_scripted(db: Session, persona: Any, scope: str = "both") -> None:
+    """Work out the scripted scenarios' hand-offs from their session state. They only change
+    when a scripted event is recorded, so this runs after events, not on every read."""
+    if scope in ("both", "onboarding"):
+        state = case_session.view(db, current_workbench())
+        try:
+            shown = casework.view(state)
+        except FileNotFoundError:
+            shown = None
+        handoffs.sync_onboarding(db, case_session.current_session(db), state, shown, persona)
+    if scope in ("both", "cycle"):
+        try:
+            cycle = current_cycle()
+        except HTTPException:
+            return
+        handoffs.sync_cycle(db, cycle_session.current_session(db, cycle), cycle,
+                            cycle_session.view(db, cycle), persona)
+
+
+def _withdraw(db: Session, subject_prefix: str, persona: Any) -> None:
+    from sqlalchemy import select as _select
+
+    from app.deals.models import WorkItem
+
+    for item in db.scalars(_select(WorkItem).where(WorkItem.subject.like(f"{subject_prefix}%"),
+                                                   WorkItem.status == "open")):
+        handoffs.close_items(db, item.key, persona, outcome="withdrawn", exact=True)
+
+
+def _fill(text: str, figures: dict[str, Any]) -> str:
+    import re
+
+    return re.sub(r"\{\{([^}]+)\}\}", lambda m: str((figures.get(m.group(1).strip()) or {})
+                                                    .get("value", m.group(0))), text)
+
+
+def scripted_portal(db: Session, client: str) -> dict[str, Any]:
+    """The scripted scenarios as their client sees them: queries, released packs, the brief."""
+    queries, reports, brief, alerts = [], [], None, []
+    if client == "calderwood":
+        state = case_session.view(db, current_workbench())
+        try:
+            shown = casework.view(state)
+        except FileNotFoundError:
+            shown = None
+        for query in (shown or {}).get("tracker", {}).get("queries", []):
+            if query.get("sent") and not query.get("earlier"):
+                queries.append({"case_id": None, "case": "0412", "facility":
+                                "Bramble Auto Receivables I", "ref": query["id"],
+                                "title": query.get("subject") or query.get("topic"),
+                                "question": query.get("text"), "asked_by": "Oxane onboarding",
+                                "asked_at": query["sent"], "answer": query.get("answer"),
+                                "status": "answered" if query.get("answered") else "waiting",
+                                "scripted": True})
+    try:
+        cycle = current_cycle()
+    except HTTPException:
+        return {"queries": queries, "reports": reports, "brief": brief, "alerts": alerts}
+    view = cycle_session.view(db, cycle)
+    names = {f["id"]: f for f in cycle["facilities"]}
+    for pack in cycle["packs"]:
+        facility = names.get(pack["facility"])
+        if facility and facility["client"] == client and pack["facility"] in view["packs"]:
+            reports.append({"facility": facility["name"], "period": cycle["cycle"]["id"],
+                            "released_at": view["packs"][pack["facility"]]["at"],
+                            "text": [_fill(pack["summary"], pack["figures"])] + [
+                                _fill(s.get("text", ""), pack["figures"])
+                                for s in pack["sections"]],
+                            "download": f"/api/monitoring/workbook/{pack['facility']}.xlsx",
+                            "scripted": True})
+    for item in cycle["briefs"]:
+        if item["client"] == client:
+            brief = {"opening": _fill(item["opening"], item["figures"]),
+                     "sections": [{"heading": s["heading"],
+                                   "points": [_fill(p, item["figures"]) for p in s["points"]]}
+                                  for s in item["sections"]]}
+    alerts = [a for a in view["alerts"] if a["client"] == client]
+    presets = (cycle["alerts"].get(client) or {}).get("presets", [])
+    return {"queries": queries, "reports": reports, "brief": brief,
+            "alerts": alerts, "alert_examples": [p["request"] for p in presets]}
+
+
 @app.post("/api/session/events")
 def post_event(event: SessionEvent, request: Request, session: SessionDep) -> dict[str, Any]:
     run = current_workbench()
@@ -167,10 +280,16 @@ def post_event(event: SessionEvent, request: Request, session: SessionDep) -> di
         user = signed_in_user(request) or ""
         actor = settings.role_of(user) or "unassigned"
         payload["user"] = user
+    actor, persona = _persona_actor(request, session, personas.ONBOARDING_EVENTS, event.type,
+                                    actor, payload)
     try:
         case_session.record(session, run, actor, event.type, payload)
     except case_session.Refused as refused:
         raise HTTPException(status_code=409, detail=str(refused)) from refused
+    sync_scripted(session, persona, "onboarding")
+    session.commit()
+    if persona is not None and persona.role == "client":
+        return {"ok": True}
     return case_session.view(session, run)
 
 
@@ -178,7 +297,12 @@ def post_event(event: SessionEvent, request: Request, session: SessionDep) -> di
 def post_reset(request: Request, session: SessionDep) -> dict[str, Any]:
     if settings.auth_required and not settings.role_of(signed_in_user(request) or ""):
         raise HTTPException(status_code=403, detail="User not recognised")
+    persona = personas.acting(request, session)
+    if persona is not None and persona.role == "client":
+        raise HTTPException(status_code=403, detail="Not available to client users")
+    _withdraw(session, "scripted:0412", persona)
     case_session.reset(session)
+    session.commit()
     return case_session.view(session, current_workbench())
 
 
@@ -340,10 +464,19 @@ def post_cycle_event(event: SessionEvent, request: Request, session: SessionDep)
         actor = "client" if event.type == "request-alert" else (
             settings.role_of(user) or "unassigned")
         payload["user"] = user
+    actor, persona = _persona_actor(request, session, personas.CYCLE_EVENTS, event.type, actor,
+                                    payload)
+    if persona is not None and persona.role == "client" and \
+            payload.get("client") != persona.client:
+        raise HTTPException(status_code=403, detail="A client asks for its own alerts only")
     try:
         cycle_session.record(session, cycle, actor, event.type, payload)
     except case_session.Refused as refused:
         raise HTTPException(status_code=409, detail=str(refused)) from refused
+    sync_scripted(session, persona, "cycle")
+    session.commit()
+    if persona is not None and persona.role == "client":
+        return {"ok": True}
     return cycle_session.view(session, cycle)
 
 
@@ -351,9 +484,25 @@ def post_cycle_event(event: SessionEvent, request: Request, session: SessionDep)
 def post_cycle_reset(request: Request, session: SessionDep) -> dict[str, Any]:
     if settings.auth_required and not settings.role_of(signed_in_user(request) or ""):
         raise HTTPException(status_code=403, detail="User not recognised")
+    persona = personas.acting(request, session)
+    if persona is not None and persona.role == "client":
+        raise HTTPException(status_code=403, detail="Not available to client users")
     cycle = current_cycle()
+    _withdraw(session, "scripted:cycle", persona)
     cycle_session.reset(session, cycle)
+    session.commit()
     return cycle_session.view(session, cycle)
+
+
+@app.get("/api/work/scripted-history")
+def get_scripted_history(scope: Literal["onboarding", "cycle"], request: Request,
+                         session: SessionDep) -> dict[str, Any]:
+    """The hand-offs of a scripted scenario, for its records' activity timelines."""
+    if scope == "onboarding":
+        sid = case_session.current_session(session)
+    else:
+        sid = cycle_session.current_session(session, current_cycle())
+    return handoffs.subject_history(session, sid)
 
 
 @app.get("/api/monitoring/scorecard")
@@ -380,12 +529,17 @@ def post_what_if(request: WhatIfRequest) -> dict[str, Any]:
 
 
 @app.get("/api/monitoring/workbook/{facility}.xlsx")
-def get_cycle_workbook(facility: str, session: SessionDep) -> RawResponse:
+def get_cycle_workbook(facility: str, request: Request, session: SessionDep) -> RawResponse:
     """The lender-facing workbook, with live formulas. Provisional until released."""
     cycle = current_cycle()
     if facility not in {f["id"] for f in cycle["facilities"]}:
         raise HTTPException(status_code=404, detail="Unknown facility")
     state = cycle_session.view(session, cycle)
+    persona = personas.acting(request, session)
+    if persona is not None and persona.role == "client":
+        owner = next(f["client"] for f in cycle["facilities"] if f["id"] == facility)
+        if owner != persona.client or facility not in state["packs"]:
+            raise HTTPException(status_code=404, detail="No released report")
     content, _ = cycle_workbook.build(cycle, state, facility)
     status_word = "provisional" if state["provisional"][facility] else "released"
     name = f"{facility}-{cycle['cycle']['id'].lower()}-{status_word}.xlsx"

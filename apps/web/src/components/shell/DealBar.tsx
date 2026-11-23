@@ -5,15 +5,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { casePath, STAGE_TONES, useCases } from "../../lib/cases";
 import { useNotifications } from "../../lib/notifications";
-import { ANALYST, APPROVER, useSession, type Actor } from "../../lib/session";
+import { useSession } from "../../lib/session";
 import { WorkbenchSwitch } from "../../monitoring/parts";
 import { Kbd } from "../ui/badges";
 import {
   EnvironmentLabel,
   NotificationBell,
-  UserMenu,
   WalkthroughToggle,
+  type BellItem,
 } from "./HeaderControls";
+import { PersonaMenu, useWorkBell } from "./Persona";
 
 function CaseSwitcher() {
   const { data } = useCases();
@@ -104,10 +105,11 @@ function CaseSwitcher() {
   );
 }
 
-const ROLES: Record<Actor, string> = { analyst: "Preparer", approver: "Reviewer" };
+
 
 export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
-  const { state, me, dispatch } = useSession();
+  const { dispatch } = useSession();
+  const workBell = useWorkBell();
   const navigate = useNavigate();
   const notices = useNotifications();
 
@@ -136,24 +138,16 @@ export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         <WalkthroughToggle />
         <NotificationBell
-          items={notices.map((notice) => ({
-            ...notice,
-            tone: notice.kind === "variance" ? "danger" : notice.kind === "approval" ? "warn" : "info",
-          }))}
+          items={[
+            ...workBell,
+            ...notices.map((notice) => ({
+              ...notice,
+              tone: (notice.kind === "variance" ? "danger" : notice.kind === "approval" ? "warn" : "info") as BellItem["tone"],
+            })),
+          ]}
         />
         <EnvironmentLabel />
-        <UserMenu
-          users={[
-            { id: "analyst", name: ANALYST, role: ROLES.analyst },
-            { id: "approver", name: APPROVER, role: ROLES.approver },
-          ]}
-          current={state.actor}
-          signedIn={
-            me?.signed_in && me.user
-              ? { name: me.user, role: me.role ? ROLES[me.role] : "No role" }
-              : null
-          }
-          onSwitch={(id) => dispatch({ type: "set-actor", actor: id as Actor })}
+        <PersonaMenu
           onReset={() => {
             dispatch({ type: "reset" });
             navigate("/");

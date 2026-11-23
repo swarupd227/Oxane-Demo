@@ -16,7 +16,9 @@ export function Breadcrumbs() {
   const { data: pipeline } = useCases();
   const crumbs: Crumb[] = [{ label: "Onboarding", to: "/cases" }];
 
-  if (pathname === "/cases") {
+  if (pathname === "/agents" || pathname.startsWith("/agents/")) {
+    crumbs.splice(0, 1, { label: "Agents" });
+  } else if (pathname === "/cases") {
     crumbs.push({ label: "Cases" });
   } else if (pathname.startsWith("/cases/")) {
     const item = pipeline?.cases.find((entry) => entry.number === pathname.split("/")[2]);

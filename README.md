@@ -12,6 +12,7 @@ The two share one facility record, rules engine, event log and workbench; the sw
 Requires Docker Desktop.
 
 ```bash
+cp .env.example .env   # once: the API mounts this file (Settings › AI provider writes the key to it)
 docker compose up --build
 ```
 
@@ -21,7 +22,9 @@ docker compose up --build
 | API docs | http://localhost:8010/docs |
 | PostgreSQL | localhost:5546 |
 
-To use different ports, copy `.env.example` to `.env` and change them.
+To use different ports, change them in `.env`.
+
+The Administrator (Alex Morgan) sets the model key at **Settings › AI provider**, with the access code. A key saved there is encrypted with `SETTINGS_ENCRYPTION_KEY` (a Fernet key; see `.env.example`) and is used from the next model call, ahead of `ANTHROPIC_API_KEY`. Locally, saving also writes the key to `.env`.
 
 ## Check it
 
@@ -128,6 +131,12 @@ docker compose exec api python -m app.monitoring.cycle --mode record
 docker compose exec api python -m app.monitoring.cycle --mode replay
 ```
 
+The cycle also carries the RFP review's three additions (`docs/PITCH_BRIEF_GAPS.md`): Ravenglass Direct Lending Fund I, a Calderwood back-leverage facility on 40 middle-market obligors (`app/monitoring/middle_market.py`); Wharfedale Infrastructure Partners III, a Thornbury subscription line run on code only (`subline.py`); and each facility's document schedule, Larkspur's daily feeds and the mapping library (`schedules.py`). The engine adds `directlending.py`, `fundfinance.py` and `feeds.py`. The scorecard scores M13 to M20 and N6 to N8 beside the original twelve and five. The review's model steps (obligor financials, the waiver notice, Ravenglass triage, pack and brief section) run their code fallback until recorded, are listed under `pending_recording` in the cycle and the agents' run log, and are recorded, capped at US$4, with:
+
+```bash
+docker compose exec api python -m app.monitoring.cycle --mode record --budget-usd 4
+```
+
 A captioned walkthrough video of the cycle is recorded the same way as the onboarding one, against a production build served by `demo-video/serve.mjs`:
 
 ```bash
@@ -139,6 +148,35 @@ The scorecard (`GET /api/monitoring/scorecard`) is the only code that reads the 
 Other monitoring endpoints: `GET /api/monitoring/workbook/{facility}.xlsx` (the lender workbook with live formulas, marked provisional until released) and `POST /api/monitoring/alerts/draft` (a client's alert request turned into a checked, back-tested rule; in replay only the three example requests are recorded). With sign-in on, `SENIOR_USERS` names the third approval level.
 
 The walkthrough video scripts in `demo-video/` predate the brief work (new steps, approval levels) and need updating before the next recording.
+
+## New deals: create to monitor
+
+Besides the two scripted scenarios, a user can run a new deal end to end: create a client, open an onboarding case, upload its agreement, amendments, loan tape (CSV or XLSX) and optionally the client's model, and take it through classification, terms, rules, tape mapping, validation, exceptions, independent QC, four-eyes approval and go-live. The live facility then receives monthly submissions: stored mapping reuse (AI only when the layout changes), validation, reconciliation against the prior period, triggers from the facility's own rule set, triage, a lender workbook, the client's approval levels and release. It also appears in the monitoring portfolio. Code: `services/api/app/deals/`, `apps/web/src/pages/deals/`.
+
+The model reads, classifies, maps and drafts; code finds every quote on its page, checks every figure against its quote, validates rules against their clauses and computes every number. A client that does not permit AI gets no model calls: the analyst enters terms with page references and writes rules, and code checks each entry. The scripted scenarios always replay; new deals call the model whenever a key is set, reusing any recorded call with the same request.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `DEMO_ACCESS_CODE` | unset | Code entered once in the workbench (user menu, Access code) and sent as `X-Demo-Access-Code`. Uploads and any step that may call the model return 403 without it; unset switches them off |
+| `LIVE_DAILY_CAP_USD` | `10` | Daily live model spend for new deals, counted in the database from token usage; at the cap model steps return 429 and the header shows the limit |
+| `DEALS_STUB_MODEL` | `false` | Tests and offline end-to-end runs only: a deterministic test double for the generated test deals in place of the model. Never set in a deployment |
+
+Two generated test deals, distinct from the Bramble pack, are built into `deal-kit/output/newdeals/` (`docker compose run --rm deal-kit python -m dealkit.newdeals.build`): Harbourline (consumer instalment, CSV tape, an amendment changing the advance rate and adding a concentration limit, the lender's own model with a stale rate, a later month with a duplicate account and a loan missing from the file) and Fenwick (SME loans, XLSX tape, no reserve in the agreement, a later month with a renamed and an added column). `tests/record_deals.py` records their model calls once a key is set.
+
+## Personas and hand-offs
+
+There is no sign-in on the demo, so the header's acting-user menu chooses who is acting; the workbench sends it as `X-Acting-User` and the API looks up the role and enforces it. Each persona lands on My work (client users on the client portal), sees only the areas their role uses, and every step that waits on someone else becomes a work item for them, shown in their My work, in the bell and in the record's history, all in a hash-chained log.
+
+| Persona | Role | Hands to |
+|---|---|---|
+| Hannah Cole | Onboarding analyst | Client user (query), credit expert (judgement), QC analyst (submit for QC) |
+| Ruth Adeyemi | Credit expert | Back to the analyst who escalated |
+| Tom Fairley | QC analyst | Reviewer (QC passed) or analyst (variances) |
+| Marcus Hale | Second analyst | Go-live hands the facility to the monitoring analyst; report level 2 to the head or the client |
+| Priya Raman | Monitoring analyst | Expert, reviewer (report level 2) |
+| Elena Varga | Head of monitoring | Client (release at level 3); sees team workload |
+| James Whitcombe, Laura Haskett, new clients' contacts | Client user | Answers go back to the analyst; sees only released reports, the status brief and their own queries |
+| Alex Morgan | Administrator | Clients, approval levels, AI permission |
 
 ## Private Credit Ontology
 
@@ -174,6 +212,12 @@ docker compose --profile tools run --rm e2e npm install
 
 ```bash
 docker compose --profile tools run --rm e2e npx playwright test --project=stage
+```
+
+`specs/deals.spec.ts` runs the new-deal flows through the browser, switching persona at each hand-off. It needs `DEMO_ACCESS_CODE` in `.env`. The AI steps run on the test model when the API is started with `DEALS_STUB_MODEL=true` (the offline variant), or on the live model only with `E2E_LIVE=1`; otherwise those two tests skip and the no-AI client's flow still runs:
+
+```bash
+DEALS_STUB_MODEL=true docker compose --profile tools run --rm e2e sh -c "npm ci && npx playwright test --project=stage specs/deals.spec.ts"
 ```
 
 Record the fallback videos into `tests/e2e/fallback-recordings`:

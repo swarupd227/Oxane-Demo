@@ -1,0 +1,14 @@
+{
+ "task": "deals_classify",
+ "model": "claude-opus-5-5",
+ "text": "{\"documents\":[{\"document\":\"Ashgrove_Harbourline_BB_Model_v1.xlsx\",\"kind\":\"client_model\",\"title\":\"Borrowing base model: Ashgrove - Harbourline v1\",\"dated\":null,\"effective\":null},{\"document\":\"Harbourline_First_Amendment.pdf\",\"kind\":\"amendment\",\"title\":\"First Amendment: Harbourline Consumer Receivables LLC Loan and Security Agreement\",\"dated\":\"2026-08-20\",\"effective\":\"2026-09-01\"},{\"document\":\"Harbourline_Loan_Tape_2026-09.csv\",\"kind\":\"loan_tape\",\"title\":\"Loan tape: Harbourline Consumer Receivables September 2026\",\"dated\":null,\"effective\":null},{\"document\":\"Harbourline_Loan_and_Security_Agreement.pdf\",\"kind\":\"agreement\",\"title\":\"Loan and Security Agreement: Harbourline Consumer Receivables LLC and Ashgrove Capital Partners LP\",\"dated\":\"2026-03-16\",\"effective\":null},{\"document\":\"Harbourline_Servicer_Report_September_2026.pdf\",\"kind\":\"servicer_report\",\"title\":\"Servicer monthly report: Harbourline Consumer Receivables LLC September 2026\",\"dated\":\"2026-09-30\",\"effective\":null}]}",
+ "usage": {
+  "task": "deals_classify",
+  "input_tokens": 2055,
+  "output_tokens": 437,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 616,
+  "from_replay": false,
+  "seconds": 43.6
+ }
+}

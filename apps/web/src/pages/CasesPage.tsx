@@ -7,6 +7,7 @@ import { Card, Skeleton } from "../components/ui/layout";
 import { PageHeader } from "../components/ui/PageHeader";
 import { casePath, ownerName, STAGE_TONES, useCases, type CaseSummary, type Stage } from "../lib/cases";
 import { formatDate, formatUsdShort } from "../lib/format";
+import { NewCasesPanel } from "./deals/NewCases";
 
 export function StagePill({ stage }: { stage: Stage }) {
   return (
@@ -70,6 +71,7 @@ export function CasesPage() {
         title="Onboarding cases"
         summary={`${s.cases} cases · ${s.clients} clients · ${s.open_exceptions} open exceptions · ${s.queries_with_client} queries with clients · as of ${formatDate(data.as_of)}`}
       />
+      <NewCasesPanel />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div role="tablist" aria-label="Stage" className="flex items-center gap-1 rounded-md bg-sand p-0.5">
           {(["all", ...data.stages] as const).map((item) => (

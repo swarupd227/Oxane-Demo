@@ -22,6 +22,8 @@ FILES = {
     "northmoor": "QC_Northmoor_May_2026.xlsx",
     "kestrel": "QC_Kestrel_Q1_2026.xlsx",
     "larkspur": "QC_Larkspur_May_2026.xlsx",
+    "ravenglass": "QC_Ravenglass_May_2026.xlsx",
+    "wharfedale": "QC_Wharfedale_May_2026.xlsx",
 }
 
 
@@ -74,6 +76,33 @@ def _lines(key: dict[str, Any]) -> dict[str, list[tuple[str, Any, str, str]]]:
             ("Adjusted collateral balance", lark["adjusted_balance"], "US$", "agrees"),
             ("Borrowing base", lark["borrowing_base"], "US$", "agrees"),
             ("Availability", lark["availability"], "US$", "agrees"),
+        ],
+        **_review_lines(checks),
+    }
+
+
+def _review_lines(checks: dict[str, Any]) -> dict[str, list[tuple[str, Any, str, str]]]:
+    """The RFP review's two facilities. Presentation differences only: no genuine variance."""
+    if "ravenglass" not in checks:
+        return {}
+    r, w = checks["ravenglass"], checks["wharfedale"]["after_exclusion"]
+    whole = float(round(r["borrowing_base"]))
+    return {
+        "ravenglass": [
+            ("Aggregate eligible balance", r["eligible_balance"], "US$", "agrees"),
+            ("Obligor loans excluded", len(r["excluded"]), "count", "agrees"),
+            ("Borrowing base", whole, "US$",
+             "agrees" if whole == r["borrowing_base"] else "rounding"),
+            ("Availability", r["availability"], "US$", "agrees"),
+            ("Largest obligor share", round(r["largest_obligor"]["pct"] / 100, 4), "%",
+             "percent"),
+            ("Concentration excess", "-", "US$", "blank"),
+        ],
+        "wharfedale": [
+            ("Aggregate eligible uncalled", w["aggregate_eligible_uncalled"], "US$", "agrees"),
+            ("Concentration reduction", w["concentration_reduction"], "US$", "agrees"),
+            ("Borrowing base", w["borrowing_base"], "US$", "agrees"),
+            ("Mandatory prepayment", -w["prepayment"], "US$", "sign"),
         ],
     }
 

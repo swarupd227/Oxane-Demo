@@ -11,11 +11,15 @@ from typing import Any
 from engine.alerts import CLASSES, classify
 from openpyxl import load_workbook
 
+from app.monitoring import middle_market, subline
+
 QC_FILES = {
     "bramble": "QC_Bramble_May_2026.xlsx",
     "northmoor": "QC_Northmoor_May_2026.xlsx",
     "kestrel": "QC_Kestrel_Q1_2026.xlsx",
     "larkspur": "QC_Larkspur_May_2026.xlsx",
+    "ravenglass": "QC_Ravenglass_May_2026.xlsx",
+    "wharfedale": "QC_Wharfedale_May_2026.xlsx",
 }
 
 
@@ -64,6 +68,8 @@ def platform_values(cycle: dict[str, Any]) -> dict[str, dict[str, Any]]:
             "Borrowing base": lark["borrowing_base"],
             "Availability": lark["availability"],
         },
+        "ravenglass": middle_market.qc_values(t["ravenglass"]) if "ravenglass" in t else {},
+        "wharfedale": subline.qc_values(t["wharfedale"]) if "wharfedale" in t else {},
     }
 
 
@@ -80,6 +86,8 @@ def compare(cycle: dict[str, Any], folder: Path) -> dict[str, Any]:
     values = platform_values(cycle)
     result = {}
     for facility, file in QC_FILES.items():
+        if not values[facility] or not (folder / file).exists():
+            continue
         lines = []
         for line, qc_value, unit, row in read_qc(folder / file):
             platform = values[facility].get(line)

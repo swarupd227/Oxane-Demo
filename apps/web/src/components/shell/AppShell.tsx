@@ -1,7 +1,8 @@
 import { RotateCw } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ONBOARDING_ROLES, usePersona } from "../../lib/persona";
 import { useLargeText, usePresenterMode } from "../../lib/presenter";
 import { scenes } from "../../lib/scenes";
 import { useSession } from "../../lib/session";
@@ -36,6 +37,7 @@ export function AppShell() {
   const largeText = useLargeText();
   const workbench = useWorkbench();
   const { dispatch, refusal, clearRefusal } = useSession();
+  const { persona } = usePersona();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -71,6 +73,12 @@ export function AppShell() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [dispatch, navigate, presenter]);
 
+  if (persona?.role === "client") {
+    return <Navigate to="/portal" replace />;
+  }
+  if (persona && !ONBOARDING_ROLES.includes(persona.role)) {
+    return <Navigate to="/work" replace />;
+  }
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30">

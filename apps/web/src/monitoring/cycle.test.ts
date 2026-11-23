@@ -37,8 +37,10 @@ describe("monitoring steps", () => {
     expect(order.every((index, i) => index > 0 && (i === 0 || index > order[i - 1]))).toBe(true);
   });
 
-  it("cover all four facilities and serve each workbook", () => {
-    expect(FACILITY_ORDER).toHaveLength(4);
+  it("cover all six worked facilities and serve each workbook", () => {
+    expect(FACILITY_ORDER).toHaveLength(6);
+    expect(FACILITY_ORDER.slice(4)).toEqual(["ravenglass", "wharfedale"]);
     expect(workbookUrl("larkspur")).toBe("/api/monitoring/workbook/larkspur.xlsx");
+    expect(workbookUrl("ravenglass")).toBe("/api/monitoring/workbook/ravenglass.xlsx");
   });
 });

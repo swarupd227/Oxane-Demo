@@ -102,7 +102,8 @@ def test_qc_variances_are_classified_and_a_genuine_one_holds_release():
     assert act("approve-pack", "approver", facility="bramble").status_code == 200
 
 
-@pytest.mark.parametrize("facility", ["bramble", "northmoor", "kestrel", "larkspur"])
+@pytest.mark.parametrize("facility", ["bramble", "northmoor", "kestrel", "larkspur", "ravenglass",
+                                      "wharfedale"])
 def test_workbook_formulas_give_the_platform_figures(facility):
     data = cycle()
     content, values = workbook.build(data, session(), facility)
@@ -122,6 +123,11 @@ def test_workbook_formulas_give_the_platform_figures(facility):
                     ("Five largest investments", "Five largest investments")],
         "larkspur": [("CCC excess adjustment", "CCC excess adjustment"),
                      ("Borrowing base", "Borrowing base"), ("CCC share", "CCC share")],
+        "ravenglass": [("Borrowing base", "Borrowing base"), ("Availability", "Availability"),
+                       ("Largest obligor share", "Largest obligor share")],
+        "wharfedale": [("Borrowing base", "Borrowing base"),
+                       ("Mandatory prepayment", "Mandatory prepayment"),
+                       ("Concentration reduction", "Concentration reduction")],
     }[facility]
     for calc_name, qc_line in expected:
         assert abs(values[calc_name] - platform[qc_line]) < 0.006, calc_name
@@ -239,7 +245,8 @@ def test_an_alert_goes_live_only_after_the_analyst_approves_it():
 
 def test_headroom_covers_every_facility():
     rows = cycle()["headroom"]
-    assert {r["facility"] for r in rows} == {"bramble", "northmoor", "kestrel", "larkspur"}
+    assert {r["facility"] for r in rows} == {"bramble", "northmoor", "kestrel", "larkspur",
+                                             "ravenglass", "wharfedale"}
     ccc = next(r for r in rows if r["facility"] == "larkspur" and r["test"] == "CCC share")
     assert not ccc["passed"] and ccc["trend"] == "towards"
 

@@ -168,6 +168,144 @@ larkspur:
     positions_may: 2026-06-12
     prices_may: 2026-05-29
 
+# Larkspur's daily feeds through May: positions from the collateral administrator by SFTP, bid
+# prices and rating changes by API. The month-end files above are the 29 May deliveries.
+larkspur_daily:
+  seed: 20260529
+  ratings_vendor: Ingleby Ratings Data
+  # Business days of May whose feeds were delivered late or not at all.
+  planted:
+    # N8: the 14 May position file came the next morning, after the 07:00 deadline. Complete.
+    late: {feed: positions, as_of: 2026-05-14, received: "2026-05-15T10:42"}
+    # M20: no price file for 21 May: the pricing interface failed and nothing was resent.
+    gap: {feed: prices, as_of: 2026-05-21}
+  downgrade_day: 2026-05-19
+  price_drop_day: 2026-05-12
+  identifier_change_day: 2026-05-15
+
+# Calderwood Bank's back-leverage facility to a direct lending fund: a middle-market book of 40
+# obligor loans. Each obligor reports quarterly financial statements and a compliance certificate
+# in its own layout; the fund sends a monthly portfolio report and borrowing base certificate.
+# Amounts for obligors are in US$ thousands.
+ravenglass:
+  seed: 20260515
+  name: Ravenglass Direct Lending Fund I back-leverage facility
+  short_name: Ravenglass Direct Lending Fund I
+  fund: Ravenglass Direct Lending Fund I LP
+  borrower: Ravenglass DL Funding I LLC
+  manager: Ravenglass Capital Management LLP
+  address: 30 Lowther Street, Carlisle CA3 8DA, United Kingdom
+  type: Back-leverage facility
+  signed: 2025-11-14
+  commitment_usd: 200000000
+  drawn_usd: 138000000
+  quarter_end: 2026-03-31
+  as_of: 2026-05-31
+  financials_due: 2026-05-15
+  obligors: 40
+  advance_rates: {First lien: 65, Unitranche: 55, Second lien: 30}
+  single_obligor_limit_pct: 7.5
+  sector_limit_pct: 20
+  addback_cap_pct: 20
+  leverage_tolerance_x: 0.02
+  sectors: [Healthcare services, Software, Business services, Industrials, Consumer services,
+            Specialty chemicals, Education, Food and beverage, Insurance services, Logistics,
+            Building products, Financial technology]
+  sponsors: [Brantwood Partners, Hawkshead Equity, Eskmeals Capital, Muncaster Partners,
+             Seascale Growth Equity, Irton Capital, Gosforth Private Equity, Wasdale Partners]
+  prefixes: [Arlecdon, Beckermet, Bootle, Calderbridge, Cleator, Distington, Egremont, Frizington,
+             Gosforth, Haile, Ireby, Keekle, Lamplugh, Moresby, Nethertown, Ponsonby, Rottington,
+             Sellafield, Thornhill, Ulpha, Waberthwaite, Whicham, Wythop, Asby, Braystones,
+             Corney, Drigg, Embleton, Gilgarran, Holmrook, Irton, Kirksanton, Lowca, Millom, Brigham, Dearham, Gilcrux]
+  received: {portfolio_report: 2026-06-10, borrowing_base_certificate: 2026-06-10}
+  planted:
+    # M13: leverage over its covenant: a Material Obligor Event, so the loan leaves the base.
+    breach: {name: Hexby Precision Engineering, sector: Industrials, facility: Unitranche,
+             outstanding: 9800000, ebitda: 8000, net_debt: 51440, interest: 3720,
+             max_leverage: 6.00, min_icr: 2.00}
+    # M14: add-backs of 34% of EBITDA. Whether the integration costs fall under the 20% cap on
+    # cost savings, synergies and restructuring decides whether leverage breaches.
+    addbacks: {name: Calloway Veterinary Partners, sector: Healthcare services,
+               facility: Unitranche, outstanding: 11200000, ebitda: 10000, net_debt: 76380,
+               interest: 5100, max_leverage: 6.00, min_icr: 2.00,
+               items: [["Run-rate cost synergies from the Brookfold acquisition", 1900, capped],
+                       ["Integration costs of the Brookfold acquisition", 900, judgement],
+                       ["Non-recurring legal settlement", 600, uncapped]]}
+    # M15: Q1 financials not delivered; the loan is excluded until they arrive.
+    missing: {name: Ashlar Packaging Group, sector: Industrials, facility: First lien,
+              outstanding: 7400000, ebitda: 9200, net_debt: 36340, interest: 2950,
+              max_leverage: 5.25, min_icr: 2.25, last_quarter: 2025-12-31}
+    # M16: a waiver raises the leverage covenant for the Q1 and Q2 test dates.
+    waiver: {name: Kelsall Dental Partners, sector: Healthcare services, facility: First lien,
+             outstanding: 8600000, ebitda: 8000, net_debt: 47360, interest: 3180,
+             max_leverage: 5.50, amended: 6.25, min_icr: 2.00, signed: 2026-05-18,
+             received: 2026-05-20, test_dates: [2026-03-31, 2026-06-30]}
+    # N6: the fund's report truncates leverage; recomputed it rounds 0.01x higher. Logged.
+    rounding: {name: Pendle Software Group, sector: Software, facility: First lien,
+               outstanding: 6900000, ebitda: 8000, net_debt: 38700, interest: 2860,
+               max_leverage: 6.00, min_icr: 2.00, reported: 4.83}
+
+# Thornbury Bank's subscription line to an infrastructure fund. The administrator sends the
+# investor register each month and every capital call and distribution notice, all as
+# workbooks, so the facility runs on code checks only, as Thornbury requires.
+wharfedale:
+  name: Wharfedale Infrastructure Partners III subscription line
+  short_name: Wharfedale Infrastructure Partners III
+  fund: Wharfedale Infrastructure Partners III LP
+  general_partner: Wharfedale Infrastructure GP III Ltd
+  administrator: Skelwith Fund Administration Ltd
+  type: Subscription line
+  signed: 2025-03-20
+  commitment_usd: 250000000
+  drawn_usd: 228000000
+  advance_rates: {Included: 90, Designated: 65}
+  included_min_rating: A-
+  exclusion_below: BBB-
+  single_investor_limit_pct: 15
+  designated_limit_pct: 30
+  called_before_pct: 70
+  capital_call: {number: 7, date: 2026-05-06, due: 2026-05-20, pct: 8}
+  distribution: {number: 4, date: 2026-05-22, pct: 3, recallable_pct: 2}
+  # [name, kind, commitment US$m, rating at 30 April, approved class]
+  investors:
+    - [Northfleet County Pension Fund, Public pension, 175, AA, Included]
+    - [Brackley Mutual Insurance, Insurance company, 150, A-, Included]
+    - [Severn Valley Teachers' Pension Scheme, Public pension, 95, AA-, Included]
+    - [Aldeburgh Life Assurance, Insurance company, 80, A+, Included]
+    - [Kingsbridge Sovereign Investment Authority, Sovereign wealth fund, 75, AA, Included]
+    - [Harrowby University Endowment, Endowment, 60, AA+, Included]
+    - [Tamar Municipal Employees' Retirement System, Public pension, 55, AA-, Included]
+    - [Penrhyn Mutual Assurance, Insurance company, 45, A, Included]
+    - [Calder Valley Local Government Pension, Public pension, 40, AA, Included]
+    - [Lowestoft Re Insurance, Insurance company, 35, A, Included]
+    - [Whitby Foundation, Foundation, 30, A+, Included]
+    - [Ribble Corporate Pension Trust, Corporate pension, 30, A-, Included]
+    - [Malvern Health Workers' Pension, Public pension, 28, AA-, Included]
+    - [Exmoor Life Insurance, Insurance company, 26, A, Included]
+    - [Dovedale Charitable Trust, Foundation, 24, A+, Included]
+    - [Stour Pension Partnership, Public pension, 22, AA, Included]
+    - [Rydal Insurance Company, Insurance company, 25, A-, Included]
+    - [Mendip Endowment Fund, Endowment, 20, A, Included]
+    - [Thirlmere Family Office, Family office, 25, NR, Designated]
+    - [Bowness Private Wealth Feeder, Wealth feeder, 40, NR, Designated]
+    - [Grisedale Capital Holdings, Holding company, 30, NR, Designated]
+    - [Ennerdale Family Partners, Family office, 22, NR, Designated]
+    - [Langstrath Investment Trust, Investment trust, 20, NR, Designated]
+    - [Kentmere Family Office, Family office, 18, NR, Designated]
+    - [Loweswater Holdings, Holding company, 15, NR, Designated]
+    - [Buttermere Wealth Feeder, Wealth feeder, 15, NR, Designated]
+    - [Haweswater Partners, Family office, 15, NR, Designated]
+    - [Coldstream Fund of Funds, Fund of funds, 25, NR, Excluded]
+    - [Torver Employee Co-Investment Vehicle, Employee vehicle, 20, NR, Excluded]
+    - [Sawrey Feeder Fund, Wealth feeder, 15, NR, Excluded]
+  planted:
+    # M17: downgraded to BB+, below BBB-: an Exclusion Event the register has not applied.
+    downgrade: {name: Brackley Mutual Insurance, rating: BB+, date: 2026-05-27, agency: S&P}
+    # M19: the register has not posted capital call 7 or distribution 4 for this investor.
+    stale_register: Thirlmere Family Office
+  received: {register_april: 2026-05-08, register_may: 2026-06-05, call: 2026-05-06,
+             distribution: 2026-05-22}
+
 # The rest of the desk's book: facilities with nothing planted, so the four above sit among
 # ordinary ones. Each reports summary figures only. Their numbers come from the seed; the
 # workbench works out every ratio, test and status from them. Nothing here is in the answer key.

@@ -4,9 +4,9 @@ import {
   ArrowRight,
   Bell,
   BellRing,
+  Bot,
   Building2,
   CalendarRange,
-  ChevronDown,
   ClipboardCheck,
   FileInput,
   FileText,
@@ -19,13 +19,16 @@ import {
   RotateCw,
   Scale,
   Search,
+  Settings,
   ShieldCheck,
   TableProperties,
   Car,
 } from "lucide-react";
 import { DropdownMenu, Popover } from "radix-ui";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { PersonaMenu, useWorkBell } from "../components/shell/Persona";
+import { cycleActor, MONITORING_ROLES, PERSONA_FOR_ACTOR, usePersona } from "../lib/persona";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/layout";
 import { Tooltip } from "../components/ui/Tooltip";
@@ -33,17 +36,17 @@ import { ActorContext, useActor, useCycle, useCycleAction, useCycleReset, useCyc
 import { deskRows, notices, ScopeContext, useScope, type ClientScope } from "./desk";
 import { WorkbenchSwitch } from "./parts";
 import { PresenterProvider, usePresenter } from "./presenter";
-import { Avatar, RecordId, when } from "./ui";
+import { RecordId, when } from "./ui";
 
 /** The screens in the order a cycle is worked. Presenter mode walks them in this order. */
 export const STEPS = [
-  { path: "/monitoring", label: "Portfolio", icon: LayoutGrid, hint: "Whole book for the cycle. Four facilities carry this month's issues; the rest are routine." },
-  { path: "/monitoring/submissions", label: "Submissions", icon: Inbox, hint: "Northmoor's servicer report is overdue and already escalated. Bramble's dealer list reused under consent." },
-  { path: "/monitoring/mapping", label: "Mapping", icon: TableProperties, hint: "Stored mapping reused; only Bramble's two new columns needed a suggestion. Confirm it." },
+  { path: "/monitoring", label: "Portfolio", icon: LayoutGrid, hint: "Whole book for the cycle. Six facilities carry this month's issues, including a 40-obligor middle-market book and a subscription line; the rest are routine." },
+  { path: "/monitoring/submissions", label: "Submissions", icon: Inbox, hint: "Northmoor's servicer report and one Ravenglass obligor's financials are overdue and escalated. Schedules and Larkspur's daily feeds are on their own tabs." },
+  { path: "/monitoring/mapping", label: "Mapping", icon: TableProperties, hint: "Stored mapping reused; only Bramble's two new columns needed a suggestion. The layout library counts each obligor layout." },
   { path: "/monitoring/validation", label: "Validation", icon: ShieldCheck, hint: "Northmoor's duplicate row blocks the load. Record the resolution to release it." },
   { path: "/monitoring/reconciliation", label: "Reconciliation", icon: Scale, hint: "Bramble roll-forward gap traced to 27 loans; charge-offs differ on 9." },
   { path: "/monitoring/terms", label: "Terms", icon: CalendarRange, hint: "Switch to June: Amendment No. 2 changes the dealer limit." },
-  { path: "/monitoring/covenants", label: "Covenants", icon: Gauge, hint: "Run the June what-if on Northmoor. Larkspur CCC excess at market value." },
+  { path: "/monitoring/covenants", label: "Covenants", icon: Gauge, hint: "Run the June what-if on Northmoor. Ravenglass obligor covenants; Wharfedale's exclusion forces a prepayment." },
   { path: "/monitoring/collateral", label: "Collateral", icon: Car, hint: "One VIN in both Bramble and Northmoor. Open both rows." },
   { path: "/monitoring/triage", label: "Exceptions", icon: ListChecks, hint: "Accept or change each suggestion; a change needs a reason." },
   { path: "/monitoring/pack", label: "Reports", icon: FileText, hint: "Resolve the QC variance, then switch user to approve. Thornbury needs three levels." },
@@ -52,8 +55,6 @@ export const STEPS = [
   { path: "/monitoring/results", label: "Metrics", icon: ClipboardCheck, hint: "Measured against assumed, with the test-set results." },
 ];
 
-const ACTORS: CycleActor[] = ["analyst", "approver", "senior", "client"];
-
 function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 }
@@ -61,6 +62,7 @@ function isTyping(target: EventTarget | null): boolean {
 function Sidebar() {
   const { data: cycle } = useCycle();
   const { data: session } = useCycleSession();
+  const role = usePersona().persona?.role;
   const counts = useMemo(() => {
     if (!cycle) {
       return {} as Record<string, { n: number; tone: string }>;
@@ -112,6 +114,35 @@ function Sidebar() {
             );
           })}
         </ul>
+        {role !== "client" && <NavLink
+          to="/monitoring/agents"
+          className={({ isActive }) =>
+            clsx("mt-2 flex h-8 items-center gap-2 rounded-md border-t border-line px-2 pt-px text-[0.8125rem]", isActive ? "bg-sand font-semibold text-ink" : "text-muted hover:bg-canvas hover:text-ink")
+          }
+        >
+          <Bot aria-hidden className="size-4 shrink-0" />
+          <span className="truncate">Agents</span>
+        </NavLink>}
+      </nav>
+      <nav aria-label="Workspace" className="border-t border-line px-2 py-2">
+        {[
+          { to: "/work", label: "My work" },
+          { to: "/facilities", label: "Onboarded facilities" },
+        ].map((item) => (
+          <NavLink key={item.to} to={item.to} className="flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem] text-muted hover:bg-canvas hover:text-ink">
+            <Building2 aria-hidden className="size-4 shrink-0" />
+            {item.label}
+          </NavLink>
+        ))}
+        {role === "admin" && (
+          <NavLink
+            to="/settings/ai-provider"
+            className={({ isActive }) => clsx("flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem]", isActive ? "bg-sand font-semibold text-ink" : "text-muted hover:bg-canvas hover:text-ink")}
+          >
+            <Settings aria-hidden className="size-4 shrink-0" />
+            Settings
+          </NavLink>
+        )}
       </nav>
       {cycle && (
         <div className="border-t border-line px-3 py-2 text-[0.6875rem] text-muted">
@@ -145,7 +176,8 @@ function Notifications() {
   const { data: session } = useCycleSession();
   const { actor } = useActor();
   const navigate = useNavigate();
-  const items = cycle ? notices(cycle, session, actor) : [];
+  const handoffs = useWorkBell();
+  const items = [...handoffs, ...(cycle ? notices(cycle, session, actor) : [])];
   return (
     <Menu
       label={`Notifications, ${items.length}`}
@@ -170,55 +202,6 @@ function Notifications() {
         ))}
         {!items.length && <p className="px-2 py-3 text-xs text-muted">Nothing new.</p>}
       </div>
-    </Menu>
-  );
-}
-
-function UserMenu({ onReset }: { onReset: () => void }) {
-  const { data: cycle } = useCycle();
-  const { actor, setActor } = useActor();
-  const { on } = usePresenter();
-  const me = cycle?.team?.[actor] ?? { name: actor, title: "" };
-  return (
-    <Menu
-      label="User menu"
-      width="w-64"
-      trigger={
-        <button type="button" className="flex h-8 cursor-pointer items-center gap-2 rounded-md px-1.5 hover:bg-sand" data-testid="user-menu">
-          <Avatar name={me.name} size="md" />
-          <span className="hidden text-left leading-tight xl:block">
-            <span className="block text-xs font-semibold">{me.name}</span>
-            <span className="block text-[0.6875rem] text-muted">{me.title}</span>
-          </span>
-          <ChevronDown aria-hidden className="size-3.5 text-muted" />
-        </button>
-      }
-    >
-      <DropdownMenu.Label className="px-2 py-1 text-xs font-semibold text-muted">Switch user</DropdownMenu.Label>
-      <DropdownMenu.RadioGroup value={actor} onValueChange={(v) => setActor(v as CycleActor)}>
-        {ACTORS.map((id) => {
-          const person = cycle?.team?.[id] ?? { name: id, title: "" };
-          return (
-            <DropdownMenu.RadioItem key={id} value={id} className={clsx(itemClass, "items-center")}>
-              <Avatar name={person.name} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate">{person.name}</span>
-                <span className="block truncate text-[0.6875rem] text-muted">{person.title}</span>
-              </span>
-              <DropdownMenu.ItemIndicator className="text-xs font-semibold">✓</DropdownMenu.ItemIndicator>
-            </DropdownMenu.RadioItem>
-          );
-        })}
-      </DropdownMenu.RadioGroup>
-      {on && (
-        <>
-          <DropdownMenu.Separator className="my-1 h-px bg-line" />
-          <DropdownMenu.Item className={clsx(itemClass, "items-center")} onSelect={onReset}>
-            <RotateCw aria-hidden className="size-3.5" />
-            Reset session
-          </DropdownMenu.Item>
-        </>
-      )}
     </Menu>
   );
 }
@@ -389,7 +372,7 @@ function Header({ onReset }: { onReset: () => void }) {
             UAT
           </span>
         </Tooltip>
-        <UserMenu onReset={onReset} />
+        <PersonaMenu onReset={onReset} resetLabel="Reset session" />
       </div>
     </header>
   );
@@ -442,7 +425,6 @@ function Frame() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const presenter = usePresenter();
-  const { setActor } = useActor();
   const { data: session } = useCycleSession();
   const action = useCycleAction();
   const reset = useCycleReset();
@@ -452,7 +434,6 @@ function Frame() {
   }, [pathname]);
   const doReset = () => {
     reset.mutate();
-    setActor("analyst");
     navigate("/monitoring");
   };
 
@@ -468,7 +449,6 @@ function Frame() {
       if (event.altKey && event.key.toLowerCase() === "r") {
         event.preventDefault();
         reset.mutate();
-        setActor("analyst");
         navigate("/monitoring");
         return;
       }
@@ -490,7 +470,7 @@ function Frame() {
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [navigate, presenter, reset, setActor]);
+  }, [navigate, presenter, reset]);
 
   return (
     <div className="flex min-h-screen bg-canvas">
@@ -511,8 +491,21 @@ function Frame() {
 }
 
 export function MonitoringShell() {
-  const [actor, setActor] = useState<CycleActor>("analyst");
+  // The acting persona decides the cycle actor; the API checks it again.
+  const { persona, setPersona } = usePersona();
+  const actor: CycleActor = cycleActor(persona?.role);
+  const setActor = (next: CycleActor) => {
+    if (next !== actor) {
+      setPersona(next === "analyst" ? PERSONA_FOR_ACTOR.monitoring : PERSONA_FOR_ACTOR[next]);
+    }
+  };
   const [client, setClient] = useState<ClientScope>("all");
+  if (persona?.role === "client") {
+    return <Navigate to="/portal" replace />;
+  }
+  if (persona && !MONITORING_ROLES.includes(persona.role)) {
+    return <Navigate to="/work" replace />;
+  }
   return (
     <PresenterProvider>
       <ActorContext.Provider value={{ actor, setActor }}>

@@ -24,6 +24,29 @@ class Settings(BaseSettings):
     # The third approval level, for clients that require one.
     senior_users: str = ""
     static_dir: Path | None = None
+    # New deals. Their model calls go live whenever a key is set, while the scripted scenarios
+    # above stay on LLM_MODE (replay by default). Recorded calls are reused by payload hash.
+    deals_llm_fixtures: Path = Path("/fixtures/llm-deals")
+    deals_model: str = "claude-opus-5-5"
+    demo_access_code: str = ""
+    live_daily_cap_usd: float = 10.0
+    max_upload_mb: int = 20
+    newdeals_dir: Path = Path("/deal-kit/output/newdeals")
+    anthropic_api_key: str = ""
+    # Tests and the offline end-to-end run only: a deterministic stand-in for the model on the
+    # generated test deals. Never set in a deployment.
+    deals_stub_model: bool = False
+    anthropic_foundry_api_key: str = ""
+    # Settings › AI provider: a Fernet key (urlsafe base64, 32 bytes) that encrypts a key saved
+    # there. Unset, nothing can be saved. LOCAL_ENV_FILE, local runs only, is the repo's .env
+    # mounted into the container; saving a key also writes it there.
+    settings_encryption_key: str = ""
+    local_env_file: str = ""
+
+    def deals_key_set(self) -> bool:
+        key = self.anthropic_foundry_api_key if self.llm_provider == "foundry" \
+            else self.anthropic_api_key
+        return bool(key.strip())
 
     def role_of(self, user: str) -> str | None:
         def listed(names: str) -> bool:

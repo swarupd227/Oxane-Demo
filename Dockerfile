@@ -19,7 +19,13 @@ RUN cp pack.manifest.json /tmp/expected-pack.json \
     && python -m dealkit.build \
     && cmp pack.manifest.json /tmp/expected-pack.json \
     && python -m dealkit.cycle.build \
-    && cmp cycle.manifest.json /tmp/expected-cycle.json
+    && cmp cycle.manifest.json /tmp/expected-cycle.json \
+    && cp newdeals.manifest.json /tmp/expected-newdeals.json \
+    && python -m dealkit.newdeals.build \
+    && cmp newdeals.manifest.json /tmp/expected-newdeals.json
+# Sample documents for trying a new deal on the hosted app: each test deal's onboarding pack and
+# its first monthly submission, as zips. The answer keys (key.json) stay out.
+RUN python -m dealkit.newdeals.samples /samples
 
 FROM python:3.13-slim
 WORKDIR /app
@@ -32,6 +38,7 @@ COPY deal-kit/deal.yaml /deal-kit/deal.yaml
 COPY --from=pack /deal-kit/output /deal-kit/output
 COPY fixtures /fixtures
 COPY --from=web /web/dist /static
+COPY --from=pack /samples /static/samples
 
 # The monitoring cycle replays from fixtures/cycle and fixtures/llm-cycle; its documents and
 # answer key come from the cycle build above, under /deal-kit/output.

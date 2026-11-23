@@ -7,6 +7,7 @@ import { PageTitle } from "../ui";
 import { formatDate } from "../../lib/format";
 import { useCycle, useWhatIf, type Cycle, type FacilityId, type Source } from "../cycle";
 import { FacilityTag, NoAiBadge, SourcePanel, Stat, TrendBars, usd2 } from "../parts";
+import { RavenglassCovenants, WharfedaleCovenants } from "./ReviewCovenants";
 
 type Status = "pass" | "warning" | "stale" | "expert" | "fail" | "pending";
 
@@ -333,12 +334,16 @@ export function CovenantsPage() {
         ? cycle.tests.bramble.leverage.guarantees[0]?.source
         : tab === "kestrel"
           ? cycle.tests.kestrel.ltv.events[0]?.source
-          : cycle.tests.larkspur.ccc_source;
+          : tab === "ravenglass"
+            ? cycle.tests.ravenglass.clauses[1]
+            : tab === "wharfedale"
+              ? cycle.tests.wharfedale.clauses[0]
+              : cycle.tests.larkspur.ccc_source;
   return (
     <>
       <PageTitle title="Covenants" meta={`${cycle.cycle.label} · terms in force for the period`} />
-      <div role="tablist" aria-label="Facility" className="mb-3 flex gap-1 border-b border-line">
-        {(["northmoor", "bramble", "kestrel", "larkspur"] as FacilityId[]).map((id) => {
+      <div role="tablist" aria-label="Facility" className="mb-3 flex gap-1 overflow-x-auto border-b border-line">
+        {(["northmoor", "bramble", "kestrel", "larkspur", "ravenglass", "wharfedale"] as FacilityId[]).map((id) => {
           const facility = cycle.facilities.find((f) => f.id === id)!;
           return (
             <button
@@ -347,7 +352,7 @@ export function CovenantsPage() {
               role="tab"
               aria-selected={tab === id}
               onClick={() => pick(id)}
-              className={clsx("-mb-px flex h-9 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium", tab === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
+              className={clsx("-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap", tab === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
             >
               {facility.name}
               <FacilityTag id={id} name={facility.asset_class} />
@@ -362,6 +367,8 @@ export function CovenantsPage() {
           {tab === "bramble" && <Bramble cycle={cycle} onSource={setSource} />}
           {tab === "kestrel" && <Kestrel cycle={cycle} onSource={setSource} />}
           {tab === "larkspur" && <Larkspur cycle={cycle} onSource={setSource} />}
+          {tab === "ravenglass" && <RavenglassCovenants cycle={cycle} onSource={setSource} />}
+          {tab === "wharfedale" && <WharfedaleCovenants cycle={cycle} onSource={setSource} />}
         </div>
         <div className="space-y-2">
           <SectionLabel>Source</SectionLabel>

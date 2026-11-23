@@ -19,6 +19,9 @@ LOAN_FIELDS = frozenset({
     "current_balance", "apr", "original_term", "remaining_term", "payments_made", "fico",
     "obligor_state", "dealer_name", "model_year", "vehicle_condition", "days_past_due",
     "modification_count", "status",
+    # The standard loan model for facilities onboarded on the platform (engine.generic).
+    "obligor_id", "maturity_date", "credit_score", "risk_grade", "sector", "region", "product",
+    "merchant", "collateral_type",
 })
 
 

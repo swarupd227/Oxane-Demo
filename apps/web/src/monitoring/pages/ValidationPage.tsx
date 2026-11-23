@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Ban, CheckCircle2, CircleSlash, FileSearch, Lock, Quote, TriangleAlert, Unlock } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Card, SectionLabel, Skeleton } from "../../components/ui/layout";
 import { Badge, PageTitle, SuggestedChip } from "../ui";
@@ -173,6 +174,42 @@ export function ValidationPage() {
           </table>
         </Card>
         <div className="space-y-3 self-start">
+          {feed.facility === "larkspur" && (
+            <Card className="p-3">
+              <SectionLabel>Daily feeds, {cycle.cycle.label}</SectionLabel>
+              <ul className="mt-2 space-y-1 text-xs">
+                {cycle.daily_feeds.feeds.map((f) => (
+                  <li key={f.feed} className="flex items-center justify-between gap-2">
+                    <span>{f.document}</span>
+                    <span className="numeric">
+                      {f.received}/{f.expected}
+                      {f.missing.length > 0 && <span className="ml-1.5 font-semibold text-danger">{f.missing.length} missing</span>}
+                      {f.late.length > 0 && <span className="ml-1.5 font-semibold text-warn">{f.late.length} late</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-muted">
+                Price coverage checked daily against the positions held: {cycle.daily_feeds.coverage.filter((c) => c.unpriced).length} day without bids.{" "}
+                <Link to="/monitoring/submissions?view=daily" className="font-medium text-info hover:underline">
+                  Open daily feeds
+                </Link>
+              </p>
+            </Card>
+          )}
+          {feed.facility === "ravenglass" && (
+            <Card className="p-3">
+              <SectionLabel>Obligor documents</SectionLabel>
+              <p className="mt-2 text-xs">
+                {cycle.tests.ravenglass.received} of {cycle.tests.ravenglass.obligors.length} obligors sent Q1 financials and a compliance certificate, each matched to a stored layout.
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {cycle.tests.ravenglass.extraction.status === "recorded"
+                  ? `${cycle.tests.ravenglass.extraction.verified} obligors read with every quote found on its page.`
+                  : "Obligor reading not yet recorded: tests use this portfolio report's figures, checked by the rules here."}
+              </p>
+            </Card>
+          )}
           <Card className="p-3">
             <SectionLabel>Change on prior period</SectionLabel>
             <div className="mt-2">

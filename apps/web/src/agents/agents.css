@@ -1,0 +1,25 @@
+/* Dark palette for the workbench tokens, opt in with <html data-theme="dark">. The agents console
+ * draws only with these tokens (including its SVG), so it follows whichever palette is set. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: #ece7e1;
+  --color-ink-soft: #d3ccc5;
+  --color-muted: #a8a09a;
+  --color-subtle: #8e857f;
+  --color-stone: #625953;
+  --color-line: #3b3632;
+  --color-sand: #2d2926;
+  --color-canvas: #191715;
+  --color-surface: #23201d;
+  --color-accent: #ffdd00;
+  --color-ok: #74cf9b;
+  --color-ok-tint: #1c3326;
+  --color-warn: #e9b752;
+  --color-warn-tint: #3a2e15;
+  --color-danger: #f2918a;
+  --color-danger-tint: #3e1e1b;
+  --color-info: #93b8ee;
+  --color-info-tint: #1c2a41;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.5);
+}

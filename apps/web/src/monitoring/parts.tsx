@@ -5,6 +5,7 @@ import { Fragment, useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { PdfPage } from "../components/evidence/PdfPage";
 import { Tooltip } from "../components/ui/Tooltip";
+import { MONITORING_ROLES, ONBOARDING_ROLES, useRole } from "../lib/persona";
 import { fileUrl, OUTCOMES, type Outcome, type Source } from "./cycle";
 
 export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitoring" }) {
@@ -20,10 +21,14 @@ export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitori
       {label}
     </NavLink>
   );
+  // Each role sees the workbenches it uses.
+  const role = useRole();
+  const onboarding = !role || ONBOARDING_ROLES.includes(role);
+  const monitoring = !role || MONITORING_ROLES.includes(role);
   return (
     <nav aria-label="Workbench" className="flex items-center gap-0.5 rounded-lg bg-sand p-0.5">
-      {item("/", "Onboarding", current === "onboarding")}
-      {item("/monitoring", "Monitoring", current === "monitoring")}
+      {onboarding && item("/", "Onboarding", current === "onboarding")}
+      {monitoring && item("/monitoring", "Monitoring", current === "monitoring")}
     </nav>
   );
 }
@@ -53,6 +58,8 @@ const facilityTones: Record<string, string> = {
   northmoor: "bg-[#dfe8ef] text-[#2f4b63]",
   kestrel: "bg-[#e6e2ef] text-[#4a3f6b]",
   larkspur: "bg-[#dcebe3] text-[#2f5a44]",
+  ravenglass: "bg-[#f0e0dc] text-[#6b2f24]",
+  wharfedale: "bg-[#e2ebe0] text-[#3d5a2f]",
 };
 
 /** A client that does not permit AI runs on code checks only. Said plainly wherever it shows. */

@@ -47,10 +47,28 @@ param foundryApiKey string = ''
 @description('Claude on Foundry resource name.')
 param foundryResource string = ''
 
+@secure()
+@description('Anthropic API key for live model calls on new cases. Empty keeps every run on replay.')
+param anthropicApiKey string = ''
+
+@secure()
+@description('Shared code a visitor enters before uploads or live model calls (the app has no sign-in).')
+param demoAccessCode string = ''
+
+@secure()
+@description('Fernet key that encrypts settings saved in the app, such as a model key entered by an admin.')
+param settingsEncryptionKey string = ''
+
+@description('Daily ceiling, in US dollars, on live model spend.')
+param liveDailyCapUsd string = '10'
+
 var suffix = uniqueString(resourceGroup().id)
 var deployApp = !empty(image)
 var signInConfigured = !empty(authClientId)
 var hasFoundry = !empty(foundryApiKey)
+var hasAnthropic = !empty(anthropicApiKey)
+var hasAccessCode = !empty(demoAccessCode)
+var hasSettingsKey = !empty(settingsEncryptionKey)
 var postgresUser = 'workbench'
 
 resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
@@ -140,6 +158,24 @@ resource foundrySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (hasF
   properties: { value: foundryApiKey }
 }
 
+resource anthropicSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (hasAnthropic) {
+  parent: vault
+  name: 'anthropic-api-key'
+  properties: { value: anthropicApiKey }
+}
+
+resource accessCodeSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (hasAccessCode) {
+  parent: vault
+  name: 'demo-access-code'
+  properties: { value: demoAccessCode }
+}
+
+resource settingsKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (hasSettingsKey) {
+  parent: vault
+  name: 'settings-encryption-key'
+  properties: { value: settingsEncryptionKey }
+}
+
 resource appEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: '${name}-env'
   location: location
@@ -184,6 +220,15 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
           : [],
         hasFoundry
           ? [{ name: 'foundry-api-key', keyVaultUrl: '${vault.properties.vaultUri}secrets/foundry-api-key', identity: identity.id }]
+          : [],
+        hasAnthropic
+          ? [{ name: 'anthropic-api-key', keyVaultUrl: '${vault.properties.vaultUri}secrets/anthropic-api-key', identity: identity.id }]
+          : [],
+        hasAccessCode
+          ? [{ name: 'demo-access-code', keyVaultUrl: '${vault.properties.vaultUri}secrets/demo-access-code', identity: identity.id }]
+          : [],
+        hasSettingsKey
+          ? [{ name: 'settings-encryption-key', keyVaultUrl: '${vault.properties.vaultUri}secrets/settings-encryption-key', identity: identity.id }]
           : []
       )
     }
@@ -204,8 +249,12 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
               { name: 'SENIOR_USERS', value: seniorUsers }
               { name: 'LLM_PROVIDER', value: llmProvider }
               { name: 'ANTHROPIC_FOUNDRY_RESOURCE', value: foundryResource }
+              { name: 'LIVE_DAILY_CAP_USD', value: liveDailyCapUsd }
             ],
-            hasFoundry ? [{ name: 'ANTHROPIC_FOUNDRY_API_KEY', secretRef: 'foundry-api-key' }] : []
+            hasFoundry ? [{ name: 'ANTHROPIC_FOUNDRY_API_KEY', secretRef: 'foundry-api-key' }] : [],
+            hasAnthropic ? [{ name: 'ANTHROPIC_API_KEY', secretRef: 'anthropic-api-key' }] : [],
+            hasAccessCode ? [{ name: 'DEMO_ACCESS_CODE', secretRef: 'demo-access-code' }] : [],
+            hasSettingsKey ? [{ name: 'SETTINGS_ENCRYPTION_KEY', secretRef: 'settings-encryption-key' }] : []
           )
           probes: [
             {

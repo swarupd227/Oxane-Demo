@@ -430,5 +430,153 @@ def _larkspur(book: Book, cycle: dict[str, Any]) -> dict[str, X]:
             "Availability": available}
 
 
+def _sheet(book: Book, name: str, header: list[str], widths: list[int]) -> Any:
+    ws = book.wb.create_sheet(name, 1)
+    for column, value in enumerate(header, start=1):
+        cell = ws.cell(row=1, column=column, value=value)
+        cell.font, cell.fill = BOLD, HEAD_FILL
+    for index, width in enumerate(widths, start=1):
+        ws.column_dimensions[chr(64 + index)].width = width
+    return ws
+
+
+def _put(ws: Any, row: int, column: int, value: Any, unit: str = "", source: str | None = None
+         ) -> None:
+    cell = ws.cell(row=row, column=column, value=value)
+    cell.number_format = FORMATS.get(unit, "General")
+    if source is not None:
+        cell.font = INPUT_FONT
+        cell.comment = Comment(f"Source: {source}", "Oxane platform")
+
+
+def _ravenglass(book: Book, cycle: dict[str, Any]) -> dict[str, X]:
+    t = cycle["tests"]["ravenglass"]
+    bb = t["borrowing_base"]
+    report = t["portfolio_file"]
+    ws = _sheet(book, "Obligors", ["Obligor ID", "Obligor", "Facility type", "Outstanding",
+                                   "Advance rate", "Eligible", "Borrowing base value",
+                                   "Net debt (US$000)", "Covenant EBITDA (US$000)",
+                                   "Interest (US$000)", "Leverage", "Maximum", "Interest cover",
+                                   "Minimum"],
+                [11, 32, 12, 16, 11, 9, 18, 14, 16, 13, 10, 10, 13, 10])
+    last = len(t["obligors"]) + 1
+    values, largest_row = [], 2
+    for row, o in enumerate(t["obligors"], start=2):
+        ws.cell(row=row, column=1, value=o["id"])
+        ws.cell(row=row, column=2, value=o["name"])
+        ws.cell(row=row, column=3, value=o["facility"])
+        _put(ws, row, 4, o["outstanding"], "US$", "Ravenglass_Obligor_Register.json, facility "
+             "record")
+        _put(ws, row, 5, o["advance_rate"], "%", "Loan and Security Agreement 1.1, Advance Rate")
+        _put(ws, row, 6, "Yes" if o["eligible"] else "No", "",
+             "Platform: " + (o["reason"] or "eligible") + " (Agreement 1.1)")
+        value = _round(o["outstanding"] * o["advance_rate"] / 100, 2) if o["eligible"] else 0.0
+        ws.cell(row=row, column=7, value=f'=IF(F{row}="Yes",ROUND(D{row}*E{row}/100,2),0)'
+                ).number_format = FORMATS["US$"]
+        values.append(value)
+        cells = {"Net debt": f"L{o['sheet_row']}", "Covenant EBITDA": f"K{o['sheet_row']}",
+                 "Interest expense": f"M{o['sheet_row']}"}
+        for column, key, figure in ((8, "Net debt", o["net_debt_k"]),
+                                    (9, "Covenant EBITDA", o["covenant_ebitda_k"]),
+                                    (10, "Interest expense", o["interest_k"])):
+            origin = o["sources"].get(key) if key != "Covenant EBITDA" else o["sources"].get(
+                "Covenant EBITDA")
+            _put(ws, row, column, figure, "count", source_text(
+                origin, f"{report}, Portfolio!{cells[key]}"))
+        ws.cell(row=row, column=11, value=f"=ROUND(H{row}/I{row},2)").number_format = "0.00"
+        _put(ws, row, 12, o["max_leverage"], "x", o["max_leverage_basis"])
+        ws.cell(row=row, column=13, value=f"=ROUND(I{row}/J{row},2)").number_format = "0.00"
+        _put(ws, row, 14, o["min_icr"], "x", "Ravenglass_Obligor_Register.json, facility record")
+        if o["eligible"] and o["outstanding"] > t["obligors"][largest_row - 2]["outstanding"]:
+            largest_row = row
+    eligible_total = sum(o["outstanding"] for o in t["obligors"] if o["eligible"])
+    aggregate = book.calc_row("Aggregate eligible balance",
+                              X(f'SUMIF(Obligors!F2:F{last},"Yes",Obligors!D2:D{last})',
+                                eligible_total), "US$", "Outstanding of eligible obligor loans")
+    excluded = book.calc_row("Obligor loans excluded",
+                             X(f'COUNTIF(Obligors!F2:F{last},"No")',
+                               sum(1 for o in t["obligors"] if not o["eligible"])), "count",
+                             "Material Obligor Event or financials not delivered")
+    excess = book.input("Concentration excess", bb["excess_reduction"], "US$",
+                        "Engine: no obligor above its limit and no sector above 20%")
+    base = book.calc_row("Borrowing base", X(f"SUM(Obligors!G2:G{last})", sum(values)) - excess,
+                         "US$", "Each eligible loan at its advance rate, less the excess")
+    commitment = book.input("Commitment", bb["commitment"], "US$", "Agreement, cover page")
+    drawn = book.input("Advances outstanding", bb["drawn"], "US$",
+                       "Facility record: advances outstanding at 31 May 2026")
+    available = book.calc_row("Availability", MIN(commitment, base) - drawn, "US$",
+                              "Lesser of commitment and borrowing base, less advances")
+    stated = book.input("Certificate: borrowing base", bb["certificate"]["borrowing_base"], "US$",
+                        f"{t['certificate_file']}, BBC Summary!B9")
+    book.calc_row("Certificate less platform: borrowing base", stated - base, "US$",
+                  "The certificate keeps the excluded loans")
+    largest = book.calc_row("Largest obligor share",
+                            X(f"ROUND(Obligors!D{largest_row}/{aggregate.f}*100,2)",
+                              _round(t["obligors"][largest_row - 2]["outstanding"]
+                                     / eligible_total * 100, 2)), "%",
+                            f"{t['obligors'][largest_row - 2]['name']} / aggregate eligible")
+    return {"Aggregate eligible balance": aggregate, "Obligor loans excluded": excluded,
+            "Borrowing base": base, "Availability": available,
+            "Largest obligor share": largest, "Concentration excess": excess}
+
+
+def _wharfedale(book: Book, cycle: dict[str, Any]) -> dict[str, X]:
+    t = cycle["tests"]["wharfedale"]
+    bb = t["borrowing_base"]
+    register = t["register_file"]
+    ws = _sheet(book, "Investors", ["Investor ID", "Investor", "Class", "Uncalled", "Advance rate",
+                                    "Concentration excess", "Borrowing base value", "Rating"],
+                [11, 42, 12, 18, 11, 18, 18, 9])
+    last = len(t["investors"]) + 1
+    rates = bb["advance_rates"]
+    for row, r in enumerate(t["investors"], start=2):
+        ws.cell(row=row, column=1, value=r["id"])
+        ws.cell(row=row, column=2, value=r["name"])
+        _put(ws, row, 3, r["class"], "", f"Platform: {r['reason']} (Credit Agreement 1.1)")
+        _put(ws, row, 4, r["uncalled"], "US$",
+             f"{register}, Register!F{r['sheet_row']}" if not r["difference"] else
+             "Rolled from the April register through capital call 7 and distribution 4")
+        _put(ws, row, 5, rates.get(r["class"], 0), "%", "Credit Agreement 1.1, Borrowing Base")
+        _put(ws, row, 8, r["rating"], "", f"{register}, Register!G{r['sheet_row']}")
+    eligible = [r for r in t["investors"] if r["class"] != "Excluded"]
+    aggregate = book.calc_row("Aggregate eligible uncalled", X(
+        f'SUMIF(Investors!C2:C{last},"<>Excluded",Investors!D2:D{last})',
+        sum(r["uncalled"] for r in eligible)), "US$", "Uncalled of included and designated "
+        "investors")
+    limit_pct = book.input("Single-investor limit", bb["single_limit_pct"], "%",
+                           source_text(t["clause_sources"]["concentration"],
+                                       "Credit Agreement 1.1"))
+    single = book.calc_row("Single-investor limit amount", ROUND(aggregate * limit_pct / 100, 2),
+                           "US$", "Aggregate eligible uncalled x limit")
+    cuts, values = [], []
+    for row, r in enumerate(t["investors"], start=2):
+        excess = 0.0 if r["class"] == "Excluded" else max(0.0, r["uncalled"] - single.v)
+        ws.cell(row=row, column=6, value=f'=IF(C{row}="Excluded",0,MAX(0,D{row}-{single.f}))'
+                ).number_format = FORMATS["US$"]
+        rate = rates.get(r["class"], 0)
+        value = 0.0 if r["class"] == "Excluded" else _round((r["uncalled"] - excess) * rate / 100,
+                                                            2)
+        ws.cell(row=row, column=7, value=f'=IF(C{row}="Excluded",0,ROUND((D{row}-F{row})*E{row}'
+                f'/100,2))').number_format = FORMATS["US$"]
+        values.append(value)
+        if excess:
+            cuts.append(X(f"ROUND(Investors!F{row}*Investors!E{row}/100,2)",
+                          _round(excess * rate / 100, 2)))
+    reduction = book.calc_row("Concentration reduction", SUM(cuts) if cuts else X.of(0), "US$",
+                              "Each investor's excess at its advance rate")
+    base = book.calc_row("Borrowing base", X(f"SUM(Investors!G2:G{last})", sum(values)), "US$",
+                         "Each eligible investor's uncalled after the limits, at its rate")
+    commitment = book.input("Commitment", bb["commitment"], "US$", "Credit Agreement, cover page")
+    drawn = book.input("Loans outstanding", bb["drawn"], "US$",
+                       "Facility record: loans outstanding at 31 May 2026")
+    book.calc_row("Availability", MIN(commitment, base) - drawn, "US$",
+                  "Lesser of commitment and borrowing base, less loans")
+    prepayment = book.calc_row("Mandatory prepayment", MAX(0, drawn - MIN(commitment, base)),
+                               "US$", source_text(t["clause_sources"]["prepayment"],
+                                                  "Credit Agreement 2.5"))
+    return {"Aggregate eligible uncalled": aggregate, "Concentration reduction": reduction,
+            "Borrowing base": base, "Mandatory prepayment": prepayment}
+
+
 BUILDERS = {"bramble": _bramble, "northmoor": _northmoor, "kestrel": _kestrel,
-            "larkspur": _larkspur}
+            "larkspur": _larkspur, "ravenglass": _ravenglass, "wharfedale": _wharfedale}

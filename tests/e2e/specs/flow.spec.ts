@@ -85,7 +85,10 @@ test("a complete onboarding, through the screen, from pack to scorecard", async 
   await test.step("Approve", async () => {
     await expect(page.getByText("You prepared this case")).toBeVisible();
     await expect(page.getByRole("button", { name: /Approve with \d open items/ })).toBeDisabled();
+    // Hand-off: the analyst's escalation waits on the credit expert, the load file on the reviewer.
+    await expect(page.getByRole("button", { name: /^Notifications/ })).toBeVisible();
     await page.getByRole("button", { name: "Second analyst" }).click();
+    await expect(page.getByRole("button", { name: /Acting as Marcus Hale/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Change summary" })).toBeVisible();
     await expect(page.getByText("38 of 38 columns accepted")).toBeVisible();
     await page.getByLabel("Decision reason").fill("The agreement's threshold stands");

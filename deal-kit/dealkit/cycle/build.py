@@ -8,9 +8,20 @@ import json
 import shutil
 
 from dealkit.config import OUTPUT_DIR, ROOT, load_deal
-from dealkit.cycle import book, bramble, kestrel, larkspur, northmoor, qc
+from dealkit.cycle import (
+    book,
+    bramble,
+    daily,
+    kestrel,
+    larkspur,
+    northmoor,
+    qc,
+    ravenglass,
+    statements,
+    wharfedale,
+)
 from dealkit.cycle.common import CYCLE_DIR, CYCLE_KEY_DIR, load_cycle
-from dealkit.cycle.key import build_cycle_key
+from dealkit.cycle.key import add_review_scenarios, build_cycle_key
 from dealkit.reports import build_financials
 from dealkit.tape import generate_tape
 
@@ -23,7 +34,10 @@ def build_cycle() -> dict[str, str]:
     shutil.rmtree(CYCLE_KEY_DIR, ignore_errors=True)
     folders = {
         name: CYCLE_DIR / name
-        for name in ("bramble", "northmoor", "kestrel", "larkspur", "qc", "book")
+        for name in (
+            "bramble", "northmoor", "kestrel", "larkspur", "qc", "book", "ravenglass",
+            "wharfedale", daily.FOLDER,
+        )
     }
     for folder in folders.values():
         folder.mkdir(parents=True)
@@ -37,6 +51,11 @@ def build_cycle() -> dict[str, str]:
     larkspur_facts = larkspur.build_larkspur(cycle, folders["larkspur"])
     # The rest of the book: nothing planted, nothing in the key.
     book.build_book(cycle, folders["book"])
+    # The RFP review's scenarios: middle-market, a subscription line and the CLO daily feeds.
+    ravenglass_facts = ravenglass.build_ravenglass(cycle, folders["ravenglass"])
+    wharfedale_facts = wharfedale.build_wharfedale(cycle, folders["wharfedale"])
+    daily_facts = daily.build_daily(cycle, folders["larkspur"], folders[daily.FOLDER])
+    statements.build_statements(folders["bramble"], folders["northmoor"])
 
     files = {
         "bramble": {
@@ -57,6 +76,7 @@ def build_cycle() -> dict[str, str]:
         CYCLE_KEY_DIR,
         larkspur_facts,
     )
+    add_review_scenarios(key, cycle, ravenglass_facts, wharfedale_facts, daily_facts)
     key["checks"]["qc"] = qc.build_qc(key, folders["qc"])
     (CYCLE_KEY_DIR / "key.json").write_text(
         json.dumps(key, indent=2, default=str) + "\n", encoding="utf-8"

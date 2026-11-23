@@ -1,6 +1,10 @@
 import clsx from "clsx";
 import {
   BarChart3,
+  Bot,
+  Settings,
+  Building2,
+  ListTodo,
   ClipboardCheck,
   FileStack,
   FolderKanban,
@@ -15,6 +19,7 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { useCase, type CaseStatus } from "../../lib/api";
 import { useCasework } from "../../lib/casework";
+import { useRole } from "../../lib/persona";
 import { useCases } from "../../lib/cases";
 import { sectionOf, sections } from "../../lib/scenes";
 import { termStatus, useSession } from "../../lib/session";
@@ -98,6 +103,7 @@ export function Sidebar() {
   const status = CASE_STATUSES[useCaseStatus()];
   const { data: pipeline } = useCases();
   const current = sectionOf(pathname);
+  const role = useRole();
   const link = (active: boolean) =>
     clsx(
       "flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem] whitespace-nowrap",
@@ -107,6 +113,14 @@ export function Sidebar() {
   return (
     <aside className="sticky top-12 hidden h-[calc(100vh-3rem)] w-56 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-2 py-3 lg:flex">
       <nav aria-label="Onboarding">
+        <NavLink to="/work" className={({ isActive }) => link(isActive)}>
+          <ListTodo aria-hidden className="size-4 shrink-0" />
+          My work
+        </NavLink>
+        <NavLink to="/clients" className={({ isActive }) => link(isActive)}>
+          <Building2 aria-hidden className="size-4 shrink-0" />
+          Clients
+        </NavLink>
         <NavLink to="/cases" end className={({ isActive }) => link(isActive || pathname.startsWith("/cases/"))}>
           <FolderKanban aria-hidden className="size-4 shrink-0" />
           Onboarding cases
@@ -159,6 +173,20 @@ export function Sidebar() {
           );
         })}
       </nav>
+      {role !== "client" && (
+        <nav aria-label="Platform" className="mt-auto border-t border-line pt-2">
+          <NavLink to="/agents" className={({ isActive }) => link(isActive)}>
+            <Bot aria-hidden className="size-4 shrink-0" />
+            Agents
+          </NavLink>
+          {role === "admin" && (
+            <NavLink to="/settings/ai-provider" className={({ isActive }) => link(isActive)}>
+              <Settings aria-hidden className="size-4 shrink-0" />
+              Settings
+            </NavLink>
+          )}
+        </nav>
+      )}
     </aside>
   );
 }

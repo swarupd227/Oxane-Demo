@@ -109,7 +109,7 @@ export function FacilityPage() {
         <div className="space-y-3">
           <Panel title="Expected submissions" flush>
             <table className="w-full text-[0.8125rem]">
-              <thead><tr className="border-b border-line text-left text-[0.6875rem] text-muted uppercase"><th className="px-3 py-1.5">Ref</th><th>Period</th><th>Due</th><th>Status</th><th>Panorama</th><th /></tr></thead>
+              <thead><tr className="border-b border-line text-left text-xs text-subtle"><th className="px-3 py-1.5">Ref</th><th>Period</th><th>Due</th><th>Status</th><th>Panorama</th><th /></tr></thead>
               <tbody>
                 {data.submissions.map((s) => (
                   <tr key={s.id} className="border-b border-sand last:border-0">

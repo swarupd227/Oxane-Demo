@@ -4,7 +4,7 @@ import { Building2, FolderKanban, Landmark, ListTodo, Settings, type LucideIcon 
 import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useDealsStatus, useWork } from "../../lib/deals";
 import { NAV_ROLES, usePersona, type Role } from "../../lib/persona";
-import { WorkbenchSwitch } from "../../monitoring/parts";
+import { Brand, CONTENT, HEADER, NavCount, NavIcon, navItem, SidebarFrame } from "./frame";
 import { EnvironmentFooter } from "./AppShell";
 import { EnvironmentLabel, NotificationBell, WalkthroughToggle } from "./HeaderControls";
 import { PersonaMenu, useWorkBell } from "./Persona";
@@ -34,7 +34,7 @@ function LiveState() {
     return null;
   }
   let text = data.mode === "live" ? "Live AI" : data.mode === "stub" ? "Test model" : "AI replay";
-  let tone = "border-line text-muted";
+  let tone = data.mode === "live" ? "border-ok/30 bg-ok-tint text-ok" : "border-line bg-surface text-muted";
   if (!data.access_configured) {
     text = "Uploads off";
   } else if (data.cap_reached) {
@@ -46,7 +46,7 @@ function LiveState() {
     tone = "border-warn/40 bg-warn-tint text-warn";
   }
   return (
-    <span role="status" title={`US$${data.spent_today_usd.toFixed(2)} of US$${data.cap_usd.toFixed(2)} live spend today`} className={clsx("inline-flex h-6 items-center rounded border px-1.5 text-[0.6875rem] font-semibold", tone)}>
+    <span role="status" title={`US$${data.spent_today_usd.toFixed(2)} of US$${data.cap_usd.toFixed(2)} live spend today`} className={clsx("inline-flex h-6 items-center gap-1.5 rounded-full border px-2 text-[0.6875rem] font-medium", tone)}>
       {text}
     </span>
   );
@@ -62,52 +62,39 @@ export function WorkspaceShell() {
     return <Navigate to="/portal" replace />;
   }
   const monitoringSide = pathname.startsWith("/facilities");
+  const client = role === "client";
+  const nav = (
+    <nav aria-label="Workspace" className="space-y-0.5">
+      {visibleNav(role).map((item) => {
+        const active =
+          pathname === item.to ||
+          pathname.startsWith(`${item.to}/`) ||
+          (item.to === "/cases" && pathname.startsWith("/deals/cases"));
+        return (
+          <NavLink key={item.to} to={item.to} className={navItem(active)}>
+            <NavIcon icon={item.icon} active={active} />
+            {item.label}
+            {item.to === "/work" && <NavCount value={work?.waiting.length} active={active} />}
+          </NavLink>
+        );
+      })}
+    </nav>
+  );
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b border-line bg-surface px-4">
-        <div className="flex shrink-0 items-center gap-2 pr-1">
-          <span aria-hidden className="size-5 rounded-[5px] bg-ink">
-            <span className="ml-[5px] block h-full w-[5px] bg-accent" />
-          </span>
-          <span className="text-sm font-semibold tracking-tight">Oxane</span>
-        </div>
-        {role !== "client" && <WorkbenchSwitch current={monitoringSide ? "monitoring" : "onboarding"} />}
-        <div className="ml-auto flex shrink-0 items-center gap-1.5">
-          {role !== "client" && <LiveState />}
-          <WalkthroughToggle />
-          <NotificationBell items={bell} />
-          <EnvironmentLabel />
-          <PersonaMenu />
-        </div>
-      </header>
-      <div className="flex flex-1">
-        {role !== "client" && (
-          <aside className="sticky top-12 hidden h-[calc(100vh-3rem)] w-56 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-2 py-3 lg:flex">
-            <nav aria-label="Workspace" className="space-y-0.5">
-              {visibleNav(role).map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    clsx(
-                      "flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem] whitespace-nowrap",
-                      isActive || pathname.startsWith(`${item.to}/`) || (item.to === "/cases" && pathname.startsWith("/deals/cases"))
-                        ? "bg-sand font-semibold text-ink"
-                        : "text-muted hover:bg-sand/60 hover:text-ink",
-                    )
-                  }
-                >
-                  <item.icon aria-hidden className="size-4 shrink-0" />
-                  {item.label}
-                  {item.to === "/work" && work && work.waiting.length > 0 && (
-                    <span className="numeric ml-auto rounded bg-sand px-1.5 text-[0.6875rem] font-medium text-muted">{work.waiting.length}</span>
-                  )}
-                </NavLink>
-              ))}
-            </nav>
-          </aside>
-        )}
-        <div className="flex min-w-0 flex-1 flex-col px-6 pt-4">
+    <div className="flex min-h-screen">
+      {!client && <SidebarFrame current={monitoringSide ? "monitoring" : "onboarding"} shared>{nav}</SidebarFrame>}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className={HEADER}>
+          {client && <Brand />}
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {!client && <LiveState />}
+            <WalkthroughToggle />
+            <NotificationBell items={bell} />
+            <EnvironmentLabel />
+            <PersonaMenu />
+          </div>
+        </header>
+        <div className={CONTENT}>
           <main className="w-full max-w-[100rem] flex-1">
             <Outlet />
           </main>

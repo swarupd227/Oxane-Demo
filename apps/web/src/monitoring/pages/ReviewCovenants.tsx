@@ -163,7 +163,7 @@ export function RavenglassCovenants({
         <div className="mt-2 max-h-96 overflow-auto rounded-md border border-line">
           <table className="w-full text-left text-xs">
             <thead className="sticky top-0 bg-canvas">
-              <tr className="text-[0.6875rem] font-semibold tracking-[0.04em] text-muted uppercase">
+              <tr className="text-xs font-medium text-subtle">
                 <th className="py-1.5 pr-2 pl-2">Obligor</th>
                 <th className="py-1.5 pr-2 text-right">Outstanding</th>
                 <th className="py-1.5 pr-2 text-right">Net debt, EBITDA</th>
@@ -272,7 +272,7 @@ export function RavenglassCovenants({
         >
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+              <tr className="text-xs font-medium text-subtle">
                 <th />
                 <th className="pb-1 text-right">Recomputed</th>
                 <th className="pb-1 pl-3 text-right">Certificate</th>
@@ -303,7 +303,7 @@ export function RavenglassCovenants({
               ))}
             </tbody>
           </table>
-          <p className="mt-3 text-[0.6875rem] font-semibold text-muted uppercase">
+          <p className="mt-3 text-xs font-medium text-subtle">
             Bridge to the certificate
           </p>
           <ul className="mt-1 space-y-1 text-xs">
@@ -616,7 +616,7 @@ export function WharfedaleCovenants({
         <div className="max-h-80 overflow-auto rounded-md border border-line">
           <table className="w-full text-left text-xs">
             <thead className="sticky top-0 bg-canvas">
-              <tr className="text-[0.6875rem] font-semibold tracking-[0.04em] text-muted uppercase">
+              <tr className="text-xs font-medium text-subtle">
                 <th className="py-1.5 pr-2 pl-2">Investor</th>
                 <th className="py-1.5 pr-2 text-right">Commitment</th>
                 <th className="py-1.5 pr-2 text-right">Uncalled</th>

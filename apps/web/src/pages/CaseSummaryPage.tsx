@@ -77,7 +77,7 @@ export function CaseSummaryPage() {
         <Card className="overflow-hidden">
           <table className="w-full text-left text-[0.8125rem]">
             <thead>
-              <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.04em] text-muted uppercase">
+              <tr className="border-b border-line text-xs font-medium text-subtle">
                 <th className="py-2 pr-3 pl-4">Progress</th>
                 <th className="py-2 pr-3 text-right">Done</th>
                 <th className="py-2 pr-3 text-right">Total</th>

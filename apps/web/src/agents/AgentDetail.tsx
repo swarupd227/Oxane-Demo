@@ -222,7 +222,7 @@ export function AgentDetail({ registry }: { registry: Registry }) {
 function DependencyList({ title, links, names, base, icon }: { title: string; links: Agent["upstream"]; names: Map<string, string>; base: string; icon: "in" | "out" }) {
   return (
     <div className="min-w-0 p-3">
-      <p className="mb-1.5 text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">{title}</p>
+      <p className="mb-1.5 text-xs font-medium text-subtle">{title}</p>
       {links.length ? (
         <ul className="space-y-1.5">
           {links.map((link) => (

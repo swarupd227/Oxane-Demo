@@ -2,36 +2,11 @@
 import clsx from "clsx";
 import { BotOff, FileText, Link2, ZoomIn, ZoomOut } from "lucide-react";
 import { Fragment, useState, type ReactNode } from "react";
-import { NavLink } from "react-router-dom";
 import { PdfPage } from "../components/evidence/PdfPage";
 import { Tooltip } from "../components/ui/Tooltip";
-import { MONITORING_ROLES, ONBOARDING_ROLES, useRole } from "../lib/persona";
 import { fileUrl, OUTCOMES, useCycle, type Outcome, type Source } from "./cycle";
 
-export function WorkbenchSwitch({ current }: { current: "onboarding" | "monitoring" }) {
-  const item = (to: string, label: string, active: boolean) => (
-    <NavLink
-      to={to}
-      aria-current={active ? "page" : undefined}
-      className={clsx(
-        "flex h-7 items-center rounded-md px-2.5 text-xs font-medium transition-colors",
-        active ? "bg-ink text-white" : "text-muted hover:text-ink",
-      )}
-    >
-      {label}
-    </NavLink>
-  );
-  // Each role sees the workbenches it uses.
-  const role = useRole();
-  const onboarding = !role || ONBOARDING_ROLES.includes(role);
-  const monitoring = !role || MONITORING_ROLES.includes(role);
-  return (
-    <nav aria-label="Workbench" className="flex items-center gap-0.5 rounded-lg bg-sand p-0.5">
-      {onboarding && item("/cases", "Onboarding", current === "onboarding")}
-      {monitoring && item("/monitoring", "Monitoring", current === "monitoring")}
-    </nav>
-  );
-}
+export { WorkbenchSwitch } from "../components/shell/frame";
 
 export function OutcomePill({ outcome, pending }: { outcome: Outcome | null; pending?: string }) {
   if (!outcome) {
@@ -55,12 +30,12 @@ export function OutcomePill({ outcome, pending }: { outcome: Outcome | null; pen
 
 // One tone per worked facility, in the cycle's own order; any other facility stays neutral.
 const facilityTones = [
-  "bg-[#efe3d3] text-[#6b4a1f]",
-  "bg-[#dfe8ef] text-[#2f4b63]",
-  "bg-[#e6e2ef] text-[#4a3f6b]",
-  "bg-[#dcebe3] text-[#2f5a44]",
-  "bg-[#f0e0dc] text-[#6b2f24]",
-  "bg-[#e2ebe0] text-[#3d5a2f]",
+  "bg-[#e0e7ff] text-[#3730a3]",
+  "bg-[#e0f2fe] text-[#075985]",
+  "bg-[#ede9fe] text-[#5b21b6]",
+  "bg-[#dcfce7] text-[#166534]",
+  "bg-[#fce7f3] text-[#9d174d]",
+  "bg-[#fef3c7] text-[#92400e]",
 ];
 
 /** A client that does not permit AI is outside the AI scope and stays on the existing process
@@ -71,7 +46,7 @@ export function NoAiBadge({ compact }: { compact?: boolean }) {
   return (
     <span
       title="This client does not permit AI, so it is outside the scope of the AI work and stays on the existing process: code checks only, no model calls."
-      className="inline-flex h-5 shrink-0 items-center gap-1 rounded border border-ink/25 bg-surface px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-ink"
+      className="inline-flex h-[1.125rem] shrink-0 items-center gap-1 rounded-full border border-line bg-surface px-1.5 text-[0.625rem] font-medium whitespace-nowrap text-muted"
     >
       <BotOff aria-hidden className="size-3" />
       {compact ? OUTSIDE_AI_SCOPE : OUTSIDE_AI_SCOPE}
@@ -128,21 +103,22 @@ export function FacilityTabs({
   extra?: (id: string) => ReactNode;
 }) {
   return (
-    <div role="tablist" aria-label="Facility" className="mb-3 flex items-center gap-1 overflow-x-auto border-b border-line">
+    <div role="tablist" aria-label="Facility" className="mb-4 flex items-center gap-1 overflow-x-auto border-b border-line">
       {facilities.map((f) => (
         <button
           key={f.id}
           type="button"
           role="tab"
           aria-selected={value === f.id}
+          aria-label={f.name}
+          title={`${f.name} · ${f.asset_class}`}
           onClick={() => onChange(f.id)}
           className={clsx(
-            "-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap",
-            value === f.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink",
+            "-mb-px flex h-10 shrink-0 cursor-pointer items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap transition-colors",
+            value === f.id ? "border-accent text-accent-strong" : "border-transparent text-muted hover:text-ink",
           )}
         >
-          {f.name}
-          <FacilityTag id={f.id} name={f.asset_class} />
+          {f.name.split(" ")[0]}
           {!f.ai_permitted && <NoAiBadge compact />}
           {extra?.(f.id)}
         </button>
@@ -157,7 +133,7 @@ export function FacilityTag({ id, name }: { id: string; name: string }) {
   return (
     <span
       className={clsx(
-        "inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap",
+        "inline-flex h-5 items-center rounded-full px-2 text-[0.6875rem] font-medium whitespace-nowrap",
         (index >= 0 && facilityTones[index]) || "bg-sand text-muted",
       )}
     >

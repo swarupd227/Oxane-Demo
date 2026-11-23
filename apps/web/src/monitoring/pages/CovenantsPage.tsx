@@ -147,7 +147,7 @@ function Bramble({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nul
         <Test title="Borrowing base against the certificate" clause={`Tolerance US$${bb.tolerance}`} status={bb.within_tolerance ? "pass" : "fail"} onSource={onSource}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+              <tr className="text-xs font-medium text-subtle">
                 <th />
                 <th className="pb-1 text-right font-semibold">Recomputed</th>
                 <th className="pb-1 pl-3 text-right font-semibold">Certificate</th>
@@ -249,7 +249,7 @@ function Larkspur({ cycle, onSource }: { cycle: Cycle; onSource: (s: Source | nu
         </div>
         <table className="mt-4 w-full text-sm">
           <thead>
-            <tr className="text-left text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+            <tr className="text-left text-xs font-medium text-subtle">
               <th className="pb-1">CCC loan, lowest bid first</th>
               <th className="pb-1">Moody's / S&amp;P</th>
               <th className="pb-1 text-right">Par</th>
@@ -352,7 +352,7 @@ export function CovenantsPage() {
               role="tab"
               aria-selected={tab === id}
               onClick={() => pick(id)}
-              className={clsx("-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap", tab === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink")}
+              className={clsx("-mb-px flex h-9 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-[0.8125rem] font-medium whitespace-nowrap", tab === id ? "border-accent text-accent-strong" : "border-transparent text-muted hover:text-ink")}
             >
               {facility.name}
               <FacilityTag id={id} name={facility.asset_class} />

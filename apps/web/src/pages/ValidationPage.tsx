@@ -26,7 +26,7 @@ function Comparison({ run }: { run: RunResult }) {
   return (
     <table className="w-full text-left">
       <thead>
-        <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+        <tr className="border-b border-line text-xs font-medium text-subtle">
           <th className="py-2.5 pr-3 pl-5">April 2026</th>
           <th className="py-2.5 pr-3 text-right">Borrower's certificate</th>
           <th className="py-2.5 pr-3 text-right">System</th>

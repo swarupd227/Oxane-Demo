@@ -342,6 +342,6 @@ test("(d) the scripted case 0412 hands an escalation to the credit expert and ba
   await expect(page.getByText(/done .* by Ruth Adeyemi/).first()).toBeVisible();
   await switchTo(page, "Hannah Cole");
   await expect(page.getByRole("link", { name: "Expert decision: X5, case 0412" }).first()).toBeVisible();
-  await expect(page.getByText(/handed over by Ruth Adeyemi/).first()).toBeVisible();
+  await expect(page.getByText(/From Ruth Adeyemi/).first()).toBeVisible();
   await resetCase(request);
 });

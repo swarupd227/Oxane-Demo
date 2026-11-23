@@ -13,6 +13,7 @@ import {
   Badge,
   DataTable,
   FilterSelect,
+  Kpis,
   PageTitle,
   Panel,
   RecordId,
@@ -69,6 +70,23 @@ function rowsOf(data: CycleScorecard, cycleLabel: string): MetricRow[] {
         ]
       : []),
   ]);
+}
+
+/** The headline results, read from the same measures the table lists. */
+function headline(data: CycleScorecard) {
+  const measure = (start: string) => data.measures.find((m) => m.name.startsWith(start));
+  const ratio = (value: string | undefined) => value?.match(/(\d+) of (\d+)/)?.slice(1, 3).join("/") ?? value ?? "–";
+  const accuracy = measure("Accuracy");
+  const linked = measure("Share of values linked");
+  const missed = data.issues.filter((i) => !i.found).length;
+  const raised = data.noise.filter((n) => n.raised).length;
+  return [
+    { label: "Values right", value: ratio(accuracy?.measured.value), tone: accuracy?.passed ? ("ok" as const) : accuracy?.passed === false ? ("danger" as const) : undefined },
+    { label: "Material issues missed", value: `${missed} of ${data.issues.length}`, tone: missed ? ("danger" as const) : ("ok" as const) },
+    { label: "False alerts", value: `${raised} of ${data.noise.length}`, tone: raised ? ("warn" as const) : ("ok" as const) },
+    { label: "Linked to source", value: ratio(linked?.measured.value), tone: linked?.passed ? ("ok" as const) : undefined },
+    { label: "Model cost per cycle", value: measure("Processing cost")?.measured.value ?? "–" },
+  ];
 }
 
 export function CycleScorecardPage() {
@@ -171,6 +189,7 @@ export function CycleScorecardPage() {
         title="Metrics"
         meta={`${label} cycle · measured and assumed`}
       />
+      <Kpis items={headline(data)} />
       <DataTable
         rows={rows}
         columns={columns}

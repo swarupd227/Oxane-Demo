@@ -13,6 +13,7 @@ import { CommandPalette } from "./CommandPalette";
 import { DealBar } from "./DealBar";
 import { Sidebar } from "./Sidebar";
 import { Stepper } from "./Stepper";
+import { CONTENT } from "./frame";
 
 function isTyping(target: EventTarget | null): boolean {
   return (
@@ -23,7 +24,7 @@ function isTyping(target: EventTarget | null): boolean {
 
 export function EnvironmentFooter() {
   return (
-    <footer className="mt-8 border-t border-line pt-2 pb-3 text-[0.6875rem] text-muted">
+    <footer className="mt-10 border-t border-line pt-3 pb-4 text-[0.6875rem] text-subtle">
       UAT environment · synthetic data only · no client or Oxane data
     </footer>
   );
@@ -80,14 +81,12 @@ export function AppShell() {
     return <Navigate to="/work" replace />;
   }
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30">
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
         <DealBar onOpenPalette={() => setPaletteOpen(true)} />
-      </header>
-      {presenter.enabled && <Stepper />}
-      <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col px-6 pt-3">
+        {presenter.enabled && <Stepper />}
+        <div className={CONTENT}>
           <Breadcrumbs />
           <motion.main
             key={pathname}

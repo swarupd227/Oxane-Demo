@@ -53,9 +53,15 @@ export function waiting(page: Page) {
   return page.locator("section").filter({ has: page.getByRole("heading", { name: "Waiting on you" }) });
 }
 
+/** My work's title greets the acting person by first name ("Good morning, Priya"). */
+export function myWorkTitle(page: Page, name?: string) {
+  const who = name ? name.split(" ")[0] : "\\S+";
+  return page.getByRole("heading", { level: 1, name: new RegExp(`^Good (morning|afternoon|evening), ${who}$`) });
+}
+
 export async function myWork(page: Page, name: string) {
   await openAs(page, name, "/work");
-  await expect(page.getByRole("heading", { level: 1, name: "My work" })).toBeVisible();
+  await expect(myWorkTitle(page, name)).toBeVisible();
   return waiting(page);
 }
 
@@ -66,11 +72,10 @@ export async function resetCycle(request: APIRequestContext) {
 
 /** Text of a KPI tile by its label. */
 export function kpi(page: Page, label: string) {
-  return page
-    .locator("div.grid.divide-x > *")
-    .filter({ has: page.locator("p", { hasText: new RegExp(`^${label}$`) }) })
-    .locator("p")
-    .nth(1);
+  // Each KPI is its own card in a grid: a label paragraph, then the value paragraph.
+  return page.locator(
+    `xpath=//div[contains(concat(' ', @class, ' '), ' grid ')]/*[p[1][normalize-space(.)='${label}']]/p[2]`,
+  );
 }
 
 /** Wait for a screen's heading. The workbench gives up on a slow API after 15 s and offers a

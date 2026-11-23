@@ -7,7 +7,7 @@ import { casePath, STAGE_TONES, useCases } from "../../lib/cases";
 import { CASE_HOME, sectionOf } from "../../lib/scenes";
 import { useNotifications } from "../../lib/notifications";
 import { useSession } from "../../lib/session";
-import { WorkbenchSwitch } from "../../monitoring/parts";
+import { HEADER } from "./frame";
 import { Kbd } from "../ui/badges";
 import {
   EnvironmentLabel,
@@ -39,7 +39,7 @@ function CaseSwitcher() {
         <button
           type="button"
           aria-label="Switch case"
-          className="flex h-8 max-w-[19rem] min-w-0 cursor-pointer items-center gap-2 rounded-md border border-line bg-surface px-2.5 text-left hover:border-stone"
+          className="flex h-8 max-w-[19rem] min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface px-2.5 text-left shadow-[0_1px_2px_rgb(16_24_40/0.05)] transition-colors hover:border-stone"
         >
           {current && <span className="numeric shrink-0 text-xs font-semibold text-muted">{current.number}</span>}
           <span className="truncate text-[0.8125rem] font-medium">
@@ -122,21 +122,13 @@ export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
   const notices = useNotifications();
 
   return (
-    <div className="flex h-12 items-center gap-3 border-b border-line bg-surface px-4">
-      <div className="flex shrink-0 items-center gap-2 pr-1">
-        <span aria-hidden className="size-5 rounded-[5px] bg-ink">
-          <span className="ml-[5px] block h-full w-[5px] bg-accent" />
-        </span>
-        <span className="text-sm font-semibold tracking-tight">Oxane</span>
-      </div>
-      <WorkbenchSwitch current="onboarding" />
-      <span aria-hidden className="h-5 w-px bg-line" />
+    <header className={HEADER}>
       <CaseSwitcher />
       <button
         type="button"
         onClick={onOpenPalette}
         aria-label="Search"
-        className="ml-2 flex h-8 w-full max-w-80 min-w-40 cursor-pointer items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-[0.8125rem] text-muted hover:border-stone"
+        className="flex h-8 w-full max-w-80 min-w-40 cursor-pointer items-center gap-2 rounded-lg border border-line bg-canvas px-2.5 text-[0.8125rem] text-subtle transition-colors hover:border-stone hover:bg-surface"
       >
         <Search aria-hidden className="size-3.5 shrink-0" />
         <span className="flex-1 truncate text-left">Search terms, exceptions, queries</span>
@@ -162,6 +154,6 @@ export function DealBar({ onOpenPalette }: { onOpenPalette: () => void }) {
           }}
         />
       </div>
-    </div>
+    </header>
   );
 }

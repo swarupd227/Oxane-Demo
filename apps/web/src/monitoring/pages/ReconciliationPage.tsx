@@ -205,7 +205,7 @@ export function ReconciliationPage() {
         <div className="max-h-[60vh] overflow-auto">
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0 bg-surface">
-              <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+              <tr className="border-b border-line text-xs font-medium text-subtle">
                 <th className="py-2 pr-2">Loan</th>
                 <th className="py-2 pr-2">Dealer</th>
                 <th className="py-2 pr-2">State</th>
@@ -228,7 +228,7 @@ export function ReconciliationPage() {
       <Dialog open={drill === "charge"} onOpenChange={(open) => !open && setDrill(null)} title={`${offs.loans.length} loans charged off in the report, live on the tape`} description={`Difference ${usd2(offs.difference)}`}>
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-line text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
+            <tr className="border-b border-line text-xs font-medium text-subtle">
               <th className="py-2 pr-2">Loan</th>
               <th className="py-2 pr-2">Tape status</th>
               <th className="py-2 pr-2 text-right">Days past due</th>

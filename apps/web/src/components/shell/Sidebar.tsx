@@ -17,10 +17,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { NavCount, NavIcon, NavSection, navItem, SidebarFrame } from "./frame";
 import { useCase, type CaseStatus } from "../../lib/api";
 import { useCasework } from "../../lib/casework";
 import { NAV_ROLES, useRole } from "../../lib/persona";
 import { useCases } from "../../lib/cases";
+import { useDealCases } from "../../lib/deals";
 import { sectionOf, sections } from "../../lib/scenes";
 import { termStatus, useSession } from "../../lib/session";
 import { useWorkbench } from "../../lib/workbench";
@@ -99,28 +101,14 @@ function useCounts(): Record<string, string> {
   return counts;
 }
 
-function Count({ value, active }: { value?: string; active?: boolean }) {
-  if (!value || value === "0") {
-    return null;
-  }
-  return (
-    <span
-      className={clsx(
-        "numeric ml-auto rounded px-1.5 text-[0.6875rem] font-medium",
-        active ? "bg-surface text-ink" : "bg-sand text-muted",
-      )}
-    >
-      {value}
-    </span>
-  );
-}
-
 export function Sidebar() {
   const { pathname } = useLocation();
   const counts = useCounts();
   const status = CASE_STATUSES[useCaseStatus()];
   const { data: caseView } = useCase();
   const { data: pipeline } = useCases();
+  const { data: platform } = useDealCases();
+  const caseCount = pipeline ? pipeline.summary.cases + (platform ?? []).filter((c) => !c.archived_at).length : undefined;
   const current = sectionOf(pathname);
   // The case's own sections show only while that case is open: on its section pages or its
   // summary. Lists, My work, clients and settings belong to no case.
@@ -132,104 +120,102 @@ export function Sidebar() {
     current !== null ||
     (caseNumber !== undefined && pathname === `/cases/${caseNumber}`);
   const role = useRole();
-  const link = (active: boolean) =>
-    clsx(
-      "flex h-8 items-center gap-2 rounded-md px-2 text-[0.8125rem] whitespace-nowrap",
-      active
-        ? "bg-sand font-semibold text-ink"
-        : "text-muted hover:bg-sand/60 hover:text-ink",
-    );
+  const casesActive = pathname === "/cases" || (pathname.startsWith("/cases/") && !inCase);
 
   return (
-    <aside className="sticky top-12 hidden h-[calc(100vh-3rem)] w-56 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-2 py-3 lg:flex">
+    <SidebarFrame
+      current="onboarding"
+      footer={
+        role !== "client" && (
+          <nav aria-label="Platform" className="space-y-0.5">
+            <NavLink to="/agents" className={({ isActive }) => navItem(isActive)}>
+              {({ isActive }) => (
+                <>
+                  <NavIcon icon={Bot} active={isActive} />
+                  Agents
+                </>
+              )}
+            </NavLink>
+            {role === "admin" && (
+              <NavLink to="/settings/ai-provider" className={({ isActive }) => navItem(isActive)}>
+                {({ isActive }) => (
+                  <>
+                    <NavIcon icon={Settings} active={isActive} />
+                    Settings
+                  </>
+                )}
+              </NavLink>
+            )}
+          </nav>
+        )
+      }
+    >
       <nav aria-label="Onboarding">
-        <NavLink to="/work" className={({ isActive }) => link(isActive)}>
-          <ListTodo aria-hidden className="size-4 shrink-0" />
-          My work
-        </NavLink>
-        {role && NAV_ROLES["/clients"].includes(role) && (
-          <NavLink to="/clients" className={({ isActive }) => link(isActive)}>
-            <Building2 aria-hidden className="size-4 shrink-0" />
-            Clients
+        <NavSection>
+          <NavLink to="/work" className={({ isActive }) => navItem(isActive)}>
+            {({ isActive }) => (
+              <>
+                <NavIcon icon={ListTodo} active={isActive} />
+                My work
+              </>
+            )}
           </NavLink>
-        )}
-        <NavLink
-          to="/cases"
-          end
-          className={({ isActive }) =>
-            link(isActive || pathname.startsWith("/cases/"))
-          }
-        >
-          <FolderKanban aria-hidden className="size-4 shrink-0" />
-          Onboarding cases
-          <Count
-            value={pipeline ? String(pipeline.summary.cases) : undefined}
-          />
-        </NavLink>
+          {role && NAV_ROLES["/clients"].includes(role) && (
+            <NavLink to="/clients" className={({ isActive }) => navItem(isActive)}>
+              {({ isActive }) => (
+                <>
+                  <NavIcon icon={Building2} active={isActive} />
+                  Clients
+                </>
+              )}
+            </NavLink>
+          )}
+          <NavLink to="/cases" end className={navItem(casesActive)}>
+            <NavIcon icon={FolderKanban} active={casesActive} />
+            Onboarding cases
+            <NavCount value={caseCount} active={casesActive} />
+          </NavLink>
+        </NavSection>
       </nav>
       {inCase && (
-        <>
+        <div className="mt-4 rounded-lg border border-line bg-canvas/60 p-1.5">
           {caseNumber && caseName && (
-            <div className="mt-4 mb-1.5 px-2">
-              <p className="text-[0.6875rem] font-semibold tracking-[0.06em] text-muted uppercase">
-                Case {caseNumber}
-              </p>
-              <p
-                className="mt-0.5 truncate text-[0.8125rem] font-medium text-ink"
-                title={caseName}
-              >
+            <div className="px-1.5 pt-1 pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="numeric text-[0.6875rem] font-medium text-subtle">Case {caseNumber}</p>
+                <span className={clsx("inline-flex h-5 items-center rounded-full px-2 text-[0.6875rem] font-medium", status.className)}>
+                  {status.label}
+                </span>
+              </div>
+              <p className="mt-0.5 truncate text-[0.8125rem] font-semibold text-ink" title={caseName}>
                 {caseName}
               </p>
-              <span
-                className={clsx(
-                  "mt-1 inline-flex h-5 items-center rounded px-1.5 text-[0.6875rem] font-medium",
-                  status.className,
-                )}
-              >
-                {status.label}
-              </span>
             </div>
           )}
           <nav aria-label="Case sections" className="space-y-0.5">
             {sections.map((section) => {
               const Icon = ICONS[section.id];
               const open = current?.section.id === section.id;
+              const leafActive = open && !section.children.length;
               return (
                 <div key={section.id}>
-                  <NavLink
-                    to={section.path}
-                    end
-                    className={() => link(open && !section.children.length)}
-                  >
-                    <Icon aria-hidden className="size-4 shrink-0" />
-                    <span className={clsx(open && "font-semibold text-ink")}>
+                  <NavLink to={section.path} end className={navItem(leafActive)}>
+                    <NavIcon icon={Icon} active={open} />
+                    <span className={clsx(open && "font-medium text-ink", leafActive && "text-accent-strong")}>
                       {section.label}
                     </span>
-                    {!section.children.length && (
-                      <Count value={counts[section.path]} active={open} />
-                    )}
+                    {!section.children.length && <NavCount value={counts[section.path]} active={leafActive} />}
                   </NavLink>
                   {section.children.length > 0 && (
-                    <div className="ml-4 border-l border-line pl-2">
+                    <div className="ml-[1.0625rem] border-l border-line pl-2">
                       {section.children.map((child) => (
-                        <NavLink
-                          key={child.path}
-                          to={child.path}
-                          end
-                          className={({ isActive }) =>
-                            clsx(
-                              "flex h-7 items-center gap-2 rounded-md px-2 text-[0.8125rem] whitespace-nowrap",
-                              isActive
-                                ? "bg-sand font-semibold text-ink"
-                                : "text-muted hover:bg-sand/60 hover:text-ink",
-                            )
-                          }
-                        >
-                          {child.label}
-                          <Count
-                            value={counts[child.path]}
-                            active={pathname === child.path}
-                          />
+                        <NavLink key={child.path} to={child.path} end className={({ isActive }) => navItem(isActive, true)}>
+                          {({ isActive }) => (
+                            <>
+                              {child.label}
+                              <NavCount value={counts[child.path]} active={isActive} />
+                            </>
+                          )}
                         </NavLink>
                       ))}
                     </div>
@@ -238,28 +224,8 @@ export function Sidebar() {
               );
             })}
           </nav>
-        </>
+        </div>
       )}
-      {role !== "client" && (
-        <nav
-          aria-label="Platform"
-          className="mt-auto border-t border-line pt-2"
-        >
-          <NavLink to="/agents" className={({ isActive }) => link(isActive)}>
-            <Bot aria-hidden className="size-4 shrink-0" />
-            Agents
-          </NavLink>
-          {role === "admin" && (
-            <NavLink
-              to="/settings/ai-provider"
-              className={({ isActive }) => link(isActive)}
-            >
-              <Settings aria-hidden className="size-4 shrink-0" />
-              Settings
-            </NavLink>
-          )}
-        </nav>
-      )}
-    </aside>
+    </SidebarFrame>
   );
 }

@@ -33,7 +33,7 @@ interface Scorecard {
 }
 
 const PERIOD = "Case 0412 · Apr 2026";
-const head = "py-1.5 pr-3 text-[0.6875rem] font-semibold tracking-[0.04em] text-muted uppercase whitespace-nowrap";
+const head = "py-1.5 pr-3 text-xs font-medium text-subtle whitespace-nowrap";
 
 function Status({ passed }: { passed: boolean | null }) {
   if (passed === true) {

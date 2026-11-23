@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/layout";
-import { Badge, DataTable, FilterSelect, Kpis, PageTitle, Panel, when, type Column } from "../monitoring/ui";
+import { Badge, DataTable, FilterSelect, Kpis, PageTitle, Panel, type Column } from "../monitoring/ui";
 import { AgentDetail } from "./AgentDetail";
 import { AgentGraph, GraphLegend } from "./AgentGraph";
 import { pct, tokens, usd, useAgents, type Agent, type Outcome, type Registry } from "./api";
@@ -43,7 +43,7 @@ export function AgentsConsole() {
     <div className="agents-console min-w-0">
       <PageTitle
         title="Agents"
-        meta={`${data.model.name} · effort ${data.model.effort} · ${data.llm_mode === "replay" ? "Replay" : data.llm_mode === "live" ? "Live" : "Record"} · registry v${data.version}`}
+        meta={`AI agents and code engines · registry v${data.version}`}
       />
       <Tabs />
       <Routes>
@@ -66,11 +66,9 @@ function Totals({ registry }: { registry: Registry }) {
         { label: "Model agents", value: model },
         { label: "Code engines", value: registry.agents.length - model },
         { label: "Model runs", value: t.runs },
-        { label: "Cost", value: usd(t.cost_usd) },
-        { label: "Tokens", value: tokens(t.tokens) },
-        { label: "Acceptance", value: t.decided ? `${pct(t.acceptance)} of ${t.decided}` : "–", tone: t.acceptance !== null && t.acceptance < 0.9 ? "warn" : undefined },
+        { label: "Model cost", value: usd(t.cost_usd) },
+        { label: "Accepted", value: t.decided ? pct(t.acceptance) : "–", tone: t.acceptance !== null && t.acceptance < 0.9 ? "warn" : t.decided ? "ok" : undefined },
         { label: "Awaiting review", value: t.outcomes.awaiting_review, tone: t.outcomes.awaiting_review ? "warn" : undefined },
-        { label: "Refused (no AI)", value: t.refused },
       ]}
     />
   );
@@ -119,10 +117,8 @@ function AgentsList({ registry }: { registry: Registry }) {
       },
     },
     { key: "runs", header: "Runs", align: "right", sort: (a) => a.stats?.runs ?? -1, render: (a) => <span className="numeric">{a.stats ? a.stats.runs : "–"}</span> },
-    { key: "refused", header: "Refused", align: "right", sort: (a) => a.stats?.refused ?? -1, render: (a) => <span className="numeric text-muted">{a.stats?.refused || "–"}</span> },
     { key: "cost", header: "Cost", align: "right", sort: (a) => a.stats?.cost_usd ?? -1, render: (a) => <span className="numeric">{a.stats ? usd(a.stats.cost_usd) : "–"}</span> },
     { key: "acceptance", header: "Acceptance", sort: (a) => a.stats?.acceptance ?? -1, render: (a) => (a.stats ? <Meter value={a.stats.acceptance} /> : <span className="text-muted">–</span>) },
-    { key: "last", header: "Last run", sort: (a) => a.stats?.last_at ?? "", render: (a) => <span className="numeric whitespace-nowrap text-muted">{a.stats?.last_at ? when(a.stats.last_at) : "–"}</span> },
   ];
   return (
     <>

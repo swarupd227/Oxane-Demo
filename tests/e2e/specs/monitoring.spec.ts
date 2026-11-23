@@ -35,6 +35,24 @@ function facilityTab(page: Page, name: string) {
   return page.getByRole("tab", { name: new RegExp(`^${name}`) });
 }
 
+/** The sign-off panel that lists what blocks approval; the Approve button stays disabled meanwhile. */
+function blocked(page: Page) {
+  return page.getByRole("status").filter({ hasText: "Approval is blocked" });
+}
+
+/** Ask the API directly to approve a facility's report as the acting persona, as a client that
+ * ignored the disabled button would: the server must still refuse. */
+async function approveDirectly(page: Page, facility: string) {
+  return page.evaluate(async (id) => {
+    const response = await fetch("/api/monitoring/session/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "approve-pack", actor: "analyst", payload: { facility: id } }),
+    });
+    return { status: response.status, detail: ((await response.json()) as { detail?: string }).detail ?? "" };
+  }, facility);
+}
+
 async function packFor(page: Page, persona: string, facility: string) {
   await monitoring(page, "/monitoring/pack", "Reports", persona);
   await facilityTab(page, facility).click();
@@ -266,14 +284,18 @@ test("validation: warnings are logged, Bramble's pool change is explained by a v
 test("reports cannot be approved while findings are open, nor by the analyst who prepared them", async ({ page }) => {
   await packFor(page, "Priya Raman", BRAMBLE);
   await expect(page.getByText("Provisional", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Approve", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Level 2 is for the second analyst" })).toBeVisible();
+  await expect(blocked(page)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Approve", exact: true })).toBeDisabled();
+  // The preparer cannot sign level 2 even by going round the screen.
+  expect(await approveDirectly(page, "bramble")).toEqual({ status: 409, detail: "Level 2 is for the second analyst" });
 
   await packFor(page, "Marcus Hale", BRAMBLE);
-  await expect(page.getByText(/^\d+ open exceptions?$/)).toBeVisible();
-  await expect(page.getByText("QC variance unresolved")).toBeVisible();
-  await page.getByRole("button", { name: "Approve", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Every finding needs a decision first" })).toBeVisible();
+  await expect(blocked(page).getByText(/^\d+ open exceptions?$/)).toBeVisible();
+  await expect(blocked(page).getByText("QC variance unresolved")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Approve", exact: true })).toBeDisabled();
+  const refused = await approveDirectly(page, "bramble");
+  expect(refused.status).toBe(409);
+  expect(refused.detail).toMatch(/^Every finding needs a decision first/);
 });
 
 test("exceptions: every finding is decided, noise stays logged, and expert judgement goes to Ruth and back", async ({ page }) => {
@@ -317,7 +339,7 @@ test("exceptions: every finding is decided, noise stays logged, and expert judge
   const ruth = await myWork(page, "Ruth Adeyemi");
   const item = ruth.locator("li").filter({ hasText: "Expert judgement: Leverage 6.20x if the guarantee counts, against 6.00x" });
   await expect(item).toBeVisible();
-  await expect(item).toContainText("handed over by Priya Raman");
+  await expect(item).toContainText("From Priya Raman");
   await expect(ruth.locator("li").filter({ hasText: "Expert judgement: Loan-to-value 30.3%" })).toBeVisible();
   await expect(ruth.locator("li").filter({ hasText: "Expert judgement: Calloway Veterinary Partners" })).toBeVisible();
   await item.getByRole("button", { name: "Record decision" }).click();
@@ -329,15 +351,15 @@ test("exceptions: every finding is decided, noise stays logged, and expert judge
   const priya = await myWork(page, "Priya Raman");
   const back = priya.locator("li").filter({ hasText: "Expert decision: Leverage 6.20x if the guarantee counts, against 6.00x" });
   await expect(back).toBeVisible();
-  await expect(back).toContainText("handed over by Ruth Adeyemi");
+  await expect(back).toContainText("From Ruth Adeyemi");
   await expect(back).toContainText("The guarantee is contingent");
 });
 
 test("validation: the held Northmoor load blocks its report until the analyst resolves it", async ({ page }) => {
   await packFor(page, "Marcus Hale", NORTHMOOR);
-  await expect(page.getByText("Load held by blocking check")).toBeVisible();
-  await page.getByRole("button", { name: "Approve", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "The load is held by a blocking check. Resolve it first" })).toBeVisible();
+  await expect(blocked(page).getByText("Load held by blocking check")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Approve", exact: true })).toBeDisabled();
+  expect(await approveDirectly(page, "northmoor")).toEqual({ status: 409, detail: "The load is held by a blocking check. Resolve it first" });
 
   await monitoring(page, "/monitoring/validation", "Validation");
   await expect(page.getByRole("button", { name: "Keep one row and release" })).toBeDisabled();
@@ -352,6 +374,7 @@ test("validation: the held Northmoor load blocks its report until the analyst re
   // Calderwood needs two levels: the preparer and a second analyst. Marcus's approval releases it.
   await packFor(page, "Marcus Hale", NORTHMOOR);
   await expect(page.getByText("Load held by blocking check")).toHaveCount(0);
+  await expect(blocked(page)).toHaveCount(0);
   await page.getByRole("button", { name: "Approve", exact: true }).click();
   await expect(page.getByText("Released", { exact: true })).toBeVisible();
   await expect(page.getByText(/^Released \d/)).toBeVisible();
@@ -381,9 +404,9 @@ test("reports: Bramble's QC variance blocks release until Tom resolves it; the w
 
   // Marcus cannot approve while the variance is open.
   await packFor(page, "Marcus Hale", BRAMBLE);
-  await expect(page.getByText("QC variance unresolved")).toBeVisible();
-  await page.getByRole("button", { name: "Approve", exact: true }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Resolve the genuine QC variance first: Gross charge-offs" })).toBeVisible();
+  await expect(blocked(page).getByText("QC variance unresolved")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Approve", exact: true })).toBeDisabled();
+  expect(await approveDirectly(page, "bramble")).toEqual({ status: 409, detail: "Resolve the genuine QC variance first: Gross charge-offs" });
 
   // The variance waits on Tom, the QC analyst; he records the resolution.
   const tom = await myWork(page, "Tom Fairley");
@@ -398,6 +421,7 @@ test("reports: Bramble's QC variance blocks release until Tom resolves it; the w
   // Now Marcus releases it, and the client contact is told.
   await packFor(page, "Marcus Hale", BRAMBLE);
   await expect(page.getByText("QC variance unresolved")).toHaveCount(0);
+  await expect(blocked(page)).toHaveCount(0);
   await page.getByRole("button", { name: "Approve", exact: true }).click();
   await expect(page.getByText("Released", { exact: true })).toBeVisible();
   download = page.waitForEvent("download");
@@ -424,8 +448,12 @@ test("reports: Thornbury needs three levels; Marcus approves level 2 and Elena r
   await expect(page.getByText("Sign-off · Thornbury Bank N.A.")).toBeVisible();
   const signoff = page.locator("ol").filter({ hasText: "Level 3" });
   await expect(signoff.locator("li")).toHaveCount(3);
-  await expect(signoff.locator("li").filter({ hasText: "Level 3" })).toContainText("Elena Varga · Head of monitoring");
-  await expect(signoff.locator("li").filter({ hasText: "Level 2" })).toContainText("Marcus Hale · Second analyst");
+  await expect(signoff.locator("li").filter({ hasText: "Level 3" })).toContainText("Elena Varga");
+  await expect(signoff.locator("li").filter({ hasText: "Level 3" })).toContainText("Level 3 · Head of monitoring");
+  await expect(signoff.locator("li").filter({ hasText: "Level 2" })).toContainText("Marcus Hale");
+  await expect(signoff.locator("li").filter({ hasText: "Level 2" })).toContainText("Level 2 · Second analyst");
+  // Marcus signs next: his level is marked as the next to sign.
+  await expect(signoff.locator("li").filter({ hasText: "Level 2" })).toContainText("Next");
   await page.getByRole("button", { name: "Approve", exact: true }).click();
   await expect(page.getByText("Provisional", { exact: true })).toBeVisible();
   await expect(signoff.locator("li").filter({ hasText: "Level 2" })).toContainText(/\d{4}/);
@@ -436,7 +464,7 @@ test("reports: Thornbury needs three levels; Marcus approves level 2 and Elena r
   const elena = await myWork(page, "Elena Varga");
   const item = elena.locator("li").filter({ hasText: `Approve ${LARKSPUR} report, level 3` });
   await expect(item).toBeVisible();
-  await expect(item).toContainText("handed over by Marcus Hale");
+  await expect(item).toContainText("From Marcus Hale");
   await expect(page.locator("section").filter({ has: page.getByRole("heading", { name: "Team workload" }) })).toBeVisible();
 
   await packFor(page, "Elena Varga", LARKSPUR);

@@ -156,7 +156,7 @@ export function UserMenu({
             <p className="px-2 py-1.5 text-xs text-muted">Signed in as {signedIn.name}</p>
           ) : (
             <>
-              <DropdownMenu.Label className="px-2 pt-1.5 pb-1 text-[0.6875rem] font-semibold tracking-wide text-muted uppercase">
+              <DropdownMenu.Label className="px-2 pt-1.5 pb-1 text-xs font-medium text-subtle">
                 Acting as
               </DropdownMenu.Label>
               <DropdownMenu.RadioGroup value={current} onValueChange={onSwitch}>

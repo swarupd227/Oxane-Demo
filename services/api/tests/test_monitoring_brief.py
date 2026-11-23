@@ -332,3 +332,39 @@ def test_audit_entries_name_the_record_they_touch():
     assert act("triage", id=item["id"], outcome=item["suggested"]["outcome"]).status_code == 200
     entry = session()["audit"][-1]
     assert entry["subject"] == item["id"] and entry["type"] == "triage" and len(entry["hash"]) >= 12
+
+
+# Panorama (a stub): released scripted packs hand their results over too
+
+
+def test_releasing_a_scripted_pack_sends_its_results_to_panorama(monkeypatch):
+    monkeypatch.setattr(settings, "panorama_base_url", "")
+    decide("kestrel")
+    assert "kestrel" not in session()["panorama"]
+    assert act("approve-pack", "approver", facility="kestrel").status_code == 200
+    state = session()
+    sent = state["panorama"]["kestrel"]
+    assert sent["ok"] and sent["receipt"].startswith("PNR-")
+    assert sent["request"]["url"] == "/api/mock/panorama/monitoring-results"
+    assert sent["response"]["status"] == 200 and sent["by"] == "Workbench (automatic)"
+    entry = next(a for a in state["audit"] if a["type"] == "panorama-sent")
+    assert entry["subject"] == "kestrel" and sent["receipt"] in entry["action"]
+    assert entry["hash"] == sent["audit_hash"] and state["chainIntact"]
+    again = client.post("/api/monitoring/panorama/kestrel")
+    assert again.status_code == 409
+
+
+def test_a_pack_short_of_its_levels_is_not_sent_and_a_failure_can_be_retried(monkeypatch):
+    decide("larkspur")
+    assert act("approve-pack", "approver", facility="larkspur").status_code == 200
+    assert "larkspur" not in session()["panorama"]  # Thornbury needs a third level
+    assert client.post("/api/monitoring/panorama/larkspur").status_code == 409
+    monkeypatch.setattr(settings, "panorama_base_url", "http://127.0.0.1:9")
+    monkeypatch.setattr(settings, "panorama_timeout_seconds", 1.0)
+    assert act("approve-pack", "senior", facility="larkspur").status_code == 200
+    failed = session()["panorama"]["larkspur"]
+    assert failed["ok"] is False and failed["receipt"] is None
+    monkeypatch.setattr(settings, "panorama_base_url", "")
+    retried = client.post("/api/monitoring/panorama/larkspur")
+    assert retried.status_code == 200
+    assert retried.json()["panorama"]["larkspur"]["ok"]

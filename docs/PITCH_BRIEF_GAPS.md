@@ -45,7 +45,7 @@ What the brief changes for the demos:
 | UC1: reporting requirements | Case › Reporting: report lines, frequency, format and due day captured as their own step; they feed the Report sheet of the configuration workbook and the built model, and the facility record at go-live |
 | UC2: calculations without a trigger | A submission whose load passes validation runs reconciliation, calculations and covenant tests by itself (activity: *Workbench (automatic)*); a held load is released by a triage decision and then re-run by the analyst |
 | UC2: partial reuse | Monitoring › Mapping › Reuse by bank and sender: each bank's rule library, the layouts reused per sender, and what each facility set for itself; new deals reuse a bank's library rules (re-checked against the new agreement) and show *Set up from* on the facility |
-| Integration with Panorama | Outbound client and an in-app mock (a stub): load file at go-live, results on release, receipt in the audit trail |
+| Integration with Panorama | Outbound client and an in-app mock (a stub): a new deal's load file at go-live and its results on release, and each scripted May-cycle pack's results when its last approval level releases it; receipt in the audit trail and on the report |
 | Clients that don't permit AI | Labelled *Existing process — outside AI scope*; not presented as a feature; no model call for them, tested |
 
 ## Out of scope

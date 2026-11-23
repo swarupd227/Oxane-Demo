@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import type { LlmMode } from "../lib/api";
+import type { PanoramaSend } from "../lib/deals";
 import type { Rect } from "../lib/workbench";
 
 export interface Source {
@@ -777,6 +778,8 @@ export interface CycleSession {
   layoutConfirmed: boolean;
   triage: Record<string, { outcome: Outcome; note: string | null; at: string; overrode: boolean }>;
   packs: Partial<Record<FacilityId, { at: string; by: string }>>;
+  /** Released results handed to Panorama (a stub), with the request, response and receipt. */
+  panorama?: Partial<Record<FacilityId, PanoramaSend>>;
   summaries?: Partial<Record<ClientId, { at: string; by: string }>>;
   blocks: Partial<Record<FacilityId, { note: string; at: string; by: string }>>;
   qcResolved: Partial<Record<FacilityId, Record<string, { note: string; at: string; by: string }>>>;

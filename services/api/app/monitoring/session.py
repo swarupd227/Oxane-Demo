@@ -21,7 +21,10 @@ ANALYST = "analyst"
 APPROVER = "approver"
 SENIOR = "senior"
 CLIENT = "client"
+# The workbench itself, for what it does on its own (the Panorama hand-off on release).
+SYSTEM = "system"
 ACTOR_NAMES = {
+    SYSTEM: "Workbench (automatic)",
     ANALYST: "Monitoring analyst",
     APPROVER: "Second analyst",
     SENIOR: "Head of monitoring",
@@ -49,6 +52,8 @@ def _initial() -> dict[str, Any]:
         "qcResolved": {},
         "approvals": {},
         "packs": {},
+        # Released results handed to Panorama (a stub): facility -> {receipt, ok, request, ...}.
+        "panorama": {},
         # Status-call summaries released to each client's portal: client id -> {at, by}.
         "summaries": {},
         "alerts": [],
@@ -78,6 +83,10 @@ def _describe(event: CaseEvent) -> tuple[str, str | None]:
             + (": released" if p.get("released") else ""),
             None,
         ),
+        "panorama-sent": (f"Sent {p.get('name')}'s released results to Panorama: receipt "
+                          f"{p.get('receipt')}", None),
+        "panorama-failed": (f"Panorama did not accept {p.get('name')}'s released results "
+                            f"(status {(p.get('response') or {}).get('status')})", None),
     }[event.type]
 
 
@@ -126,7 +135,12 @@ def fold(events: list[CaseEvent]) -> dict[str, Any]:
                  "at": at})
             if p.get("released"):
                 state["packs"][p["facility"]] = {"at": at, "by": who}
-        if event.type != "open-cycle":
+        elif event.type in ("panorama-sent", "panorama-failed"):
+            state["panorama"][p["facility"]] = {
+                "ok": event.type == "panorama-sent", "receipt": p.get("receipt"),
+                "request": p.get("request"), "response": p.get("response"), "at": at,
+                "by": who, "audit_hash": event.hash}
+        if event.type not in ("open-cycle", "panorama-sent", "panorama-failed"):
             state["actions"] += 1
         action, reason = _describe(event)
         # The record each event touches, so a finding or facility can show its own history.
@@ -300,6 +314,50 @@ def record(
     extra = _check(state, events, cycle, actor, kind, payload)
     _append(db, session_id, events, actor, kind, {**payload, **extra})
     db.commit()
+
+
+def results_payload(cycle: dict[str, Any], state: dict[str, Any], facility: str
+                    ) -> dict[str, Any]:
+    """A released pack's results, as Panorama would take them: the figures code computed."""
+    fac = next(f for f in cycle["facilities"] if f["id"] == facility)
+    return {
+        "facility": facility, "facility_name": fac["name"], "client": fac["client_name"],
+        "period": cycle["cycle"]["label"], "cycle": cycle["cycle"]["id"],
+        "status": "released" if facility in state["packs"] else "provisional",
+        "results": cycle["tests"].get(facility) or {},
+        "approvals": state["approvals"].get(facility, []),
+        "findings": [{"id": f["id"], "title": f.get("title"),
+                      "outcome": decided(state, f)} for f in cycle["findings"]
+                     if facility in f["facility"].split(",")],
+    }
+
+
+def send_to_panorama(db: Session, cycle: dict[str, Any], facility: str) -> dict[str, Any]:
+    """Hand a released pack's results to Panorama and log the attempt in the cycle's chain.
+    A failure is recorded, never raised; a facility already received is not sent again."""
+    from app import panorama
+
+    session_id = current_session(db, cycle)
+    events = load_events(db, session_id)
+    state = fold(events)
+    if facility not in state["packs"]:
+        raise Refused("Results go to Panorama once the pack is released")
+    if (state["panorama"].get(facility) or {}).get("ok"):
+        raise Refused("Panorama already has these results")
+    sent = panorama.send("monitoring-results", json_safe(results_payload(cycle, state,
+                                                                         facility)))
+    name = next(f["name"] for f in cycle["facilities"] if f["id"] == facility)
+    _append(db, session_id, events, SYSTEM, "panorama-sent" if sent["ok"] else
+            "panorama-failed", {"facility": facility, "name": name, "receipt": sent["receipt"],
+                                "request": sent["request"], "response": sent["response"]})
+    db.commit()
+    return sent
+
+
+def json_safe(value: Any) -> Any:
+    import json
+
+    return json.loads(json.dumps(value, default=str))
 
 
 def reset(db: Session, cycle: dict[str, Any]) -> None:

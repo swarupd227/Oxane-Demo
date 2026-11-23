@@ -157,10 +157,14 @@ test("query tracker: send the drafted queries, the client answers one, the analy
   await expect(page.getByText("Case 0412 · 9 queries · 2 with client · 0 drafted")).toBeVisible();
   await expect(page.getByRole("button", { name: /^Record \d+ answers$/ })).toHaveCount(0);
 
-  // The split: analyst plus client waiting makes the elapsed time; the sent queries added waiting.
+  // The split: analyst plus client waiting makes the elapsed time. Client waiting is the union of
+  // the waits, and Q-01 (blocking, sent 5 May) is still open, so sending more queries in
+  // parallel adds waiting to each query but not to the case.
   const tracker = (await (await request.get("/api/casework")).json()).tracker;
   expect(tracker.elapsed_hours).toBe(83.5);
-  expect(tracker.client_waiting_hours).toBeGreaterThan(74);
+  expect(tracker.client_waiting_hours).toBe(74);
+  const waited = tracker.queries.filter((q: { sent: string | null; earlier: boolean }) => q.sent && !q.earlier);
+  expect(waited.every((q: { waiting_hours: number }) => q.waiting_hours > 0)).toBe(true);
   expect(Math.round((tracker.analyst_hours + tracker.client_waiting_hours) * 100) / 100).toBe(83.5);
   await expect(figure("Analyst time")).toHaveText(`${tracker.analyst_hours.toFixed(1)} h`);
   await expect(figure("Client waiting time")).toHaveText(`${tracker.client_waiting_hours.toFixed(1)} h`);

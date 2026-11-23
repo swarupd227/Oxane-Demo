@@ -217,7 +217,9 @@ test("(b) its first monitoring month runs through to a released report", async (
   await expect(page.getByText("Borrowing base", { exact: true })).toBeVisible({ timeout: 60_000 });
   await clickEach(page, () => page.getByRole("button", { name: "Decide", exact: true }));
   await page.getByRole("button", { name: "Draft report" }).click();
-  await expect(page.getByText(/The pool stood at US\$/)).toBeVisible({ timeout: 60_000 });
+  // The live model drafts its own wording; the stub's template starts "The pool stood at". Either
+  // way the draft is ready when level 1 approval is offered.
+  await expect(page.getByRole("button", { name: "Approve, level 1" })).toBeEnabled({ timeout: 120_000 });
   await page.getByRole("button", { name: "Approve, level 1" }).click();
   await switchTo(page, "Marcus Hale");
   await page.locator(`main a[href="${state.subPath}"]`).first().click();

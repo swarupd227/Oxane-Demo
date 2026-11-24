@@ -82,7 +82,7 @@ export function MappingPage() {
       {view === "files" && (
         <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-3">
           <div className="space-y-3">
-            <Card>
+            <Card className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-line text-xs font-medium text-subtle">
@@ -108,13 +108,14 @@ export function MappingPage() {
                           f.facility === feed.facility && "bg-canvas",
                         )}
                       >
+                        {/* A long file name truncates (full name on hover) so the table stays inside its card. */}
                         <td className="py-2.5 pr-3 pl-5">
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex min-w-0 items-center gap-1.5">
                             <FacilityTag
                               id={f.facility}
                               name={fac.name.split(" ")[0]}
                             />
-                            <span className="truncate text-sm">{f.file}</span>
+                            <span className="max-w-20 truncate text-sm min-[1400px]:max-w-36 min-[1800px]:max-w-80" title={f.file}>{f.file}</span>
                           </span>
                         </td>
                         <td className="py-2.5 pr-3 text-sm">
@@ -135,10 +136,11 @@ export function MappingPage() {
                             </span>
                           )}
                         </td>
-                        <td className="numeric py-2.5 pr-3 text-right text-sm">
+                        <td className="numeric py-2.5 pr-3 text-right text-sm whitespace-nowrap">
                           {f.from_memory} of {f.columns_total}
                         </td>
-                        <td className="py-2.5 pr-5 text-sm">
+                        {/* The no-AI badge may wrap here, so its full wording fits a narrow column. */}
+                        <td className="py-2.5 pr-5 text-sm [&>span]:h-auto [&>span]:py-0.5 [&>span]:leading-tight [&>span]:whitespace-normal">
                           {fac.ai_permitted ? (
                             f.ai_used ? (
                               `${f.columns_total - f.from_memory} columns`
@@ -321,7 +323,7 @@ export function MappingPage() {
                         {memory.name}
                       </p>
                       {!client.ai_permitted && (
-                        <p className="mt-1">
+                        <p className="mt-1 [&>span]:h-auto [&>span]:py-0.5 [&>span]:leading-tight [&>span]:whitespace-normal">
                           <NoAiBadge compact />
                         </p>
                       )}

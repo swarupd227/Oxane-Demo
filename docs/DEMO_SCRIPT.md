@@ -29,7 +29,7 @@ Step by step, onboarding and then monitoring, first for a client that permits AI
    - *Reporting*: **Record requirements** (the report lines the client needs).
 5. *Rules*: **Draft with AI**. Each rule carries its clause and page, including the one the amendment adds. **Approve rule set**.
 6. *Mapping*: **Suggest mapping** › **Confirm and store**. The mapping is kept for this client and reused every month.
-7. *Validation*: Reporting date `2026-09-30` › **Validate and run**. The engine computes the borrowing base: **US$13,687,998.52**.
+7. *Validation*: Reporting date `2026-09-30` › **Validate and run**. The engine runs on 1,400 loan rows: gross pool US$16,632,199.97, **eligible pool US$13,687,998.52**, advance rate 86.00%, **borrowing base US$10,628,282.29**, delinquency 3.48%.
 8. *Exceptions*: the client's model uses 88% against the agreement's 86%. Type a note and **Query client**. Work the rest with **Accept** and a note.
 
 **Nadia Brooks (client contact)**

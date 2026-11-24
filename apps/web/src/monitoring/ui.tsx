@@ -2,7 +2,7 @@
  * people, record references, provenance chips and the activity timeline. */
 import clsx from "clsx";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Gavel, Search, Sparkles } from "lucide-react";
-import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useMemo, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { Tooltip } from "../components/ui/Tooltip";
 import type { CycleAudit } from "./cycle";
 
@@ -96,36 +96,51 @@ export function Panel({ title, meta, actions, children, className, flush }: { ti
 
 export function Kpis({ items }: { items: { label: string; value: ReactNode; tone?: "ok" | "warn" | "danger"; onClick?: () => void }[] }) {
   const dot = { ok: "bg-ok", warn: "bg-warn", danger: "bg-danger" };
+  // A figure must stay inside its tile. More than four tiles split into two even rows when the row
+  // is narrow (under 64rem) or a figure is long (an amount to the cent), and a long figure steps
+  // down a size; overflow-wrap is the last resort, never a spill past the border.
+  const length = (value: ReactNode) => (typeof value === "string" || typeof value === "number" ? String(value).length : 0);
+  const size = (value: ReactNode) => (length(value) > 13 ? "text-xl" : length(value) > 9 ? "text-[1.375rem]" : "text-2xl");
+  const many = items.length > 4;
+  const half = Math.ceil(items.length / 2);
+  const wide = many && items.some((item) => length(item.value) > 12) ? half : items.length;
+  const columns = (n: number) => `repeat(${n}, minmax(0, 1fr))`;
   return (
-    <div className="mb-5 grid gap-3" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
-      {items.map((item) => {
-        const body = (
-          <>
-            <p className="flex items-center gap-1.5 truncate text-xs font-medium text-subtle">
-              {item.tone && <span aria-hidden className={clsx("size-1.5 shrink-0 rounded-full", dot[item.tone])} />}
-              {item.label}
-            </p>
-            <p
-              className={clsx(
-                "numeric mt-1.5 text-2xl leading-none font-semibold tracking-tight",
-                item.tone === "danger" ? "text-danger" : item.tone === "warn" ? "text-warn" : "text-ink",
-              )}
-            >
-              {item.value}
-            </p>
-          </>
-        );
-        const tile = "rounded-xl border border-line bg-surface px-4 py-3.5 text-left shadow-card";
-        return item.onClick ? (
-          <button key={item.label} type="button" onClick={item.onClick} className={clsx(tile, "cursor-pointer transition-colors hover:border-stone")}>
-            {body}
-          </button>
-        ) : (
-          <div key={item.label} className={tile}>
-            {body}
-          </div>
-        );
-      })}
+    <div className="mb-5 @container">
+      <div
+        className="grid grid-cols-(--kpi-narrow) gap-3 @5xl:grid-cols-(--kpi-wide)"
+        style={{ "--kpi-narrow": columns(many ? half : items.length), "--kpi-wide": columns(wide) } as CSSProperties}
+      >
+        {items.map((item) => {
+          const body = (
+            <>
+              <p className="flex items-start gap-1.5 text-xs leading-snug font-medium text-subtle">
+                {item.tone && <span aria-hidden className={clsx("mt-1 size-1.5 shrink-0 rounded-full", dot[item.tone])} />}
+                {item.label}
+              </p>
+              <p
+                className={clsx(
+                  "numeric mt-1.5 leading-tight font-semibold tracking-tight [overflow-wrap:anywhere]",
+                  size(item.value),
+                  item.tone === "danger" ? "text-danger" : item.tone === "warn" ? "text-warn" : "text-ink",
+                )}
+              >
+                {item.value}
+              </p>
+            </>
+          );
+          const tile = "min-w-0 rounded-xl border border-line bg-surface px-4 py-3.5 text-left shadow-card";
+          return item.onClick ? (
+            <button key={item.label} type="button" onClick={item.onClick} className={clsx(tile, "cursor-pointer transition-colors hover:border-stone")}>
+              {body}
+            </button>
+          ) : (
+            <div key={item.label} className={tile}>
+              {body}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

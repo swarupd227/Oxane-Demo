@@ -99,7 +99,7 @@ function Approvals({
             <tr key={row.id} className="border-b border-sand last:border-0">
               <td className="py-1.5 pr-3 pl-4 font-mono text-xs whitespace-nowrap">{row.id}</td>
               <td className="py-1.5 pr-3">{row.item}</td>
-              <td className="numeric py-1.5 pr-3 text-xs whitespace-nowrap text-muted">
+              <td className="numeric py-1.5 pr-3 text-xs text-muted">
                 {row.requested ? formatDateTime(row.requested.at) : "-"}
               </td>
               <td className="py-1.5 pr-3">
@@ -107,8 +107,9 @@ function Approvals({
                   {row.status}
                 </span>
               </td>
-              <td className="py-1.5 pr-4 text-xs whitespace-nowrap">
+              <td className="py-1.5 pr-4 text-xs">
                 {row.decided ? (
+                  // The time wraps under the date rather than being clipped by the card on a narrow screen.
                   <span className="flex items-center gap-1.5">
                     <Avatar name={row.decided.actor} />
                     <span className="numeric text-muted">{formatDateTime(row.decided.at)}</span>
